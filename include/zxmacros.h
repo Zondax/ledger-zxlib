@@ -2,6 +2,7 @@
 // file LICENSE or http://www.opensource.org/licenses/mit-license.php.
 #pragma once
 
+#include <stdint.h>
 #include <memory.h>
 #define __INLINE inline __attribute__((always_inline)) static
 
