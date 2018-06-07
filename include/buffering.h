@@ -16,71 +16,84 @@
 #pragma once
 #include "zxmacros.h"
 
-typedef struct {
-  struct {
-    uint8_t last_chunk: 1;
-  } flags;
-  uint8_t data_size;
-} chunk_header_t;
+#ifdef LEDGER_SPECIFIC
+typedef uint16_t BUFFER_IDX_TYPE;
+#else
+typedef size_t BUFFER_IDX_TYPE;
+#endif
 
 typedef struct {
   uint8_t* data;
-  uint16_t size;
-  uint16_t pos;
+  BUFFER_IDX_TYPE size;
+  BUFFER_IDX_TYPE pos_r;
+  BUFFER_IDX_TYPE pos_w;
 } buffer_state_t;
 
-__INLINE bool lastChunk(const uint8_t* chunk)
+__INLINE BUFFER_IDX_TYPE CLIP(BUFFER_IDX_TYPE min, BUFFER_IDX_TYPE val, BUFFER_IDX_TYPE max)
 {
-    chunk_header_t* header = (chunk_header_t*) chunk;
-    return header->flags.last_chunk;
+    if (val<min) return min;
+    if (val>max) return max;
+    return val;
 }
 
-__INLINE bool eofBuffer(const buffer_state_t* buffer_state)
+__INLINE bool eof(const buffer_state_t* buffer_state)
 {
-    return buffer_state->pos==buffer_state->size;
+    return buffer_state->pos_r==buffer_state->pos_w;
+}
+
+__INLINE bool full(const buffer_state_t* buffer_state)
+{
+    return buffer_state->pos_w==buffer_state->size;
+}
+
+__INLINE BUFFER_IDX_TYPE space_left(const buffer_state_t* buffer_state)
+{
+    return (buffer_state->pos_w>buffer_state->size) ?
+           (BUFFER_IDX_TYPE) 0 :
+           buffer_state->size-buffer_state->pos_w;
 }
 
 __INLINE void resetBuffet(buffer_state_t* buffer_state)
 {
-    buffer_state->pos = 0;
+    buffer_state->pos_r = 0;
+    buffer_state->pos_w = 0;
 }
 
-__INLINE void initBuffer(buffer_state_t* buffer_state, uint8_t* buffer, uint16_t buffer_size)
+__INLINE void set_pos_r(buffer_state_t* buffer_state, BUFFER_IDX_TYPE new_pos_r)
+{
+    buffer_state->pos_r = CLIP(0, new_pos_r, buffer_state->pos_w);
+}
+
+__INLINE void set_pos_w(buffer_state_t* buffer_state, BUFFER_IDX_TYPE new_pos_w)
+{
+    buffer_state->pos_w = CLIP(0, new_pos_w, buffer_state->size);
+    buffer_state->pos_r = CLIP(0, buffer_state->pos_r, buffer_state->pos_w);
+}
+
+__INLINE void initBuffer(buffer_state_t* buffer_state, uint8_t* buffer, BUFFER_IDX_TYPE buffer_size)
 {
     buffer_state->data = buffer;
     buffer_state->size = buffer_size;
     resetBuffet(buffer_state);
 }
 
-__INLINE bool getChunk(buffer_state_t* buffer_state, uint8_t* chunk, int16_t max_chunk_size)
+__INLINE BUFFER_IDX_TYPE getChunk(buffer_state_t* buffer_state, uint8_t* chunk, BUFFER_IDX_TYPE max_chunk_size)
 {
-    max_chunk_size -= sizeof(chunk_header_t);
-    const uint16_t data_left = buffer_state->size-buffer_state->pos;
-    const uint16_t n = data_left<=max_chunk_size ? data_left : max_chunk_size;
+    const BUFFER_IDX_TYPE src_n = CLIP(0, buffer_state->pos_w-buffer_state->pos_r, max_chunk_size);
+    const uint8_t* src_p = buffer_state->data+buffer_state->pos_r;
 
-    chunk_header_t* header = (chunk_header_t*) chunk;
-    header->data_size = n;
-    chunk += sizeof(chunk_header_t);
+    memcpy((void*) chunk, src_p, src_n);
+    buffer_state->pos_r += src_n;
 
-    const uint8_t* p = buffer_state->data+buffer_state->pos;
-    memcpy(chunk, p, n);
-    buffer_state->pos += n;
-
-    // return if this is the last chunk
-    header->flags.last_chunk = eofBuffer(buffer_state);
-    return header->flags.last_chunk;
+    return src_n;
 }
 
-__INLINE bool putChunk(buffer_state_t* buffer_state, const uint8_t* chunk)
+__INLINE BUFFER_IDX_TYPE putChunk(buffer_state_t* buffer_state, const uint8_t* chunk, BUFFER_IDX_TYPE chunk_size)
 {
-    chunk_header_t* header = (chunk_header_t*) chunk;
-    const uint16_t data_left = buffer_state->size - buffer_state->pos;
-    const uint16_t n = data_left<=header->data_size ? data_left : header->data_size;
+    const BUFFER_IDX_TYPE dst_n = CLIP(0, chunk_size, buffer_state->size-buffer_state->pos_w);
+    uint8_t* const dst_p = buffer_state->data+buffer_state->pos_w;
+    memcpy(dst_p, chunk, dst_n);
+    buffer_state->pos_w += dst_n;
 
-    uint8_t* const p = buffer_state->data+buffer_state->pos;
-    memcpy(p, chunk, n);
-    buffer_state->pos += n;
-
-    // return true if it is the last chunk or the buffer is full
-    return lastChunk(chunk) || eofBuffer(buffer_state);
+    return dst_n;
 }

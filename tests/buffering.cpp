@@ -14,6 +14,7 @@
 *  limitations under the License.
 ********************************************************************************/
 #include <gmock/gmock.h>
+#include <buffering.h>
 #include "buffering.h"
 
 namespace {
@@ -24,110 +25,79 @@ TEST(BUFFERING, init)
 
     initBuffer(&buffer_state, buffer, sizeof(buffer));
 
-    EXPECT_EQ(buffer_state.pos, 0);
+    EXPECT_EQ(buffer_state.pos_r, 0);
+    EXPECT_EQ(buffer_state.pos_w, 0);
     EXPECT_EQ(buffer_state.size, 250);
-}
-
-TEST(BUFFERING, get_3)
-{
-    const uint16_t buffer_size = 40;
-    std::vector<uint8_t> buffer(buffer_size);
-    buffer_state_t buffer_state;
-
-    for(uint8_t i=0; i<buffer_size; i++)
-        buffer[i] = i;
-
-    initBuffer(&buffer_state, buffer.data(), buffer_size);
 
     std::vector<uint8_t> chunk(20);
-    getChunk(&buffer_state, chunk.data(), (int16_t)chunk.size());
+    auto bytes_read = getChunk(&buffer_state, chunk.data(), (uint16_t) chunk.size());
 
-    //////////////
-    // Get chunk 1
-    auto header = reinterpret_cast<chunk_header_t*>(chunk.data());
-    EXPECT_EQ(header->data_size, 18);
-    EXPECT_FALSE(lastChunk(chunk.data()));
-    EXPECT_EQ(buffer_state.pos, 18);
-    for(uint8_t i=0; i<header->data_size; i++)
-        EXPECT_EQ(chunk[sizeof(chunk_header_t)+i], i);
-
-    //////////////
-    // Get chunk 2
-    getChunk(&buffer_state, chunk.data(), (int16_t)chunk.size());
-
-    header = reinterpret_cast<chunk_header_t*>(chunk.data());
-    EXPECT_EQ(header->data_size, 18);
-    EXPECT_FALSE(lastChunk(chunk.data()));
-    EXPECT_EQ(buffer_state.pos, 36);
-    for(uint8_t i=0; i<header->data_size; i++)
-        EXPECT_EQ(chunk[sizeof(chunk_header_t)+i], i+18);
-
-    //////////////
-    // Get chunk 3
-    getChunk(&buffer_state, chunk.data(), (int16_t)chunk.size());
-
-    header = reinterpret_cast<chunk_header_t*>(chunk.data());
-    EXPECT_EQ(header->data_size, 4);
-    EXPECT_TRUE(lastChunk(chunk.data()));
-    EXPECT_EQ(buffer_state.pos, buffer_size);
-    for(uint8_t i=0; i<header->data_size; i++)
-        EXPECT_EQ(chunk[sizeof(chunk_header_t)+i], i+36);
+    EXPECT_EQ(0, bytes_read);
 }
 
-TEST(BUFFERING, put_2)
+TEST(BUFFERING, put_chunks_4)
 {
-    const uint16_t buffer_size = 40;
-    std::vector<uint8_t> buffer(buffer_size);
+    std::vector<uint8_t> buffer(40);
+
     buffer_state_t buffer_state;
-    initBuffer(&buffer_state, buffer.data(), buffer_size);
+    initBuffer(&buffer_state, buffer.data(), buffer.size());
 
     ///////////
     std::vector<uint8_t> chunk(30);
-    for(uint8_t i=0; i<28; i++)
+    for (uint8_t i = 0; i<28; i++)
         chunk[i+2] = i;
-    auto header = reinterpret_cast<chunk_header_t*>(chunk.data());
-    header->flags.last_chunk=0;
-    header->data_size = 28;
 
     //////////////
     // Put chunk 1
-    EXPECT_FALSE(putChunk(&buffer_state, chunk.data()));
-    EXPECT_EQ(buffer_state.pos, 28);
+    EXPECT_EQ(30, putChunk(&buffer_state, chunk.data(), chunk.size()));
+    EXPECT_EQ(0, buffer_state.pos_r);
+    EXPECT_EQ(30, buffer_state.pos_w);
+    EXPECT_FALSE(eof(&buffer_state));
+    EXPECT_FALSE(full(&buffer_state));
 
     //////////////
     // Put chunk 2
-    header->flags.last_chunk=1;
-    header->data_size = 5;
-    EXPECT_TRUE(putChunk(&buffer_state, chunk.data()));
-    EXPECT_EQ(buffer_state.pos, 33);
+    EXPECT_EQ(5, putChunk(&buffer_state, chunk.data(), 5));
+    EXPECT_EQ(0, buffer_state.pos_r);
+    EXPECT_EQ(35, buffer_state.pos_w);
+    EXPECT_FALSE(eof(&buffer_state));
+    EXPECT_FALSE(full(&buffer_state));
+
+    //////////////
+    // Put chunk 3
+    EXPECT_EQ(5, putChunk(&buffer_state, chunk.data(), 5));
+    EXPECT_EQ(0, buffer_state.pos_r);
+    EXPECT_EQ(40, buffer_state.pos_w);
+    EXPECT_FALSE(eof(&buffer_state));
+    EXPECT_TRUE(full(&buffer_state));
+
+    //////////////
+    // Put chunk 4
+    EXPECT_EQ(0, putChunk(&buffer_state, chunk.data(), 10));
+    EXPECT_EQ(0, buffer_state.pos_r);
+    EXPECT_EQ(40, buffer_state.pos_w);
+    EXPECT_FALSE(eof(&buffer_state));
+    EXPECT_TRUE(full(&buffer_state));
+
 }
 
-TEST(BUFFERING, put_2_overflow)
+TEST(BUFFERING, get_chunks_2)
 {
-    const uint16_t buffer_size = 40;
-    std::vector<uint8_t> buffer(buffer_size);
+    std::vector<uint8_t> buffer(40);
+
     buffer_state_t buffer_state;
-    initBuffer(&buffer_state, buffer.data(), buffer_size);
+    initBuffer(&buffer_state, buffer.data(), (uint16_t) buffer.size());
+    set_pos_w(&buffer_state, 50);
 
-    ///////////
-    std::vector<uint8_t> chunk(30);
-    for(uint8_t i=0; i<28; i++)
-        chunk[i+2] = i;
-    auto header = reinterpret_cast<chunk_header_t*>(chunk.data());
-    header->flags.last_chunk=0;
-    header->data_size = 28;
+    EXPECT_EQ(buffer_state.size, buffer_state.pos_w);
+    EXPECT_EQ(buffer.size(), buffer_state.size);
 
-    //////////////
-    // Put chunk 1
-    EXPECT_FALSE(putChunk(&buffer_state, chunk.data()));
-    EXPECT_EQ(buffer_state.pos, 28);
+    std::vector<uint8_t> chunk(25);
+    auto bytes_read = getChunk(&buffer_state, chunk.data(), (int16_t) chunk.size());
+    EXPECT_EQ(chunk.size(), bytes_read);
 
-    //////////////
-    // Put chunk 2
-    header->flags.last_chunk=0;
-    header->data_size = 28;
-    EXPECT_TRUE(putChunk(&buffer_state, chunk.data()));
-    EXPECT_EQ(buffer_state.pos, 40);
+    bytes_read = getChunk(&buffer_state, chunk.data(), (int16_t) chunk.size());
+    EXPECT_EQ(15, bytes_read);
 }
 
 }
