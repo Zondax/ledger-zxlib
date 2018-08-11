@@ -67,3 +67,14 @@ __INLINE void nvset(NVCONST void *dst, uint32_t val)
 #define HtoNL(x) (x)
 #define NtoHL(x) (x)
 #endif
+
+inline void array_to_hexstr(char* dst, const uint8_t* src, uint8_t count)
+{
+    const char hexchars[] = "0123456789ABCDEF";
+    for(uint8_t i=0; i<count; i++, src++)
+    {
+        *dst++ = hexchars[*src >> 4];
+        *dst++ = hexchars[*src & 0x0F];
+    }
+    *dst=0; // terminate string
+}
