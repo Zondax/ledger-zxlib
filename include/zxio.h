@@ -28,7 +28,7 @@ inline void fpuint64_to_str(char *dst, const uint64_t value, uint8_t decimals) {
     if (digits <= decimals) {
         *dst++ = '0';
         *dst++ = '.';
-        for (int i = 0; i < decimals - digits; i++, dst++)
+        for (uint16_t i = 0; i < decimals - digits; i++, dst++)
             *dst = '0';
         strcpy(dst, buffer);
     } else {
