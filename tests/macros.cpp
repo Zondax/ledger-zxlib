@@ -15,6 +15,7 @@
 ********************************************************************************/
 #include <gmock/gmock.h>
 #include <zxmacros.h>
+#include <zxio.h>
 
 namespace {
 TEST(MACROS, array_to_hexstr) {
@@ -26,5 +27,32 @@ TEST(MACROS, array_to_hexstr) {
     array_to_hexstr(output, array1, sizeof(array1));
     EXPECT_EQ(memcmp(output, "010305", 2*sizeof(array1)), 0);
     EXPECT_EQ(output[2*sizeof(array1)], 0);
+}
+}
+
+namespace {
+TEST(MACROS, fpuint64_to_str) {
+    char output[100];
+    printf("\n");
+
+    fpuint64_to_str(output, 123, 5);
+    printf("%10s\n", output);
+    EXPECT_EQ(std::string(output), "0.00123");
+
+    fpuint64_to_str(output, 1234, 5);
+    printf("%10s\n", output);
+    EXPECT_EQ(std::string(output), "0.01234");
+
+    fpuint64_to_str(output, 12345, 5);
+    printf("%10s\n", output);
+    EXPECT_EQ(std::string(output), "0.12345");
+
+    fpuint64_to_str(output, 123456, 5);
+    printf("%10s\n", output);
+    EXPECT_EQ(std::string(output), "1.23456");
+
+    fpuint64_to_str(output, 1234567, 5);
+    printf("%10s\n", output);
+    EXPECT_EQ(std::string(output), "12.34567");
 }
 }
