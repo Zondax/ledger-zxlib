@@ -55,4 +55,205 @@ TEST(MACROS, fpuint64_to_str) {
     printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "12.34567");
 }
+
+TEST(INT64_TO_STR, Zero) {
+
+    char temp[10];
+    const char* error = int64_to_str(temp, sizeof(temp), int64_t(0));
+    EXPECT_STREQ(temp, "0");
+    EXPECT_TRUE(error == NULL);
+}
+
+TEST(INT64_TO_STR, Positive_1234) {
+
+    char temp[10];
+    const char* error = int64_to_str(temp, sizeof(temp), int64_t(1234));
+    EXPECT_STREQ(temp, "1234");
+    EXPECT_TRUE(error == NULL);
+}
+
+TEST(INT64_TO_STR, Negative_1234) {
+
+    char temp[10];
+    const char* error = int64_to_str(temp, sizeof(temp), int64_t(-1234));
+    EXPECT_STREQ(temp, "-1234");
+    EXPECT_TRUE(error == NULL);
+}
+
+TEST(INT64_TO_STR, TooSmall_0) {
+
+    char temp[1];
+    const char* error = int64_to_str(temp, sizeof(temp), int64_t(0));
+    EXPECT_STREQ("Size too small", error);
+}
+
+TEST(INT64_TO_STR, FitsJust) {
+
+    char temp[4];
+    const char *error = int64_to_str(temp, sizeof(temp), int64_t(999));
+    EXPECT_STREQ(temp, "999");
+    EXPECT_TRUE(error == NULL);
+}
+
+TEST(INT64_TO_STR, TooSmall_10) {
+
+    char temp[2];
+    const char* error = int64_to_str(temp, sizeof(temp), int64_t(10));
+    EXPECT_STREQ("Size too small", error);
+}
+
+TEST(INT64_TO_STR, Max) {
+
+    char temp[20];
+    const char* error = int64_to_str(temp, sizeof(temp), std::numeric_limits<int64_t>::max());
+    EXPECT_STREQ(temp, "9223372036854775807");
+    EXPECT_TRUE(error == NULL);
+}
+
+TEST(INT64_TO_STR, Min) {
+
+    char temp[21];
+    const char* error = int64_to_str(temp, sizeof(temp), std::numeric_limits<int64_t>::min());
+    EXPECT_STREQ(temp, "-9223372036854775808");
+    EXPECT_TRUE(error == NULL);
+}
+
+TEST(STR_TO_INT8, Min) {
+
+    char numberStr[] = "-128";
+    char error = 0;
+    int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(-128, number);
+    EXPECT_EQ(0, error);
+}
+
+TEST(STR_TO_INT8, Max) {
+
+    char numberStr[] = "127";
+    char error = 0;
+    int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(127, number);
+    EXPECT_EQ(0, error);
+}
+
+TEST(STR_TO_INT8, Zero) {
+
+    char numberStr[] = "0";
+    char error = 0;
+    int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(0, number);
+    EXPECT_EQ(0, error);
+}
+
+TEST(STR_TO_INT8, Hundred) {
+
+    char numberStr[] = "100";
+    char error = 0;
+    int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(100, number);
+    EXPECT_EQ(0, error);
+}
+
+TEST(STR_TO_INT8, NegHundred) {
+
+    char numberStr[] = "-100";
+    char error = 0;
+    int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(-100, number);
+    EXPECT_EQ(0, error);
+}
+
+TEST(STR_TO_INT8, OutsideBoundsPositive) {
+
+    char numberStr[] = "128";
+    char error = 0;
+    int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(1, error);
+}
+
+TEST(STR_TO_INT8, OutsideBoundsNegative) {
+
+    char numberStr[] = "-129";
+    char error = 0;
+    int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(1, error);
+}
+
+
+TEST(STR_TO_INT8, DummyData_Positive) {
+
+    char numberStr[] = "100b0";
+    char error = 0;
+    int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(1, error);
+}
+
+TEST(STR_TO_INT8, DummyData_Negative) {
+
+    char numberStr[] = "-1002xx";
+    char error = 0;
+    int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(1, error);
+}
+
+TEST(STR_TO_INT64, Min) {
+
+    char numberStr[] = "-9223372036854775808";
+    char error = 0;
+    int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(-9223372036854775808, number);
+    EXPECT_EQ(0, error);
+}
+
+TEST(STR_TO_INT64, Max) {
+
+    char numberStr[] = "9223372036854775807";
+    char error = 0;
+    int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(9223372036854775807, number);
+    EXPECT_EQ(0, error);
+}
+
+TEST(STR_TO_INT64, Zero) {
+
+    char numberStr[] = "0";
+    char error = 0;
+    int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(0, number);
+    EXPECT_EQ(0, error);
+}
+
+TEST(STR_TO_INT64, Hundred) {
+
+    char numberStr[] = "100";
+    char error = 0;
+    int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(100, number);
+    EXPECT_EQ(0, error);
+}
+
+TEST(STR_TO_INT64, NegHundred) {
+
+    char numberStr[] = "-100";
+    char error = 0;
+    int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(-100, number);
+    EXPECT_EQ(0, error);
+}
+
+TEST(STR_TO_INT64, DummyData_Positive) {
+
+    char numberStr[] = "100b0";
+    char error = 0;
+    int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(1, error);
+}
+
+TEST(STR_TO_INT64, DummyData_Negative) {
+
+    char numberStr[] = "-1002xx";
+    char error = 0;
+    int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(1, error);
+}
 }
