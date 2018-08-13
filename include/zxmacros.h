@@ -79,3 +79,94 @@ inline void array_to_hexstr(char* dst, const uint8_t* src, uint8_t count)
     }
     *dst=0; // terminate string
 }
+
+inline const char* int64_to_str(char* data, int size, int64_t number)
+{
+    char temp[] = "-9223372036854775808";
+
+    char* ptr  = temp;
+    int64_t num = number;
+    int sign = 1;
+    if (number < 0) {
+        sign = -1;
+    }
+    while (num != 0) {
+        *ptr++ = '0' + (num % 10) * sign;
+        num /= 10;
+    }
+    if (number < 0) {
+        *ptr++ = '-';
+    }
+    else if (number == 0) {
+        *ptr++ = '0';
+    }
+    int distance = (ptr - temp) + 1;
+    if (size < distance) {
+        return "Size too small";
+    }
+    int index = 0;
+    while (--ptr >= temp) {
+        data[index++] = *ptr;
+    }
+    data[index] = '\0';
+    return NULL;
+}
+
+inline int8_t str_to_int8(const char *start, const char* end, char* error) {
+
+    int sign = 1;
+    if (*start == '-') {
+        sign = -1;
+        start++;
+    }
+
+    int64_t value = 0;
+    int multiplier = 1;
+    for (const char *s = end-1; s >= start; s--) {
+        int delta = (*s - '0');
+        if (delta >= 0 && delta <= 9) {
+            value += (delta * multiplier);
+            multiplier *= 10;
+        } else {
+            if (error != NULL) {
+                *error = 1;
+                return 0;
+            }
+        }
+    }
+
+    value *= sign;
+    if (value >= INT8_MIN && value <= INT8_MAX) {
+        return (int8_t)value;
+    }
+    if (error != NULL) {
+        *error = 1;
+    }
+    return 0;
+}
+
+inline int64_t str_to_int64(const char *start, const char* end, char* error) {
+
+    int sign = 1;
+    if (*start == '-') {
+        sign = -1;
+        start++;
+    }
+
+    int64_t value = 0;
+    uint64_t multiplier = 1;
+    for (const char *s = end-1; s >= start; s--) {
+        int delta = (*s - '0');
+        if (delta >= 0 && delta <= 9) {
+            value += (delta * multiplier);
+            multiplier *= 10;
+        } else {
+            if (error != NULL) {
+                *error = 1;
+                return 0;
+            }
+        }
+    }
+
+    return value * sign;
+}
