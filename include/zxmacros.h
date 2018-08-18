@@ -69,7 +69,7 @@ __INLINE void nvset(NVCONST void *dst, uint32_t val)
 #define NtoHL(x) (x)
 #endif
 
-inline void array_to_hexstr(char* dst, const uint8_t* src, uint8_t count)
+__INLINE void array_to_hexstr(char* dst, const uint8_t* src, uint8_t count)
 {
     const char hexchars[] = "0123456789ABCDEF";
     for(uint8_t i=0; i<count; i++, src++)
@@ -80,7 +80,7 @@ inline void array_to_hexstr(char* dst, const uint8_t* src, uint8_t count)
     *dst=0; // terminate string
 }
 
-inline const char* int64_to_str(char* data, int size, int64_t number)
+__INLINE const char* int64_to_str(char* data, int size, int64_t number)
 {
     char temp[] = "-9223372036854775808";
 
@@ -112,7 +112,7 @@ inline const char* int64_to_str(char* data, int size, int64_t number)
     return NULL;
 }
 
-inline int8_t str_to_int8(const char *start, const char* end, char* error) {
+__INLINE int8_t str_to_int8(const char *start, const char* end, char* error) {
 
     int sign = 1;
     if (*start == '-') {
@@ -145,7 +145,7 @@ inline int8_t str_to_int8(const char *start, const char* end, char* error) {
     return 0;
 }
 
-inline int64_t str_to_int64(const char *start, const char* end, char* error) {
+__INLINE int64_t str_to_int64(const char *start, const char* end, char* error) {
 
     int sign = 1;
     if (*start == '-') {
