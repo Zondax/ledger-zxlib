@@ -15,8 +15,7 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef CI_TEST_BUFFERING_H
-#define CI_TEST_BUFFERING_H
+#pragma once
 
 #include <stdint.h>
 #include <stdio.h>
@@ -55,8 +54,8 @@ void buffering_reset();
 /// Append data to the buffer
 /// \param data
 /// \param length
-/// \return It returns an error message if the buffer is too small.
-char* buffering_append(uint8_t *data, int length);
+/// \return the number of appended bytes
+int buffering_append(uint8_t *data, int length);
 
 /// buffering_get_ram_buffer
 /// \return
@@ -73,5 +72,3 @@ buffer_state_t *buffering_get_buffer();
 #ifdef __cplusplus
 }
 #endif
-
-#endif //CI_TEST_BUFFERING_H

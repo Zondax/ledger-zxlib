@@ -53,7 +53,7 @@ void buffering_reset() {
     flash.in_use = 0;
 }
 
-char* buffering_append(uint8_t *data, int length) {
+int buffering_append(uint8_t *data, int length) {
     if (ram.in_use) {
         if (ram.size - ram.pos >= length) {
             // RAM in use, append to ram if there is enough space
@@ -66,21 +66,20 @@ char* buffering_append(uint8_t *data, int length) {
             if (ram.pos > 0) {
                 buffering_append(ram.data, ram.pos);
             }
-            char* error = buffering_append(data, length);
+            int num_bytes = buffering_append(data, length);
             ram.pos = 0;
-            return error;
+            return num_bytes;
         }
     } else {
         // Flash in use, append to flash
         if (flash.size - flash.pos >= length) {
             append_flash_buffer(&flash, data, length);
             flash.pos += length;
-        }
-        else {
-            return "Not enough room in flash";
+        } else {
+            return 0;
         }
     }
-    return NULL;
+    return length;
 }
 
 buffer_state_t *buffering_get_ram_buffer() {

@@ -28,18 +28,18 @@ TEST(Buffering, SmallBuffer) {
         ram_buffer,
         sizeof(ram_buffer),
         [](buffer_state_t *buffer, uint8_t *data, int size) {
-            memcpy(buffer->data + buffer->pos, data, size);
+          memcpy(buffer->data + buffer->pos, data, size);
         },
         flash_buffer,
         sizeof(flash_buffer),
         [](buffer_state_t *buffer, uint8_t *data, int size) {
-            memcpy(buffer->data + buffer->pos, data, size);
+          memcpy(buffer->data + buffer->pos, data, size);
         });
 
     // Data is small enough to fit into ram buffer
     uint8_t small[50];
-    char* error = buffering_append(small, sizeof(small));
-    EXPECT_TRUE(error == NULL) << "Append should not return error";
+    auto num_bytes = buffering_append(small, sizeof(small));
+    EXPECT_EQ(sizeof(small), num_bytes) << "Append should not return error";
 
     EXPECT_TRUE(buffering_get_ram_buffer()->in_use) << "Writing small buffer should only write to RAM";
     EXPECT_FALSE(buffering_get_flash_buffer()->in_use) << "Writing big buffer should write data to FLASH";
@@ -58,18 +58,18 @@ TEST(Buffering, BigBuffer) {
         ram_buffer,
         sizeof(ram_buffer),
         [](buffer_state_t *buffer, uint8_t *data, int size) {
-            memcpy(buffer->data + buffer->pos, data, size);
+          memcpy(buffer->data + buffer->pos, data, size);
         },
         flash_buffer,
         sizeof(flash_buffer),
         [](buffer_state_t *buffer, uint8_t *data, int size) {
-            memcpy(buffer->data + buffer->pos, data, size);
+          memcpy(buffer->data + buffer->pos, data, size);
         });
 
     // Data is too big to fit into ram buffer, it will be written directly to flash
     uint8_t big[500];
-    char* error = buffering_append(big, sizeof(big));
-    EXPECT_TRUE(error == NULL) << "Append should not return error";
+    auto num_bytes = buffering_append(big, sizeof(big));
+    EXPECT_EQ(sizeof(big), num_bytes) << "Append should not return error";
 
     EXPECT_FALSE(buffering_get_ram_buffer()->in_use) << "Writing big buffer should write data to FLASH";
     EXPECT_TRUE(buffering_get_flash_buffer()->in_use) << "Writing big buffer should write data to FLASH";
@@ -88,17 +88,17 @@ TEST(Buffering, SmallBufferMultipleTimesWithinRam) {
         ram_buffer,
         sizeof(ram_buffer),
         [](buffer_state_t *buffer, uint8_t *data, int size) {
-            memcpy(buffer->data + buffer->pos, data, size);
+          memcpy(buffer->data + buffer->pos, data, size);
         },
         flash_buffer,
         sizeof(flash_buffer),
         [](buffer_state_t *buffer, uint8_t *data, int size) {
-            memcpy(buffer->data + buffer->pos, data, size);
+          memcpy(buffer->data + buffer->pos, data, size);
         });
 
     uint8_t small[40];
-    char* error = buffering_append(small, sizeof(small));
-    EXPECT_TRUE(error == NULL) << "Append should not return error";
+    auto num_bytes = buffering_append(small, sizeof(small));
+    EXPECT_EQ(sizeof(small), num_bytes) << "Append should not return error";
     EXPECT_TRUE(buffering_get_ram_buffer()->in_use) << "Writing small buffer should only write to RAM";
     EXPECT_FALSE(buffering_get_flash_buffer()->in_use) << "Writing big buffer should write data to FLASH";
 
@@ -122,12 +122,12 @@ TEST(Buffering, SmallBufferMultipleTimesToFlash) {
         ram_buffer,
         sizeof(ram_buffer),
         [](buffer_state_t *buffer, uint8_t *data, int size) {
-            memcpy(buffer->data + buffer->pos, data, size);
+          memcpy(buffer->data + buffer->pos, data, size);
         },
         flash_buffer,
         sizeof(flash_buffer),
         [](buffer_state_t *buffer, uint8_t *data, int size) {
-            memcpy(buffer->data + buffer->pos, data, size);
+          memcpy(buffer->data + buffer->pos, data, size);
         });
 
     uint8_t small[100];
@@ -156,12 +156,12 @@ TEST(Buffering, SmallBufferMultipleTimes_CheckData) {
         ram_buffer,
         sizeof(ram_buffer),
         [](buffer_state_t *buffer, uint8_t *data, int size) {
-            memcpy(buffer->data + buffer->pos, data, size);
+          memcpy(buffer->data + buffer->pos, data, size);
         },
         flash_buffer,
         sizeof(flash_buffer),
         [](buffer_state_t *buffer, uint8_t *data, int size) {
-            memcpy(buffer->data + buffer->pos, data, size);
+          memcpy(buffer->data + buffer->pos, data, size);
         });
 
     uint8_t small1[100];
@@ -174,8 +174,8 @@ TEST(Buffering, SmallBufferMultipleTimes_CheckData) {
     for (int i = 0; i < sizeof(small2); i++) {
         small2[i] = 100 - i;
     }
-    char* error = buffering_append(small2, sizeof(small2));
-    EXPECT_TRUE(error == NULL) << "Append should not return error";
+    auto num_bytes = buffering_append(small2, sizeof(small2));
+    EXPECT_EQ(sizeof(small2), num_bytes) << "Append should not return error";
 
     // In this test we want to make sure that data is not compromised.
     uint8_t *dst = buffering_get_flash_buffer()->data;
@@ -194,20 +194,20 @@ TEST(Buffering, Reset) {
     uint8_t flash_buffer[1000];
 
     buffering_init(
-            ram_buffer,
-            sizeof(ram_buffer),
-            [](buffer_state_t *buffer, uint8_t *data, int size) {
-                memcpy(buffer->data + buffer->pos, data, size);
-            },
-            flash_buffer,
-            sizeof(flash_buffer),
-            [](buffer_state_t *buffer, uint8_t *data, int size) {
-                memcpy(buffer->data + buffer->pos, data, size);
-            });
+        ram_buffer,
+        sizeof(ram_buffer),
+        [](buffer_state_t *buffer, uint8_t *data, int size) {
+          memcpy(buffer->data + buffer->pos, data, size);
+        },
+        flash_buffer,
+        sizeof(flash_buffer),
+        [](buffer_state_t *buffer, uint8_t *data, int size) {
+          memcpy(buffer->data + buffer->pos, data, size);
+        });
 
     uint8_t big[1000];
-    char* error = buffering_append(big, sizeof(big));
-    EXPECT_TRUE(error == NULL) << "Append should not return error";
+    auto num_bytes = buffering_append(big, sizeof(big));
+    EXPECT_EQ(sizeof(big), num_bytes) << "Append should not return error";
 
     EXPECT_FALSE(buffering_get_ram_buffer()->in_use) << "Writing big buffer should only write to FLASH";
     EXPECT_TRUE(buffering_get_flash_buffer()->in_use) << "Writing big buffer should only write to FLASH";
@@ -225,19 +225,19 @@ TEST(Buffering, NotEnoughRoomInFlash) {
     uint8_t flash_buffer[1000];
 
     buffering_init(
-            ram_buffer,
-            sizeof(ram_buffer),
-            [](buffer_state_t *buffer, uint8_t *data, int size) {
-                memcpy(buffer->data + buffer->pos, data, size);
-            },
-            flash_buffer,
-            sizeof(flash_buffer),
-            [](buffer_state_t *buffer, uint8_t *data, int size) {
-                memcpy(buffer->data + buffer->pos, data, size);
-            });
+        ram_buffer,
+        sizeof(ram_buffer),
+        [](buffer_state_t *buffer, uint8_t *data, int size) {
+          memcpy(buffer->data + buffer->pos, data, size);
+        },
+        flash_buffer,
+        sizeof(flash_buffer),
+        [](buffer_state_t *buffer, uint8_t *data, int size) {
+          memcpy(buffer->data + buffer->pos, data, size);
+        });
 
     uint8_t big[1101];
-    char* error = buffering_append(big, sizeof(big));
-    EXPECT_TRUE(error != NULL) << "Appending outside the bounds of the buffer should return error";
+    auto num_bytes = buffering_append(big, sizeof(big));
+    EXPECT_EQ(0, num_bytes) << "Appending outside the bounds of the buffer should return error";
 }
 }
