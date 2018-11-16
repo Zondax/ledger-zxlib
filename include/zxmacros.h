@@ -170,3 +170,12 @@ __INLINE int64_t str_to_int64(const char *start, const char* end, char* error) {
 
     return value * sign;
 }
+
+__INLINE uint64_t uint64_from_BEarray(const uint8_t data[8]) {
+    uint64_t result = 0;
+    for (int i = 0; i < 8; i++) {
+        result <<= 8;
+        result += data[i];
+    }
+    return result;
+}
