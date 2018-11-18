@@ -56,12 +56,33 @@ TEST(MACROS, fpuint64_to_str) {
     EXPECT_EQ(std::string(output), "12.34567");
 }
 
+    TEST(MACROS, fpuint64_to_str_zeros) {
+        char output[100];
+        printf("\n");
+
+        fpuint64_to_str(output, 0, 9);
+        printf("%11s\n", output);
+        EXPECT_EQ(std::string(output), "0.000000000");
+
+        fpuint64_to_str(output, 0, 1);
+        printf("%11s\n", output);
+        EXPECT_EQ(std::string(output), "0.0");
+
+        fpuint64_to_str(output, 1, 1);
+        printf("%11s\n", output);
+        EXPECT_EQ(std::string(output), "0.1");
+
+        fpuint64_to_str(output, 10, 1);
+        printf("%11s\n", output);
+        EXPECT_EQ(std::string(output), "1.0");
+    }
+
 TEST(INT64_TO_STR, Zero) {
 
     char temp[10];
     const char* error = int64_to_str(temp, sizeof(temp), int64_t(0));
     EXPECT_STREQ(temp, "0");
-    EXPECT_TRUE(error == NULL);
+    EXPECT_TRUE(error == nullptr);
 }
 
 TEST(INT64_TO_STR, Positive_1234) {
@@ -69,7 +90,7 @@ TEST(INT64_TO_STR, Positive_1234) {
     char temp[10];
     const char* error = int64_to_str(temp, sizeof(temp), int64_t(1234));
     EXPECT_STREQ(temp, "1234");
-    EXPECT_TRUE(error == NULL);
+    EXPECT_TRUE(error == nullptr);
 }
 
 TEST(INT64_TO_STR, Negative_1234) {
@@ -77,7 +98,7 @@ TEST(INT64_TO_STR, Negative_1234) {
     char temp[10];
     const char* error = int64_to_str(temp, sizeof(temp), int64_t(-1234));
     EXPECT_STREQ(temp, "-1234");
-    EXPECT_TRUE(error == NULL);
+    EXPECT_TRUE(error == nullptr);
 }
 
 TEST(INT64_TO_STR, TooSmall_0) {
@@ -92,7 +113,7 @@ TEST(INT64_TO_STR, FitsJust) {
     char temp[4];
     const char *error = int64_to_str(temp, sizeof(temp), int64_t(999));
     EXPECT_STREQ(temp, "999");
-    EXPECT_TRUE(error == NULL);
+    EXPECT_TRUE(error == nullptr);
 }
 
 TEST(INT64_TO_STR, TooSmall_10) {
@@ -107,7 +128,7 @@ TEST(INT64_TO_STR, Max) {
     char temp[20];
     const char* error = int64_to_str(temp, sizeof(temp), std::numeric_limits<int64_t>::max());
     EXPECT_STREQ(temp, "9223372036854775807");
-    EXPECT_TRUE(error == NULL);
+    EXPECT_TRUE(error == nullptr);
 }
 
 TEST(INT64_TO_STR, Min) {
@@ -115,7 +136,7 @@ TEST(INT64_TO_STR, Min) {
     char temp[21];
     const char* error = int64_to_str(temp, sizeof(temp), std::numeric_limits<int64_t>::min());
     EXPECT_STREQ(temp, "-9223372036854775808");
-    EXPECT_TRUE(error == NULL);
+    EXPECT_TRUE(error == nullptr);
 }
 
 TEST(STR_TO_INT8, Min) {
