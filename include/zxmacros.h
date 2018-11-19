@@ -171,6 +171,29 @@ __INLINE int64_t str_to_int64(const char *start, const char* end, char* error) {
     return value * sign;
 }
 
+__INLINE void fpuint64_to_str(char *dst, const uint64_t value, uint8_t decimals) {
+    char buffer[30];
+
+    int64_to_str(buffer, 30, value);
+    size_t digits = strlen(buffer);
+
+    if (digits <= decimals) {
+        *dst++ = '0';
+        *dst++ = '.';
+        for (uint16_t i = 0; i < decimals - digits; i++, dst++)
+            *dst = '0';
+        strcpy(dst, buffer);
+    } else {
+        strcpy(dst, buffer);
+        const size_t shift = digits - decimals;
+        dst = dst + shift;
+        *dst++ = '.';
+
+        char *p = buffer + shift;
+        strcpy(dst, p);
+    }
+}
+
 __INLINE uint64_t uint64_from_BEarray(const uint8_t data[8]) {
     uint64_t result = 0;
     for (int i = 0; i < 8; i++) {

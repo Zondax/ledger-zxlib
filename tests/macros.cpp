@@ -15,7 +15,6 @@
 ********************************************************************************/
 #include <gmock/gmock.h>
 #include <zxmacros.h>
-#include <zxio.h>
 
 namespace {
 TEST(MACROS, array_to_hexstr) {
