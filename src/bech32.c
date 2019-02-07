@@ -13,24 +13,25 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
-#include <gmock/gmock.h>
-#include <zxmacros.h>
-#include <bech32.h>
 
-namespace {
-    TEST(BECH32, hex_to_address) {
-        char addr_out[100];
-        const char *hrp = "zx";
+#include <stdint.h>
+#include <stddef.h>
+#include "bech32.h"
+#include "segwit_addr.h"
+#include "bittools.h"
 
-        uint8_t data1[] = {1, 3, 5};
-        uint8_t data2[] = {1, 3, 5, 7, 9, 11, 13};
-
-        bech32EncodeFromBytes(addr_out, hrp, data1, sizeof(data1));
-        std::cout << addr_out << std::endl;
-        ASSERT_STREQ("zx1qypse825ac", addr_out);
-
-        bech32EncodeFromBytes(addr_out, hrp, data2, sizeof(data2));
-        std::cout << addr_out << std::endl;
-        ASSERT_STREQ("zx1qyps2pcfpvx20dk22", addr_out);
+void bech32EncodeFromBytes(char *output,
+                           const char *hrp,
+                           const uint8_t *data,
+                           size_t data_len) {
+    output[0] = 0;
+    if (data_len > 128) {
+        return;
     }
+
+    uint8_t tmp_data[128];
+    size_t tmp_size = 0;
+
+    convert_bits(tmp_data, &tmp_size, 5, data, data_len, 8, 0);
+    bech32_encode(output, hrp, tmp_data, tmp_size);
 }
