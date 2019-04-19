@@ -15,24 +15,15 @@
 ********************************************************************************/
 
 #include "buffering.h"
+#include "memhelpers.h"
 
-// Ram
-append_buffer_delegate append_ram_buffer = NULL;
-buffer_state_t ram;
-
-// Flash
-append_buffer_delegate append_flash_buffer = NULL;
-buffer_state_t flash;
+buffer_state_t ram;         // Ram
+buffer_state_t flash;       // Flash
 
 void buffering_init(uint8_t *ram_buffer,
                     uint16_t ram_buffer_size,
-                    append_buffer_delegate ram_delegate,
                     uint8_t *flash_buffer,
-                    uint16_t flash_buffer_size,
-                    append_buffer_delegate flash_delegate) {
-    append_ram_buffer = ram_delegate;
-    append_flash_buffer = flash_delegate;
-
+                    uint16_t flash_buffer_size) {
     ram.data = ram_buffer;
     ram.size = ram_buffer_size;
     ram.pos = 0;
@@ -57,7 +48,7 @@ int buffering_append(uint8_t *data, int length) {
     if (ram.in_use) {
         if (ram.size - ram.pos >= length) {
             // RAM in use, append to ram if there is enough space
-            append_ram_buffer(&ram, data, length);
+            MEMCPY(ram.data + ram.pos, data, length);
             ram.pos += length;
         } else {
             // If RAM is not big enough copy memory to flash
@@ -73,7 +64,7 @@ int buffering_append(uint8_t *data, int length) {
     } else {
         // Flash in use, append to flash
         if (flash.size - flash.pos >= length) {
-            append_flash_buffer(&flash, data, length);
+            MEMCPY_NV(flash.data + flash.pos, data, length);
             flash.pos += length;
         } else {
             return 0;
