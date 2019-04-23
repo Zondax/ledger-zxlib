@@ -17,19 +17,18 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stdio.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <stdint.h>
+#include <stdio.h>
 
 typedef struct {
     uint8_t *data;
     uint16_t size;
     uint16_t pos;
     uint8_t in_use: 1;
-    uint8_t initialized : 1;
 } buffer_state_t;
 
 /// Initialize buffer

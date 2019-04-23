@@ -15,7 +15,11 @@
 ********************************************************************************/
 
 #include "buffering.h"
-#include "memhelpers.h"
+#include <zxmacros.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 buffer_state_t ram;         // Ram
 buffer_state_t flash;       // Flash
@@ -28,13 +32,11 @@ void buffering_init(uint8_t *ram_buffer,
     ram.size = ram_buffer_size;
     ram.pos = 0;
     ram.in_use = 1;
-    ram.initialized = 1;
 
     flash.data = flash_buffer;
     flash.size = flash_buffer_size;
     flash.pos = 0;
     flash.in_use = 0;
-    flash.initialized = 1;
 }
 
 void buffering_reset() {
@@ -87,3 +89,7 @@ buffer_state_t *buffering_get_buffer() {
     }
     return &flash;
 }
+
+#ifdef __cplusplus
+}
+#endif

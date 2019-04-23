@@ -16,8 +16,26 @@
 
 #pragma once
 
+#if defined(LEDGER_SPECIFIC)
+#include "bolos_target.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#if defined(TARGET_NANOX) || defined (TARGET_NANOS)
+#include "os.h"
+#define MEMMOVE os_memmove
+#define MEMSET os_memset
+#define MEMCPY os_memcpy
+#define MEMCPY_NV nvm_write
+#else
+#include <string.h>
+#define MEMMOVE memmove
+#define MEMSET memset
+#define MEMCPY memcpy
+#define MEMCPY_NV memcpy
 #endif
 
 #include <inttypes.h>
