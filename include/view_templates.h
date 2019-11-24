@@ -49,12 +49,6 @@
         0               /* icon_id  */                      \
     },                                                      \
         NULL,   /* text             */                      \
-        0,      /* touch_area_brim  */                      \
-        0,      /* overfgcolor      */                      \
-        0,      /* overbgcolor      */                      \
-        NULL,   /* tap              */                      \
-        NULL,   /* out              */                      \
-        NULL,   /* over             */                      \
 }
 
 #define UI_LabelLine(id, x, y, w, h, fgcolor, bgcolor, text)    \
@@ -75,12 +69,6 @@
         0               /* icon_id  */                          \
     },                                                          \
         text,   /* text             */                          \
-        0,      /* touch_area_brim  */                          \
-        0,      /* overfgcolor      */                          \
-        0,      /* overbgcolor      */                          \
-        NULL,   /* tap              */                          \
-        NULL,   /* out              */                          \
-        NULL,   /* over             */                          \
 }
 
 #define UI_LabelLineScrolling(id, x, y, w, h, fgcolor, bgcolor, text)    \
@@ -101,19 +89,16 @@
         50 /* icon_id / scroll speed  */ \
     },                                                          \
         text,   /* text             */                          \
-        0,      /* touch_area_brim  */                          \
-        0,      /* overfgcolor      */                          \
-        0,      /* overbgcolor      */                          \
-        NULL,   /* tap              */                          \
-        NULL,   /* out              */                          \
-        NULL,   /* over             */                          \
 }
 
 #if defined(TARGET_NANOX)
 #define UI_SCREEN_WIDTH  128
 #define UI_SCREEN_HEIGHT 64
+
 #define BAGL_GLYPH_ICON_LEFT ((const char*)&C_icon_left)
 #define BAGL_GLYPH_ICON_RIGHT ((const char*)&C_icon_right)
+#define BAGL_GLYPH_ICON_CROSS ((const char*)&C_icon_crossmark)
+#define BAGL_GLYPH_ICON_CHECK ((const char*)&C_icon_validate)
 
 #define UI_Icon(id, x, y, w, h, icon)                       \
 {                                                           \
@@ -168,12 +153,6 @@
         icon            /* icon_id  */                      \
     },                                                      \
         NULL,   /* text             */                      \
-        0,      /* touch_area_brim  */                      \
-        0,      /* overfgcolor      */                      \
-        0,      /* overbgcolor      */                      \
-        NULL,   /* tap              */                      \
-        NULL,   /* out              */                      \
-        NULL,   /* over             */                      \
 }
 
 #define UI_BACKGROUND_LEFT_RIGHT_ICONS \

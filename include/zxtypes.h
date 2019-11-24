@@ -14,41 +14,17 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include <ctype.h>
-#include <string.h>
-#include "hexutils.h"
+#pragma once
 
-uint8_t hex2dec(char c, char *out) {
-    c = (char) tolower((int)c);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    if (!isxdigit((int)c)) {
-        return -1;
-    }
+typedef enum {
+    bool_false = 0,
+    bool_true = 1,
+} bool_t;
 
-    if (isdigit((int)c)) {
-        *out = c - '0';
-        return 0;
-    }
-
-    *out = c - 'a' + 10;
-    return 0;
+#ifdef __cplusplus
 }
-
-size_t parseHexString(const char *s, uint8_t *out) {
-    size_t len = strlen(s);
-    if (len % 2 == 1) {
-        return 0;
-    }
-
-    for (size_t i = 0; i < len; i += 2) {
-        char tmp1, tmp2;
-        if (hex2dec(s[i], &tmp1))
-            return 0;
-        if (hex2dec(s[i + 1], &tmp2))
-            return 0;
-
-        out[i >> 1u] = (tmp1 << 4u) + tmp2;
-    }
-
-    return len >> 1u;
-};
+#endif

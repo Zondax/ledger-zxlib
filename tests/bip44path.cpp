@@ -13,42 +13,16 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
+#include <gmock/gmock.h>
+#include <zxmacros.h>
 
-#include <ctype.h>
-#include <string.h>
-#include "hexutils.h"
+namespace {
+    TEST(MACROS, bip44path) {
+        uint32_t path[] = {44, 60, 0, 0, 1};
 
-uint8_t hex2dec(char c, char *out) {
-    c = (char) tolower((int)c);
+        char buffer[100];
+        bip44_to_str(buffer, sizeof(buffer), path);
 
-    if (!isxdigit((int)c)) {
-        return -1;
+        EXPECT_EQ("44/60/0/0/1", std::string(buffer));
     }
-
-    if (isdigit((int)c)) {
-        *out = c - '0';
-        return 0;
-    }
-
-    *out = c - 'a' + 10;
-    return 0;
 }
-
-size_t parseHexString(const char *s, uint8_t *out) {
-    size_t len = strlen(s);
-    if (len % 2 == 1) {
-        return 0;
-    }
-
-    for (size_t i = 0; i < len; i += 2) {
-        char tmp1, tmp2;
-        if (hex2dec(s[i], &tmp1))
-            return 0;
-        if (hex2dec(s[i + 1], &tmp2))
-            return 0;
-
-        out[i >> 1u] = (tmp1 << 4u) + tmp2;
-    }
-
-    return len >> 1u;
-};

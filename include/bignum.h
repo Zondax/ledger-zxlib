@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   (c) 2018 ZondaX GmbH
+*   (c) 2019 ZondaX GmbH
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -14,41 +14,22 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include <ctype.h>
-#include <string.h>
-#include "hexutils.h"
+#pragma once
 
-uint8_t hex2dec(char c, char *out) {
-    c = (char) tolower((int)c);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    if (!isxdigit((int)c)) {
-        return -1;
-    }
+#include <zxmacros.h>
+#include <zxtypes.h>
 
-    if (isdigit((int)c)) {
-        *out = c - '0';
-        return 0;
-    }
+bool_t bignumLittleEndian_bcdprint(char *outBuffer, uint16_t outBufferLen, const uint8_t *inBCD, uint16_t inBCDLen);
+void bignumLittleEndian_to_bcd(uint8_t *bcdOut, uint16_t bcdOutLen, const uint8_t *binValue, uint16_t binValueLen);
 
-    *out = c - 'a' + 10;
-    return 0;
+bool_t bignumBigEndian_bcdprint(char *outBuffer, uint16_t outBufferLen, const uint8_t *bcdIn, uint16_t bcdInLen);
+void bignumBigEndian_to_bcd(uint8_t *bcdOut, uint16_t bcdOutLen, const uint8_t *binValue, uint16_t binValueLen);
+
+
+#ifdef __cplusplus
 }
-
-size_t parseHexString(const char *s, uint8_t *out) {
-    size_t len = strlen(s);
-    if (len % 2 == 1) {
-        return 0;
-    }
-
-    for (size_t i = 0; i < len; i += 2) {
-        char tmp1, tmp2;
-        if (hex2dec(s[i], &tmp1))
-            return 0;
-        if (hex2dec(s[i + 1], &tmp2))
-            return 0;
-
-        out[i >> 1u] = (tmp1 << 4u) + tmp2;
-    }
-
-    return len >> 1u;
-};
+#endif
