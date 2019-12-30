@@ -77,7 +77,6 @@ TEST(MACROS, fpuint64_to_str) {
     }
 
 TEST(INT64_TO_STR, Zero) {
-
     char temp[10];
     const char* error = int64_to_str(temp, sizeof(temp), int64_t(0));
     EXPECT_STREQ(temp, "0");
@@ -85,7 +84,6 @@ TEST(INT64_TO_STR, Zero) {
 }
 
 TEST(INT64_TO_STR, Positive_1234) {
-
     char temp[10];
     const char* error = int64_to_str(temp, sizeof(temp), int64_t(1234));
     EXPECT_STREQ(temp, "1234");
@@ -93,7 +91,6 @@ TEST(INT64_TO_STR, Positive_1234) {
 }
 
 TEST(INT64_TO_STR, Negative_1234) {
-
     char temp[10];
     const char* error = int64_to_str(temp, sizeof(temp), int64_t(-1234));
     EXPECT_STREQ(temp, "-1234");
@@ -101,14 +98,12 @@ TEST(INT64_TO_STR, Negative_1234) {
 }
 
 TEST(INT64_TO_STR, TooSmall_0) {
-
     char temp[1];
     const char* error = int64_to_str(temp, sizeof(temp), int64_t(0));
     EXPECT_STREQ("Buffer too small", error);
 }
 
 TEST(INT64_TO_STR, FitsJust) {
-
     char temp[4];
     const char *error = int64_to_str(temp, sizeof(temp), int64_t(999));
     EXPECT_STREQ(temp, "999");
@@ -116,14 +111,12 @@ TEST(INT64_TO_STR, FitsJust) {
 }
 
 TEST(INT64_TO_STR, TooSmall_10) {
-
     char temp[2];
     const char* error = int64_to_str(temp, sizeof(temp), int64_t(10));
     EXPECT_STREQ("Buffer too small", error);
 }
 
 TEST(INT64_TO_STR, Max) {
-
     char temp[20];
     const char* error = int64_to_str(temp, sizeof(temp), std::numeric_limits<int64_t>::max());
     EXPECT_STREQ(temp, "9223372036854775807");
@@ -131,7 +124,6 @@ TEST(INT64_TO_STR, Max) {
 }
 
 TEST(INT64_TO_STR, Min) {
-
     char temp[21];
     const char* error = int64_to_str(temp, sizeof(temp), std::numeric_limits<int64_t>::min());
     EXPECT_STREQ(temp, "-9223372036854775808");
@@ -139,7 +131,6 @@ TEST(INT64_TO_STR, Min) {
 }
 
 TEST(STR_TO_INT8, Min) {
-
     char numberStr[] = "-128";
     char error = 0;
     int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
@@ -148,7 +139,6 @@ TEST(STR_TO_INT8, Min) {
 }
 
 TEST(STR_TO_INT8, Max) {
-
     char numberStr[] = "127";
     char error = 0;
     int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
@@ -157,7 +147,6 @@ TEST(STR_TO_INT8, Max) {
 }
 
 TEST(STR_TO_INT8, Zero) {
-
     char numberStr[] = "0";
     char error = 0;
     int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
@@ -166,7 +155,6 @@ TEST(STR_TO_INT8, Zero) {
 }
 
 TEST(STR_TO_INT8, Hundred) {
-
     char numberStr[] = "100";
     char error = 0;
     int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
@@ -175,7 +163,6 @@ TEST(STR_TO_INT8, Hundred) {
 }
 
 TEST(STR_TO_INT8, NegHundred) {
-
     char numberStr[] = "-100";
     char error = 0;
     int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
@@ -184,7 +171,6 @@ TEST(STR_TO_INT8, NegHundred) {
 }
 
 TEST(STR_TO_INT8, OutsideBoundsPositive) {
-
     char numberStr[] = "128";
     char error = 0;
     int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
@@ -192,7 +178,6 @@ TEST(STR_TO_INT8, OutsideBoundsPositive) {
 }
 
 TEST(STR_TO_INT8, OutsideBoundsNegative) {
-
     char numberStr[] = "-129";
     char error = 0;
     int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
@@ -201,7 +186,6 @@ TEST(STR_TO_INT8, OutsideBoundsNegative) {
 
 
 TEST(STR_TO_INT8, DummyData_Positive) {
-
     char numberStr[] = "100b0";
     char error = 0;
     int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
@@ -209,7 +193,6 @@ TEST(STR_TO_INT8, DummyData_Positive) {
 }
 
 TEST(STR_TO_INT8, DummyData_Negative) {
-
     char numberStr[] = "-1002xx";
     char error = 0;
     int8_t number = str_to_int8(numberStr, numberStr + strlen(numberStr), &error);
@@ -217,7 +200,6 @@ TEST(STR_TO_INT8, DummyData_Negative) {
 }
 
 TEST(STR_TO_INT64, Min) {
-
     char numberStr[] = "-9223372036854775807";
     char error = 0;
     int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
@@ -226,7 +208,6 @@ TEST(STR_TO_INT64, Min) {
 }
 
 TEST(STR_TO_INT64, Max) {
-
     char numberStr[] = "9223372036854775807";
     char error = 0;
     int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
@@ -235,7 +216,6 @@ TEST(STR_TO_INT64, Max) {
 }
 
 TEST(STR_TO_INT64, Zero) {
-
     char numberStr[] = "0";
     char error = 0;
     int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
@@ -244,7 +224,6 @@ TEST(STR_TO_INT64, Zero) {
 }
 
 TEST(STR_TO_INT64, Hundred) {
-
     char numberStr[] = "100";
     char error = 0;
     int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
@@ -253,7 +232,6 @@ TEST(STR_TO_INT64, Hundred) {
 }
 
 TEST(STR_TO_INT64, NegHundred) {
-
     char numberStr[] = "-100";
     char error = 0;
     int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
@@ -262,7 +240,6 @@ TEST(STR_TO_INT64, NegHundred) {
 }
 
 TEST(STR_TO_INT64, DummyData_Positive) {
-
     char numberStr[] = "100b0";
     char error = 0;
     int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
@@ -270,7 +247,6 @@ TEST(STR_TO_INT64, DummyData_Positive) {
 }
 
 TEST(STR_TO_INT64, DummyData_Negative) {
-
     char numberStr[] = "-1002xx";
     char error = 0;
     int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
