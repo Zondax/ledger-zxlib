@@ -19,23 +19,23 @@
 #include "hexutils.h"
 
 uint8_t hex2dec(char c, char *out) {
-    c = (char) tolower((int)c);
+    c = (char) tolower((int) c);
 
-    if (!isxdigit((int)c)) {
+    if (!isxdigit((int) c)) {
         return -1;
     }
 
-    if (isdigit((int)c)) {
-        *out = c - '0';
+    if (isdigit((int) c)) {
+        *out = (char) (c - '0');
         return 0;
     }
 
-    *out = c - 'a' + 10;
+    *out = (char) (c - 'a' + 10);
     return 0;
 }
 
-size_t parseHexString(const char *s, uint8_t *out) {
-    size_t len = strlen(s);
+size_t parseHexString(const char *s, size_t maxS, uint8_t *out) {
+    size_t len = strnlen(s, maxS);
     if (len % 2 == 1) {
         return 0;
     }
