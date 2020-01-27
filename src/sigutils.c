@@ -17,9 +17,6 @@
 #include <sigutils.h>
 #include <zxmacros.h>
 
-#define CX_ECCINFO_PARITY_ODD 1u
-#define CX_ECCINFO_xGTn 2u
-
 err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER,
                               unsigned int inInfo,
                               uint8_t *outR,
@@ -46,8 +43,10 @@ err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER,
     }
 
     const uint8_t payloadLen = *(inSignatureDER + 1);
-    if (payloadLen < 4 + 32 + 2 + 32 || payloadLen > 4 + 33 + 2 + 33) {
-//        return invalid_payloadLen;
+    const uint8_t minPayloadLen = 2 + 32 + 2 + 32;
+    const uint8_t maxPayloadLen = 2 + 33 + 2 + 33;
+    if (payloadLen < minPayloadLen || payloadLen > maxPayloadLen) {
+        return invalid_payloadLen;
     }
 
     const uint8_t rMarker = *(inSignatureDER + 2);

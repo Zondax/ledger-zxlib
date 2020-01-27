@@ -30,6 +30,14 @@ typedef enum {
     invalid_sLen,
 } err_convert_e;
 
+#ifndef CX_ECCINFO_PARITY_ODD
+#define CX_ECCINFO_PARITY_ODD 1u
+#endif
+
+#ifndef CX_ECCINFO_xGTn
+#define CX_ECCINFO_xGTn 2u
+#endif
+
 err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER,
                               unsigned int inInfo,
                               uint8_t *outR,
