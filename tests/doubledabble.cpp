@@ -62,9 +62,7 @@ TEST_P(BignumLittleEndianTests, print) {
     auto testcase = GetParam();
 
     uint8_t inBuffer[100];
-    auto inBufferLen = parseHexString(testcase.hex.c_str(),
-                                      testcase.hex.size(),
-                                      inBuffer);
+    auto inBufferLen = parseHexString(inBuffer, sizeof(inBuffer), testcase.hex.c_str());
 
     uint8_t bcdOut[100];
     uint16_t bcdOutLen = sizeof(bcdOut);
@@ -87,9 +85,7 @@ TEST(BignumLittleEndianTests, range) {
             s << std::setfill('0') << std::setw(2) << std::hex << tmp % 256;
             tmp /= 256;
         }
-        auto inBufferLen = parseHexString(s.str().c_str(),
-                                          s.str().size(),
-                                          inBuffer);
+        auto inBufferLen = parseHexString(inBuffer, sizeof(inBuffer), s.str().c_str());
 
         uint8_t bcdOut[100];
         uint16_t bcdOutLen = sizeof(bcdOut);
@@ -134,9 +130,7 @@ TEST_P(BignumBigEndianTests, print) {
     auto testcase = GetParam();
 
     uint8_t inBuffer[100];
-    auto inBufferLen = parseHexString(testcase.hex.c_str(),
-                                      testcase.hex.size(),
-                                      inBuffer);
+    auto inBufferLen = parseHexString(inBuffer, sizeof(inBuffer), testcase.hex.c_str());
 
     uint8_t bcdOut[100];
     uint16_t bcdOutLen = sizeof(bcdOut);
@@ -155,9 +149,7 @@ TEST(BignumBigEndianTests, range) {
         std::stringstream s;
         s << std::setfill('0') << std::setw(10) << std::hex << i;
         std::cout << s.str() << std::endl;
-        auto inBufferLen = parseHexString(s.str().c_str(),
-                                          s.str().size(),
-                                          inBuffer);
+        auto inBufferLen = parseHexString(inBuffer, sizeof(inBuffer), s.str().c_str());
 
         uint8_t bcdOut[100];
         uint16_t bcdOutLen = sizeof(bcdOut);

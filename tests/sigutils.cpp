@@ -22,9 +22,9 @@
 
 TEST(SIGUTILS, convertBasic) {
     char inSignatureDERStr[] = "304402206878b5690514437a2342405029426cc2b25b4a03fc396fef845d656cf62bad2c022018610a8d37e3384245176ab49ddbdbe8da4133f661bf5ea7ad4e3d2b912d856f01";
-    auto inSignatureDER = std::vector<uint8_t>(sizeof(inSignatureDERStr) / 2);
+    auto inSignatureDER = std::vector<uint8_t>(71);
 
-    auto length = parseHexString(inSignatureDERStr, sizeof(inSignatureDERStr), inSignatureDER.data());
+    auto length = parseHexString(inSignatureDER.data(), inSignatureDER.size(), inSignatureDERStr);
     EXPECT_EQ(length, sizeof(inSignatureDERStr) / 2);
 
     uint8_t R[32];
@@ -38,8 +38,8 @@ TEST(SIGUTILS, convertBasic) {
     char inSignatureDERStr_S[] = "18610a8d37e3384245176ab49ddbdbe8da4133f661bf5ea7ad4e3d2b912d856f";
     auto inSignatureDER_R = std::vector<uint8_t>(32);
     auto inSignatureDER_S = std::vector<uint8_t>(32);
-    parseHexString(inSignatureDERStr_R, sizeof(inSignatureDERStr_R), inSignatureDER_R.data());
-    parseHexString(inSignatureDERStr_S, sizeof(inSignatureDERStr_S), inSignatureDER_S.data());
+    parseHexString(inSignatureDER_R.data(), inSignatureDER_R.size(), inSignatureDERStr_R);
+    parseHexString(inSignatureDER_S.data(), inSignatureDER_S.size(), inSignatureDERStr_S);
 
     EXPECT_THAT(R, ::testing::ElementsAreArray(inSignatureDER_R));
     EXPECT_THAT(S, ::testing::ElementsAreArray(inSignatureDER_S));

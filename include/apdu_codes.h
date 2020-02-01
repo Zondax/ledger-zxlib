@@ -17,6 +17,7 @@
 #pragma once
 
 #include "inttypes.h"
+#include "zxmacros.h"
 
 // Based on ISO7816
 

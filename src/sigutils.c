@@ -82,7 +82,7 @@ err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER,
     }
 
     // Prepare V
-    *outV = 27;
+    *outV = 0;
     if (inInfo & CX_ECCINFO_PARITY_ODD) {
         *outV += 1;
     }
@@ -96,4 +96,3 @@ err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER,
 
     return no_error;
 }
-

@@ -22,7 +22,7 @@ extern "C" {
 
 #include "string.h"
 #ifndef __APPLE__
-extern void explicit_bzero (void *__s, size_t __n) __THROW __nonnull ((1));
+extern void explicit_bzero(void *__s, size_t __n) __THROW __nonnull ((1));
 #endif
 #define __Z_INLINE inline __attribute__((always_inline)) static
 
@@ -33,9 +33,11 @@ extern void explicit_bzero (void *__s, size_t __n) __THROW __nonnull ((1));
 #if defined(TARGET_NANOX)
 #define NV_CONST const
 #define NV_VOL volatile
+#define SAFE_HEARTBEAT(X)  io_seproxyhal_io_heartbeat(); X; io_seproxyhal_io_heartbeat();
 #else
 #define NV_CONST
 #define NV_VOL
+#define SAFE_HEARTBEAT(X)  X;
 #endif
 
 #ifndef PIC
@@ -93,6 +95,9 @@ void __logstack();
 #define MEMCPY memcpy
 #define MEMCMP memcmp
 #define MEMCPY_NV memcpy
+
+#define CX_ECCINFO_PARITY_ODD 1u
+#define CX_ECCINFO_xGTn 2u
 
 #ifndef __APPLE__
 #define MEMZERO explicit_bzero
@@ -253,13 +258,20 @@ __Z_INLINE uint64_t uint64_from_BEarray(const uint8_t data[8]) {
     return result;
 }
 
-__Z_INLINE void array_to_hexstr(char *dst, const uint8_t *src, uint8_t count) {
+__Z_INLINE uint16_t array_to_hexstr(char *dst, uint16_t dstLen, const uint8_t *src, uint8_t count) {
+
+    if (dstLen < (count * 2 + 1)) {
+        return 0;
+    }
+
     const char hexchars[] = "0123456789ABCDEF";
     for (uint8_t i = 0; i < count; i++, src++) {
         *dst++ = hexchars[*src >> 4u];
         *dst++ = hexchars[*src & 0x0Fu];
     }
     *dst = 0; // terminate string
+
+    return count * 2;
 }
 
 __Z_INLINE void pageStringExt(char *outValue, uint16_t outValueLen,
@@ -298,6 +310,8 @@ __Z_INLINE void pageString(char *outValue, uint16_t outValueLen,
                            uint8_t pageIdx, uint8_t *pageCount) {
     pageStringExt(outValue, outValueLen, inValue, strlen(inValue), pageIdx, pageCount);
 }
+
+#define sizeof_field(type, member) sizeof(((type *)0)->member)
 
 ///////////////////////
 ///////////////////////

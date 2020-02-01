@@ -23,7 +23,7 @@ TEST(MACROS, array_to_hexstr) {
     char output[20];
     memset(output, 1, 20);
 
-    array_to_hexstr(output, array1, sizeof(array1));
+    array_to_hexstr(output, sizeof(output), array1, sizeof(array1));
     EXPECT_EQ(memcmp(output, "010305", 2*sizeof(array1)), 0);
     EXPECT_EQ(output[2*sizeof(array1)], 0);
 }
