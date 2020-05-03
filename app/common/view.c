@@ -104,7 +104,7 @@ void h_paging_decrease() {
     }
 }
 
-__Z_INLINE void h_paging_set_page_count(uint8_t pageCount) {
+void h_paging_set_page_count(uint8_t pageCount) {
     viewdata.pageCount = pageCount;
     if (viewdata.pageIdx > viewdata.pageCount) {
         viewdata.pageIdx = viewdata.pageCount - 1;
