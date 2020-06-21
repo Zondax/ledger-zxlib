@@ -39,6 +39,7 @@ size_t asciify_ext(const char *utf8_in, char *ascii_only_out) {
 }
 
 void handle_stack_overflow() {
+    zemu_log("!!!!!!!!!!!!!!!!!!!!!! CANARY TRIGGERED!!! STACK OVERFLOW DETECTED\n");
 #if defined (TARGET_NANOS) || defined(TARGET_NANOX)
     io_seproxyhal_se_reset();
 #else
