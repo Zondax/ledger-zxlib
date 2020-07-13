@@ -145,7 +145,7 @@ zxerr_t h_review_update_data() {
                                        viewdata.key, MAX_CHARS_PER_KEY_LINE,
                                        viewdata.value, MAX_CHARS_PER_VALUE1_LINE,
                                        0, &viewdata.pageCount))
-                if (viewdata.pageIdx > viewdata.pageCount) {
+                if (viewdata.pageCount != 0 && viewdata.pageIdx > viewdata.pageCount) {
                     // try again and get last page
                     viewdata.pageIdx = viewdata.pageCount - 1;
                 }
@@ -163,7 +163,7 @@ zxerr_t h_review_update_data() {
                                          viewdata.key, MAX_CHARS_PER_KEY_LINE,
                                          viewdata.value, MAX_CHARS_PER_VALUE1_LINE,
                                          0, &viewdata.pageCount))
-                if (viewdata.pageIdx > viewdata.pageCount) {
+                if (viewdata.pageCount != 0 && viewdata.pageIdx > viewdata.pageCount) {
                     // try again and get last page
                     viewdata.pageIdx = viewdata.pageCount - 1;
                 }
