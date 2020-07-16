@@ -37,6 +37,10 @@ err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER,
     // S [32]
     // V [1]
 
+    MEMZERO(outR, 32);
+    MEMZERO(outS, 32);
+    MEMZERO(outV, 1);
+
     const uint8_t derPrefix = *(inSignatureDER);
     if (derPrefix != 0x30) {
         return invalid_derPrefix;

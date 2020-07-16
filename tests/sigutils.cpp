@@ -17,6 +17,7 @@
 #include "gmock/gmock.h"
 #include <string>
 #include <hexutils.h>
+#include <zxmacros.h>
 
 #include "sigutils.h"
 
@@ -65,6 +66,12 @@ TEST(SIGUTILS, convertBasic2) {
     auto inSignatureDER_S = std::vector<uint8_t>(32);
     parseHexString(inSignatureDER_R.data(), inSignatureDER_R.size(), inSignatureDERStr_R);
     parseHexString(inSignatureDER_S.data(), inSignatureDER_S.size(), inSignatureDERStr_S);
+
+    char buffer[100];
+    array_to_hexstr(buffer, sizeof(buffer), R, (int16_t) sizeof(R));
+    std::cout << buffer << std::endl;
+    array_to_hexstr(buffer, sizeof(buffer), S, (int16_t) sizeof(S));
+    std::cout << buffer << std::endl;
 
     EXPECT_THAT(R, ::testing::ElementsAreArray(inSignatureDER_R));
     EXPECT_THAT(S, ::testing::ElementsAreArray(inSignatureDER_S));
