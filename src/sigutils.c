@@ -43,7 +43,7 @@ err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER,
     }
 
     const uint8_t payloadLen = *(inSignatureDER + 1);
-    const uint8_t minPayloadLen = 2 + 32 + 2 + 32;
+    const uint8_t minPayloadLen = 2 + 31 + 2 + 31;
     const uint8_t maxPayloadLen = 2 + 33 + 2 + 33;
     if (payloadLen < minPayloadLen || payloadLen > maxPayloadLen) {
         return invalid_payloadLen;
@@ -54,8 +54,8 @@ err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER,
         return invalid_rmaker;
     }
 
-    const uint8_t rLen = *(inSignatureDER + 3);
-    if (rLen > 33 || rLen < 32) {
+    uint8_t rLen = *(inSignatureDER + 3);
+    if (rLen > 33 || rLen < 31) {
         return invalid_rLen;
     }
 
@@ -64,20 +64,28 @@ err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER,
         return invalid_smarker;
     }
 
-    const uint8_t sLen = *(inSignatureDER + 4 + rLen + 1);
-    if (sLen > 33 || sLen < 32) {
+    uint8_t sLen = *(inSignatureDER + 4 + rLen + 1);
+    if (sLen > 33 || sLen < 31) {
         return invalid_sLen;
     }
 
     // Get data fields
     const uint8_t *rPtr = inSignatureDER + 4;
+    const uint8_t *sPtr = inSignatureDER + 4 + rLen + 2;
+
     // Correct field pointers
+    if (rLen == 31) {
+        outR++;
+    }
     if (rLen == 33) {
+        rLen--;
         rPtr++;       // get only 32 bytes
     }
-
-    const uint8_t *sPtr = inSignatureDER + 4 + rLen + 2;
+    if (sLen == 31) {
+        outS++;
+    }
     if (sLen == 33) {
+        sLen--;
         sPtr++;       // get only 32 bytes
     }
 
@@ -91,8 +99,8 @@ err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER,
     }
 
     // Copy things
-    MEMCPY(outR, rPtr, 32);
-    MEMCPY(outS, sPtr, 32);
+    MEMCPY(outR, rPtr, rLen);
+    MEMCPY(outS, sPtr, sLen);
 
     return no_error;
 }

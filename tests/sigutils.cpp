@@ -44,3 +44,53 @@ TEST(SIGUTILS, convertBasic) {
     EXPECT_THAT(R, ::testing::ElementsAreArray(inSignatureDER_R));
     EXPECT_THAT(S, ::testing::ElementsAreArray(inSignatureDER_S));
 }
+
+TEST(SIGUTILS, convertBasic2) {
+    char inSignatureDERStr[] = "30430220035942178e9e8d447cf9e6886f99c41bf942fb2880fd79aa2d4626489ec7821b021f6b3277dea0355c161d20a120ec9165500b5c9a2cd0fce1c4b8a5260bf6831f";
+    auto inSignatureDER = std::vector<uint8_t>(71);
+
+    auto length = parseHexString(inSignatureDER.data(), inSignatureDER.size(), inSignatureDERStr);
+    EXPECT_EQ(length, sizeof(inSignatureDERStr) / 2);
+
+    uint8_t R[32];
+    uint8_t S[32];
+    uint8_t V;
+
+    auto ret = convertDERtoRSV(inSignatureDER.data(), 0, R, S, &V);
+    EXPECT_EQ(ret, 0);
+
+    char inSignatureDERStr_R[] = "035942178e9e8d447cf9e6886f99c41bf942fb2880fd79aa2d4626489ec7821b";
+    char inSignatureDERStr_S[] = "006b3277dea0355c161d20a120ec9165500b5c9a2cd0fce1c4b8a5260bf6831f";
+    auto inSignatureDER_R = std::vector<uint8_t>(32);
+    auto inSignatureDER_S = std::vector<uint8_t>(32);
+    parseHexString(inSignatureDER_R.data(), inSignatureDER_R.size(), inSignatureDERStr_R);
+    parseHexString(inSignatureDER_S.data(), inSignatureDER_S.size(), inSignatureDERStr_S);
+
+    EXPECT_THAT(R, ::testing::ElementsAreArray(inSignatureDER_R));
+    EXPECT_THAT(S, ::testing::ElementsAreArray(inSignatureDER_S));
+}
+
+TEST(SIGUTILS, convertBasic3) {
+    char inSignatureDERStr[] = "3045022100e9b508a9cd66410b43992c01622cf9e1a6aa1353d836d7f428a6d1317f96f27d02200ca01cee5480388bad3802c08e0bcf357c091f3a5921e1e5d1e0e115dd14ff23";
+    auto inSignatureDER = std::vector<uint8_t>(71);
+
+    auto length = parseHexString(inSignatureDER.data(), inSignatureDER.size(), inSignatureDERStr);
+    EXPECT_EQ(length, sizeof(inSignatureDERStr) / 2);
+
+    uint8_t R[32];
+    uint8_t S[32];
+    uint8_t V;
+
+    auto ret = convertDERtoRSV(inSignatureDER.data(), 0, R, S, &V);
+    EXPECT_EQ(ret, 0);
+
+    char inSignatureDERStr_R[] = "e9b508a9cd66410b43992c01622cf9e1a6aa1353d836d7f428a6d1317f96f27d";
+    char inSignatureDERStr_S[] = "0ca01cee5480388bad3802c08e0bcf357c091f3a5921e1e5d1e0e115dd14ff23";
+    auto inSignatureDER_R = std::vector<uint8_t>(32);
+    auto inSignatureDER_S = std::vector<uint8_t>(32);
+    parseHexString(inSignatureDER_R.data(), inSignatureDER_R.size(), inSignatureDERStr_R);
+    parseHexString(inSignatureDER_S.data(), inSignatureDER_S.size(), inSignatureDERStr_S);
+
+    EXPECT_THAT(R, ::testing::ElementsAreArray(inSignatureDER_R));
+    EXPECT_THAT(S, ::testing::ElementsAreArray(inSignatureDER_S));
+}
