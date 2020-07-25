@@ -53,6 +53,5 @@ namespace {
 
         base64_encode(data, 10, out, sizeof(out));
         EXPECT_STREQ(out, "AQMFBwkLDQ8REw==");
-
     };
 }
