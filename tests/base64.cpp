@@ -21,37 +21,37 @@ namespace {
         char out[100];
         uint8_t data[] = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19};
 
-        base64_encode(data, 0, out, sizeof(out));
+        base64_encode(out, sizeof(out), data, 0);
         EXPECT_STREQ(out, "");
 
-        base64_encode(data, 1, out, sizeof(out));
+        base64_encode(out, sizeof(out), data, 1);
         EXPECT_STREQ(out, "AQ==");
 
-        base64_encode(data, 2, out, sizeof(out));
+        base64_encode(out, sizeof(out), data, 2);
         EXPECT_STREQ(out, "AQM=");
 
-        base64_encode(data, 3, out, sizeof(out));
+        base64_encode(out, sizeof(out), data, 3);
         EXPECT_STREQ(out, "AQMF");
 
-        base64_encode(data, 4, out, sizeof(out));
+        base64_encode(out, sizeof(out), data, 4);
         EXPECT_STREQ(out, "AQMFBw==");
 
-        base64_encode(data, 5, out, sizeof(out));
+        base64_encode(out, sizeof(out), data, 5);
         EXPECT_STREQ(out, "AQMFBwk=");
 
-        base64_encode(data, 6, out, sizeof(out));
+        base64_encode(out, sizeof(out), data, 6);
         EXPECT_STREQ(out, "AQMFBwkL");
 
-        base64_encode(data, 7, out, sizeof(out));
+        base64_encode(out, sizeof(out), data, 7);
         EXPECT_STREQ(out, "AQMFBwkLDQ==");
 
-        base64_encode(data, 8, out, sizeof(out));
+        base64_encode(out, sizeof(out), data, 8);
         EXPECT_STREQ(out, "AQMFBwkLDQ8=");
 
-        base64_encode(data, 9, out, sizeof(out));
+        base64_encode(out, sizeof(out), data, 9);
         EXPECT_STREQ(out, "AQMFBwkLDQ8R");
 
-        base64_encode(data, 10, out, sizeof(out));
+        base64_encode(out, sizeof(out), data, 10);
         EXPECT_STREQ(out, "AQMFBwkLDQ8REw==");
     };
 }

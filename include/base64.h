@@ -22,7 +22,7 @@ extern "C" {
 #include <inttypes.h>
 #include <stdint.h>
 
-uint8_t base64_encode(const uint8_t *in, uint16_t inlen, char *out, uint16_t outlen);
+uint16_t base64_encode(char *out, uint16_t outlen, const uint8_t *in, uint16_t inlen);
 
 #ifdef __cplusplus
 }
