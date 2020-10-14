@@ -32,6 +32,7 @@ typedef enum {
     zxerr_out_of_bounds = 0b00001001,
     zxerr_encoding_failed = 0b00001010,
     zxerr_invalid_crypto_settings = 0b00001100,
+    zxerr_ledger_api_error = 0b00001111,
 } zxerr_t;
 
 //0b00000000
