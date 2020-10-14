@@ -63,8 +63,6 @@ void h_error_accept(unsigned int _) {
 // Paging related
 
 void h_paging_init() {
-    zemu_log_stack("-- h_paging_init");
-
     viewdata.itemIdx = 0;
     viewdata.pageIdx = 0;
     viewdata.pageCount = 1;
