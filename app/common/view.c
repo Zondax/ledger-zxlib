@@ -38,7 +38,7 @@ view_t viewdata;
 
 void h_approve(unsigned int _) {
     UNUSED(_);
-    view_idle_show(0);
+    view_idle_show(0, NULL);
     UX_WAIT();
     if (viewdata.viewfuncAccept != NULL) {
         viewdata.viewfuncAccept();
@@ -47,14 +47,14 @@ void h_approve(unsigned int _) {
 
 void h_reject(unsigned int _) {
     UNUSED(_);
-    view_idle_show(0);
+    view_idle_show(0, NULL);
     UX_WAIT();
     app_reject();
 }
 
 void h_error_accept(unsigned int _) {
     UNUSED(_);
-    view_idle_show(0);
+    view_idle_show(0, NULL);
     UX_WAIT();
     app_reply_error();
 }
@@ -174,8 +174,12 @@ void view_init(void) {
     UX_INIT();
 }
 
-void view_idle_show(uint8_t item_idx) {
-    view_idle_show_impl(item_idx);
+void view_idle_show(uint8_t item_idx, char *statusString) {
+    view_idle_show_impl(item_idx, statusString);
+}
+
+void view_message_show(char *title, char *message) {
+    view_message_impl(title, message);
 }
 
 void view_review_init(viewfunc_getItem_t viewfuncGetItem,

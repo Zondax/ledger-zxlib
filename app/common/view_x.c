@@ -191,7 +191,14 @@ void h_expert_update() {
 //////////////////////////
 //////////////////////////
 
-void view_idle_show_impl(uint8_t item_idx) {
+void view_idle_show_impl(uint8_t item_idx, char *statusString) {
+    if (statusString == NULL ) {
+        snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", MENU_MAIN_APP_LINE2);
+    } else {
+        snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", statusString);
+    }
+
+    h_status_update();
     if(G_ux.stack_count == 0) {
         ux_stack_push();
     }

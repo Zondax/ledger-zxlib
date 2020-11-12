@@ -76,8 +76,9 @@ void splitValueField();
 ///////////////////////////////////////////////
 ///////////////////////////////////////////////
 
-void view_idle_show_impl(uint8_t item_idx);
+void view_idle_show_impl(uint8_t item_idx, char *statusString);
 
+void view_message_impl(char *title, char *message);
 
 void view_error_show_impl();
 
