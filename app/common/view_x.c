@@ -182,7 +182,7 @@ void h_review_loop_end() {
 void splitValueField() {
     uint16_t vlen = strlen(viewdata.value);
     if (vlen == 0 ) {
-        strcpy(viewdata.value, " ");
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, " ");
     }
 }
 

@@ -42,6 +42,7 @@ void h_secret_click();
 ux_state_t ux;
 
 void os_exit(uint32_t id) {
+    (void)id;
     os_sched_exit(0);
 }
 
@@ -58,7 +59,6 @@ const ux_menu_entry_t menu_main[] = {
 #endif
      0, &C_icon_app, "Developed by:", "Zondax.ch", 33, 12},
 
-    {NULL, NULL, 0, &C_icon_app, "Developed by:", "Zondax.ch", 33, 12},
     {NULL, NULL, 0, &C_icon_app, "License: ", "Apache 2.0", 33, 12},
     {NULL, os_exit, 0, &C_icon_dashboard, "Quit", NULL, 50, 29},
     UX_MENU_END
@@ -85,7 +85,7 @@ static const bagl_element_t view_error[] = {
     UI_LabelLineScrolling(UIID_LABELSCROLL, 0, 30, 128, UI_11PX, UI_WHITE, UI_BLACK, viewdata.value2),
 };
 
-static unsigned int view_error_button(unsigned int button_mask, unsigned int button_mask_counter) {
+static unsigned int view_error_button(unsigned int button_mask, __Z_UNUSED unsigned int button_mask_counter) {
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
         case BUTTON_EVT_RELEASED | BUTTON_LEFT:
@@ -97,7 +97,7 @@ static unsigned int view_error_button(unsigned int button_mask, unsigned int but
     return 0;
 }
 
-static unsigned int view_message_button(unsigned int button_mask, unsigned int button_mask_counter) {
+static unsigned int view_message_button(unsigned int button_mask, __Z_UNUSED unsigned int button_mask_counter) {
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
         case BUTTON_EVT_RELEASED | BUTTON_LEFT:
@@ -107,7 +107,8 @@ static unsigned int view_message_button(unsigned int button_mask, unsigned int b
     return 0;
 }
 
-static unsigned int view_review_button(unsigned int button_mask, unsigned int button_mask_counter) {
+static unsigned int view_review_button(unsigned int button_mask, __Z_UNUSED unsigned int button_mask_counter) {
+    UNUSED(button_mask_counter);
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
             h_review_button_both();
@@ -191,7 +192,7 @@ void splitValueField() {
     print_value2("");
     uint16_t vlen = strlen(viewdata.value);
     if (vlen > MAX_CHARS_PER_VALUE2_LINE - 1) {
-        strcpy(viewdata.value2, viewdata.value + MAX_CHARS_PER_VALUE_LINE);
+        snprintf(viewdata.value2, MAX_CHARS_PER_VALUE2_LINE, "%s", viewdata.value + MAX_CHARS_PER_VALUE_LINE)
         viewdata.value[MAX_CHARS_PER_VALUE_LINE] = 0;
     }
 }
