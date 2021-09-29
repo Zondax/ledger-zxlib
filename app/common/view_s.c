@@ -108,7 +108,6 @@ static unsigned int view_message_button(unsigned int button_mask, __Z_UNUSED uns
 }
 
 static unsigned int view_review_button(unsigned int button_mask, __Z_UNUSED unsigned int button_mask_counter) {
-    UNUSED(button_mask_counter);
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
             h_review_button_both();
@@ -192,7 +191,7 @@ void splitValueField() {
     print_value2("");
     uint16_t vlen = strlen(viewdata.value);
     if (vlen > MAX_CHARS_PER_VALUE2_LINE - 1) {
-        snprintf(viewdata.value2, MAX_CHARS_PER_VALUE2_LINE, "%s", viewdata.value + MAX_CHARS_PER_VALUE_LINE)
+        snprintf(viewdata.value2, MAX_CHARS_PER_VALUE2_LINE, "%s", viewdata.value + MAX_CHARS_PER_VALUE_LINE);
         viewdata.value[MAX_CHARS_PER_VALUE_LINE] = 0;
     }
 }

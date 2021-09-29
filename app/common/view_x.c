@@ -25,6 +25,7 @@
 #include "zxmacros.h"
 #include "view_templates.h"
 #include "tx.h"
+#include "view_internal.h"
 
 #ifdef APP_SECRET_MODE_ENABLED
 #include "secret.h"
@@ -182,7 +183,7 @@ void h_review_loop_end() {
 void splitValueField() {
     uint16_t vlen = strlen(viewdata.value);
     if (vlen == 0 ) {
-        snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, " ");
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, " ");
     }
 }
 

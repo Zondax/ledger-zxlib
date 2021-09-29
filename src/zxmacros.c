@@ -14,28 +14,6 @@
 *  limitations under the License.
 ********************************************************************************/
 #include "zxmacros.h"
-#include "utf8.h"
-
-size_t asciify(char *utf8_in_ascii_out) {
-    return asciify_ext(utf8_in_ascii_out, utf8_in_ascii_out);
-}
-
-size_t asciify_ext(const char *utf8_in, char *ascii_only_out) {
-    void *p = (void *) utf8_in;
-    char *q = ascii_only_out;
-
-    // utf8valid returns zero on success
-    while (*((char *) p) && utf8valid(p) == 0) {
-        utf8_int32_t tmp_codepoint = 0;
-        p = utf8codepoint(p, &tmp_codepoint);
-        *q = (char) ((tmp_codepoint >= 32 && tmp_codepoint <= (int32_t) 0x7F) ? tmp_codepoint : '.');
-        q++;
-    }
-
-    // Terminate string
-    *q = 0;
-    return q - ascii_only_out;
-}
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
@@ -71,7 +49,9 @@ void zemu_log_stack(const char *ctx) {
     (void) ctx;
 }
 #else
+
 void zemu_log_stack(__Z_UNUSED const char *ctx) {}
+
 #endif
 
 
