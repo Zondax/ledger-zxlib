@@ -50,7 +50,9 @@ NUM_TO_STR(int64)
 
 NUM_TO_STR(uint64)
 
-zxerr_t safeWrap(char *buffer, size_t bufferSize, const char *prefix, char suffix);
+size_t z_strlen(const char *buffer, size_t maxSize);
+
+zxerr_t z_str3join(char *buffer, size_t bufferSize, const char *prefix, const char *suffix);
 
 __Z_INLINE void bip32_to_str(char *s, uint32_t max, const uint32_t *path, uint8_t pathLen) {
     MEMZERO(s, max);
