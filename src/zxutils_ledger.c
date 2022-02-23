@@ -114,7 +114,7 @@ const char nanos_characters_width[96] = {
 unsigned short zx_compute_line_width_light(const char* text, unsigned char text_length) {
   char current_char;
   unsigned short line_width = 0;
-  
+
   if(text == NULL) {
     return 0xFFFF;
   }
