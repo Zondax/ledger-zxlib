@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   (c) 2018, 2019 Zondax GmbH
+*   (c) 2018 - 2022 Zondax GmbH
 *   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,19 +30,25 @@
 #include "secret.h"
 #endif
 
+
 #include <string.h>
 #include <stdio.h>
 
 #if defined(TARGET_NANOX) || defined(TARGET_NANOS2)
 
-void h_expert_toggle();
-void h_expert_update();
-void h_review_loop_start();
-void h_review_loop_inside();
-void h_review_loop_end();
+void crowdloan_enabled();
+
+static void h_expert_toggle();
+static void h_expert_update();
+static void h_review_loop_start();
+static void h_review_loop_inside();
+static void h_review_loop_end();
+
+static void h_crowdloan_toggle();
+static void h_crowdloan_update();
 
 #ifdef APP_SECRET_MODE_ENABLED
-void h_secret_click();
+static void h_secret_click();
 #endif
 
 #include "ux.h"
@@ -64,9 +70,16 @@ UX_STEP_NOCB(ux_idle_flow_4_step, bn, { "Developed by:", "Zondax.ch", });
 UX_STEP_NOCB(ux_idle_flow_5_step, bn, { "License:", "Apache 2.0", });
 UX_STEP_CB(ux_idle_flow_6_step, pb, os_sched_exit(-1), { &C_icon_dashboard, "Quit",});
 
+#ifdef APP_CROWDLOAN_MODE_ENABLED
+UX_STEP_CB_INIT(ux_idle_flow_7_step, bn,  h_crowdloan_update(), h_crowdloan_toggle(), { "Account:", viewdata.value, });
+#endif
+
 const ux_flow_step_t *const ux_idle_flow [] = {
   &ux_idle_flow_1_step,
   &ux_idle_flow_2_step,
+#ifdef APP_CROWDLOAN_MODE_ENABLED
+  &ux_idle_flow_7_step,
+#endif
   &ux_idle_flow_3_step,
   &ux_idle_flow_4_step,
   &ux_idle_flow_5_step,
@@ -212,6 +225,19 @@ void h_expert_update() {
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "disabled");
     if (app_mode_expert()) {
         snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "enabled");
+    }
+}
+
+void h_crowdloan_toggle() {
+    if(app_mode_expert()) {
+      crowdloan_enabled();
+    }
+}
+
+void h_crowdloan_update() {
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Legacy");
+    if (app_mode_crowdloan()) {
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Crowdloan");
     }
 }
 

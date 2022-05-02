@@ -25,30 +25,31 @@
 #include "view_templates.h"
 #include "zxutils_ledger.h"
 
-#include <string.h>
-#include <stdio.h>
-
 #if defined(TARGET_NANOS)
-
-void h_initialize();
-
 #define BAGL_WIDTH 128
 #define BAGL_HEIGHT 32
 #define BAGL_WIDTH_MARGIN 10
 
-void h_expert_toggle();
-void h_expert_update();
-void h_review_button_left();
-void h_review_button_right();
-void h_review_button_both();
+static bool exceed_pixel_in_display(const uint8_t length);
 
-bool exceed_pixel_in_display(const uint8_t length);
+void h_initialize();
+void crowdloan_enabled();
+
+static void h_expert_toggle();
+static void h_expert_update();
+static void h_review_button_left();
+static void h_review_button_right();
+static void h_review_button_both();
 
 #ifdef APP_SECRET_MODE_ENABLED
-void h_secret_click();
+static void h_secret_click();
 #endif
 
+static void h_crowdloan_toggle();
+static void h_crowdloan_update();
+
 ux_state_t ux;
+extern ux_menu_state_t ux_menu;
 
 void os_exit(uint32_t id) {
     (void)id;
@@ -58,6 +59,11 @@ void os_exit(uint32_t id) {
 const ux_menu_entry_t menu_main[] = {
     {NULL, NULL, 0, &C_icon_app, MENU_MAIN_APP_LINE1, viewdata.key, 33, 12},
     {NULL, h_expert_toggle, 0, &C_icon_app, "Expert mode:", viewdata.value, 33, 12},
+
+#ifdef APP_CROWDLOAN_MODE_ENABLED
+    {NULL, h_crowdloan_toggle, 0, &C_icon_app, "Account:", viewdata.value, 33, 12},
+#endif
+
     {NULL, NULL, 0, &C_icon_app, APPVERSION_LINE1, APPVERSION_LINE2, 33, 12},
 
     {NULL,
@@ -145,6 +151,22 @@ static unsigned int view_review_button(unsigned int button_mask, __Z_UNUSED unsi
     return 0;
 }
 
+const bagl_element_t* idle_preprocessor(const ux_menu_entry_t* entry, bagl_element_t* element) {
+    switch(ux_menu.current_entry) {
+        case 0:
+            break;
+        case 1:
+            h_expert_update();
+            break;
+        case 2:
+            h_crowdloan_update();
+            break;
+        default:
+            break;
+    }
+    return element;
+}
+
 const bagl_element_t *view_prepro(const bagl_element_t *element) {
     switch (element->component.userid) {
         case UIID_ICONLEFT:
@@ -203,8 +225,108 @@ void h_review_button_right() {
 }
 
 void h_review_button_both() {
-    zemu_log_stack("h_review_button_left");
+    zemu_log_stack("h_review_button_both");
     h_review_action();
+}
+
+//////////////////////////
+//////////////////////////
+//////////////////////////
+//////////////////////////
+//////////////////////////
+
+void view_initialize_show_impl(uint8_t item_idx, char *statusString) {
+    if (statusString == NULL ) {
+        snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", MENU_MAIN_APP_LINE2);
+    } else {
+        snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", statusString);
+    }
+    UX_MENU_DISPLAY(item_idx, menu_initialize, NULL);
+}
+
+void view_idle_show_impl(uint8_t item_idx, char *statusString) {
+    if (statusString == NULL ) {
+        snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", MENU_MAIN_APP_LINE2);
+#ifdef APP_SECRET_MODE_ENABLED
+        if (app_mode_secret()) {
+            snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", MENU_MAIN_APP_LINE2_SECRET);
+        }
+#endif
+    } else {
+        snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", statusString);
+    }
+    UX_MENU_DISPLAY(item_idx, menu_main, idle_preprocessor);
+}
+
+void view_message_impl(char *title, char *message) {
+    snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", title);
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "%s", message);
+    UX_DISPLAY(view_message, view_prepro_idle);
+}
+
+void view_error_show_impl() {
+    UX_DISPLAY(view_error, view_prepro);
+}
+
+void h_expert_toggle() {
+    app_mode_set_expert(!app_mode_expert());
+    view_idle_show(1, NULL);
+}
+
+void h_crowdloan_toggle() {
+    if(app_mode_expert()) {
+        crowdloan_enabled();
+    }
+}
+
+#ifdef APP_SECRET_MODE_ENABLED
+void h_secret_click() {
+    if (COIN_SECRET_REQUIRED_CLICKS == 0) {
+        // There is no secret mode
+        return;
+    }
+
+    viewdata.secret_click_count++;
+
+    char buffer[50];
+    snprintf(buffer, sizeof(buffer), "secret click %d\n", viewdata.secret_click_count);
+    zemu_log(buffer);
+
+    if (viewdata.secret_click_count >= COIN_SECRET_REQUIRED_CLICKS) {
+        secret_enabled();
+        viewdata.secret_click_count = 0;
+    }
+}
+#endif
+
+void h_expert_update() {
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "disabled");
+    if (app_mode_expert()) {
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "enabled");
+    }
+}
+
+void h_crowdloan_update() {
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Legacy");
+    if (app_mode_crowdloan()) {
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Crowdloan");
+    }
+}
+
+void view_review_show_impl() {
+    zemu_log_stack("view_review_show_impl");
+
+    h_paging_init();
+
+    zxerr_t err = h_review_update_data();
+    switch(err) {
+        case zxerr_ok:
+            UX_DISPLAY(view_review, view_prepro);
+            break;
+        default:
+            view_error_show();
+            break;
+    }
 }
 
 void splitValueField() {
@@ -243,94 +365,5 @@ max_char_display get_max_char_per_line() {
 bool exceed_pixel_in_display(const uint8_t length) {
     const unsigned short strWidth = zx_compute_line_width_light(viewdata.value, length);
     return (strWidth >= (BAGL_WIDTH - BAGL_WIDTH_MARGIN));
-}
-
-//////////////////////////
-//////////////////////////
-//////////////////////////
-//////////////////////////
-//////////////////////////
-
-void view_initialize_show_impl(uint8_t item_idx, char *statusString) {
-    if (statusString == NULL ) {
-        snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", MENU_MAIN_APP_LINE2);
-    } else {
-        snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", statusString);
-    }
-    h_expert_update();
-    UX_MENU_DISPLAY(item_idx, menu_initialize, NULL);
-}
-
-void view_idle_show_impl(uint8_t item_idx, char *statusString) {
-    if (statusString == NULL ) {
-        snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", MENU_MAIN_APP_LINE2);
-#ifdef APP_SECRET_MODE_ENABLED
-        if (app_mode_secret()) {
-            snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", MENU_MAIN_APP_LINE2_SECRET);
-        }
-#endif
-    } else {
-        snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", statusString);
-    }
-    h_expert_update();
-    UX_MENU_DISPLAY(item_idx, menu_main, NULL);
-}
-
-void view_message_impl(char *title, char *message) {
-    snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", title);
-    snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "%s", message);
-    UX_DISPLAY(view_message, view_prepro_idle);
-}
-
-void view_error_show_impl() {
-    UX_DISPLAY(view_error, view_prepro);
-}
-
-void h_expert_toggle() {
-    app_mode_set_expert(!app_mode_expert());
-    view_idle_show(1, NULL);
-}
-
-#ifdef APP_SECRET_MODE_ENABLED
-void h_secret_click() {
-    if (COIN_SECRET_REQUIRED_CLICKS == 0) {
-        // There is no secret mode
-        return;
-    }
-
-    viewdata.secret_click_count++;
-
-    char buffer[50];
-    snprintf(buffer, sizeof(buffer), "secret click %d\n", viewdata.secret_click_count);
-    zemu_log(buffer);
-
-    if (viewdata.secret_click_count >= COIN_SECRET_REQUIRED_CLICKS) {
-        secret_enabled();
-        viewdata.secret_click_count = 0;
-    }
-}
-#endif
-
-void h_expert_update() {
-    snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "disabled");
-    if (app_mode_expert()) {
-        snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "enabled");
-    }
-}
-
-void view_review_show_impl() {
-    zemu_log_stack("view_review_show_impl");
-
-    h_paging_init();
-
-    zxerr_t err = h_review_update_data();
-    switch(err) {
-        case zxerr_ok:
-            UX_DISPLAY(view_review, view_prepro);
-            break;
-        default:
-            view_error_show();
-            break;
-    }
 }
 #endif
