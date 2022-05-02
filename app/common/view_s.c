@@ -45,8 +45,10 @@ static void h_review_button_both();
 static void h_secret_click();
 #endif
 
+#ifdef APP_CROWDLOAN_MODE_ENABLED
 static void h_crowdloan_toggle();
 static void h_crowdloan_update();
+#endif
 
 ux_state_t ux;
 extern ux_menu_state_t ux_menu;
@@ -159,7 +161,9 @@ const bagl_element_t* idle_preprocessor(const ux_menu_entry_t* entry, bagl_eleme
             h_expert_update();
             break;
         case 2:
+#ifdef APP_CROWDLOAN_MODE_ENABLED
             h_crowdloan_update();
+#endif
             break;
         default:
             break;
@@ -273,11 +277,27 @@ void h_expert_toggle() {
     view_idle_show(1, NULL);
 }
 
+void h_expert_update() {
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "disabled");
+    if (app_mode_expert()) {
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "enabled");
+    }
+}
+
+#ifdef APP_CROWDLOAN_MODE_ENABLED
 void h_crowdloan_toggle() {
     if(app_mode_expert()) {
         crowdloan_enabled();
     }
 }
+
+void h_crowdloan_update() {
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Legacy");
+    if (app_mode_crowdloan()) {
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Crowdloan");
+    }
+}
+#endif
 
 #ifdef APP_SECRET_MODE_ENABLED
 void h_secret_click() {
@@ -298,20 +318,6 @@ void h_secret_click() {
     }
 }
 #endif
-
-void h_expert_update() {
-    snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "disabled");
-    if (app_mode_expert()) {
-        snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "enabled");
-    }
-}
-
-void h_crowdloan_update() {
-    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Legacy");
-    if (app_mode_crowdloan()) {
-        snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Crowdloan");
-    }
-}
 
 void view_review_show_impl() {
     zemu_log_stack("view_review_show_impl");

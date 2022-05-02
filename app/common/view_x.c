@@ -44,8 +44,10 @@ static void h_review_loop_start();
 static void h_review_loop_inside();
 static void h_review_loop_end();
 
+#ifdef APP_CROWDLOAN_MODE_ENABLED
 static void h_crowdloan_toggle();
 static void h_crowdloan_update();
+#endif
 
 #ifdef APP_SECRET_MODE_ENABLED
 static void h_secret_click();
@@ -228,6 +230,7 @@ void h_expert_update() {
     }
 }
 
+#ifdef APP_CROWDLOAN_MODE_ENABLED
 void h_crowdloan_toggle() {
     if(app_mode_expert()) {
       crowdloan_enabled();
@@ -240,6 +243,7 @@ void h_crowdloan_update() {
         snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Crowdloan");
     }
 }
+#endif
 
 #ifdef APP_SECRET_MODE_ENABLED
 void h_secret_click() {
