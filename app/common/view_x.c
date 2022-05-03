@@ -57,6 +57,7 @@ static void h_secret_click();
 ux_state_t G_ux;
 bolos_ux_params_t G_ux_params;
 uint8_t flow_inside_loop;
+static uint8_t mustReply = 0;
 
 
 UX_STEP_NOCB(ux_idle_flow_1_step, pbb, { &C_icon_app, MENU_MAIN_APP_LINE1, viewdata.key,});
@@ -116,7 +117,7 @@ UX_STEP_INIT(ux_review_flow_2_start_step, NULL, NULL, { h_review_loop_start(); }
 UX_STEP_NOCB_INIT(ux_review_flow_2_step, bnnn_paging, { h_review_loop_inside(); }, { .title = viewdata.key, .text = viewdata.value, });
 UX_STEP_INIT(ux_review_flow_2_end_step, NULL, NULL, { h_review_loop_end(); });
 UX_STEP_VALID(ux_review_flow_3_step, pb, h_approve(0), { &C_icon_validate_14, APPROVE_LABEL });
-UX_STEP_VALID(ux_review_flow_4_step, pb, h_reject(0), { &C_icon_crossmark, REJECT_LABEL });
+UX_STEP_VALID(ux_review_flow_4_step, pb, h_reject(mustReply), { &C_icon_crossmark, REJECT_LABEL });
 
 const ux_flow_step_t *const ux_review_flow[] = {
   &ux_review_flow_1_review_title,
@@ -233,7 +234,9 @@ void h_expert_update() {
 #ifdef APP_CROWDLOAN_MODE_ENABLED
 void h_crowdloan_toggle() {
     if(app_mode_expert()) {
-      crowdloan_enabled();
+        crowdloan_enabled();
+    } else {
+        ux_flow_init(0, ux_idle_flow, &ux_idle_flow_7_step);
     }
 }
 
@@ -291,7 +294,8 @@ void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
     ux_flow_init(0, ux_idle_flow, NULL);
 }
 
-void view_review_show_impl(){
+void view_review_show_impl(uint8_t requireReply){
+    mustReply = requireReply;
     h_paging_init();
     h_paging_decrease();
     ////
