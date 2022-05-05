@@ -52,7 +52,7 @@ static void h_crowdloan_update();
 
 ux_state_t ux;
 extern ux_menu_state_t ux_menu;
-static uint8_t mustReply = 0;
+static unsigned int mustReply = 0;
 
 void os_exit(uint32_t id) {
     (void)id;
@@ -322,7 +322,7 @@ void h_secret_click() {
 }
 #endif
 
-void view_review_show_impl(uint8_t requireReply) {
+void view_review_show_impl(unsigned int requireReply) {
     zemu_log_stack("view_review_show_impl");
     mustReply = requireReply;
 

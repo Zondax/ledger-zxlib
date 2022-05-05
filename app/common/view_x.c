@@ -57,7 +57,7 @@ static void h_secret_click();
 ux_state_t G_ux;
 bolos_ux_params_t G_ux_params;
 uint8_t flow_inside_loop;
-static uint8_t mustReply = 0;
+static unsigned int mustReply = 0;
 
 
 UX_STEP_NOCB(ux_idle_flow_1_step, pbb, { &C_icon_app, MENU_MAIN_APP_LINE1, viewdata.key,});
@@ -294,7 +294,7 @@ void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
     ux_flow_init(0, ux_idle_flow, NULL);
 }
 
-void view_review_show_impl(uint8_t requireReply){
+void view_review_show_impl(unsigned int requireReply){
     mustReply = requireReply;
     h_paging_init();
     h_paging_decrease();

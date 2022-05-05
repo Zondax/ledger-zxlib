@@ -47,7 +47,7 @@ void h_approve(__Z_UNUSED unsigned int _) {
     }
 }
 
-void h_reject(uint8_t requireReply) {
+void h_reject(unsigned int requireReply) {
     zemu_log_stack("h_reject");
 
     view_idle_show(0, NULL);
@@ -313,7 +313,7 @@ void view_review_init(viewfunc_getItem_t viewfuncGetItem,
     viewdata.viewfuncAccept = viewfuncAccept;
 }
 
-void view_review_show(uint8_t requireReply) {
+void view_review_show(unsigned int requireReply) {
     // Set > 0 to reply apdu message
     view_review_show_impl(requireReply);
 }
