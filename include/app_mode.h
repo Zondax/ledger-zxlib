@@ -28,9 +28,9 @@ bool app_mode_expert();
 
 void app_mode_set_expert(uint8_t val);
 
-bool app_mode_crowdloan();
+bool app_mode_account();
 
-void app_mode_set_crowdloan(uint8_t val);
+void app_mode_set_account(uint8_t val);
 
 bool app_mode_secret();
 

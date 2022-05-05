@@ -33,7 +33,7 @@
 static bool exceed_pixel_in_display(const uint8_t length);
 
 void h_initialize();
-void crowdloan_enabled();
+void account_enabled();
 
 static void h_expert_toggle();
 static void h_expert_update();
@@ -45,9 +45,9 @@ static void h_review_button_both();
 static void h_secret_click();
 #endif
 
-#ifdef APP_CROWDLOAN_MODE_ENABLED
-static void h_crowdloan_toggle();
-static void h_crowdloan_update();
+#ifdef APP_ACCOUNT_MODE_ENABLED
+static void h_account_toggle();
+static void h_account_update();
 #endif
 
 ux_state_t ux;
@@ -63,8 +63,8 @@ const ux_menu_entry_t menu_main[] = {
     {NULL, NULL, 0, &C_icon_app, MENU_MAIN_APP_LINE1, viewdata.key, 33, 12},
     {NULL, h_expert_toggle, 0, &C_icon_app, "Expert mode:", viewdata.value, 33, 12},
 
-#ifdef APP_CROWDLOAN_MODE_ENABLED
-    {NULL, h_crowdloan_toggle, 0, &C_icon_app, "Account:", viewdata.value, 33, 12},
+#ifdef APP_ACCOUNT_MODE_ENABLED
+    {NULL, h_account_toggle, 0, &C_icon_app, "Account:", viewdata.value, 33, 12},
 #endif
 
     {NULL, NULL, 0, &C_icon_app, APPVERSION_LINE1, APPVERSION_LINE2, 33, 12},
@@ -162,8 +162,8 @@ const bagl_element_t* idle_preprocessor(const ux_menu_entry_t* entry, bagl_eleme
             h_expert_update();
             break;
         case 2:
-#ifdef APP_CROWDLOAN_MODE_ENABLED
-            h_crowdloan_update();
+#ifdef APP_ACCOUNT_MODE_ENABLED
+            h_account_update();
 #endif
             break;
         default:
@@ -285,18 +285,18 @@ void h_expert_update() {
     }
 }
 
-#ifdef APP_CROWDLOAN_MODE_ENABLED
-void h_crowdloan_toggle() {
+#ifdef APP_ACCOUNT_MODE_ENABLED
+void h_account_toggle() {
     if(app_mode_expert()) {
-        crowdloan_enabled();
+        account_enabled();
     } else {
         view_idle_show(2, NULL);
     }
 }
 
-void h_crowdloan_update() {
+void h_account_update() {
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, ACCOUNT_DEFAULT);
-    if (app_mode_crowdloan()) {
+    if (app_mode_account()) {
         snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, ACCOUNT_SECONDARY);
     }
 }
