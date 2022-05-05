@@ -241,9 +241,9 @@ void h_crowdloan_toggle() {
 }
 
 void h_crowdloan_update() {
-    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Legacy");
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, ACCOUNT_DEFAULT);
     if (app_mode_crowdloan()) {
-        snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Crowdloan");
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, ACCOUNT_SECONDARY);
     }
 }
 #endif
