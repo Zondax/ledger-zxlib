@@ -164,7 +164,7 @@ bool is_reject_item(){
 }
 #endif
 
-void h_review_action(uint8_t requireReply) {
+void h_review_action(unsigned int requireReply) {
 #ifdef INCLUDE_ACTIONS_AS_ITEMS
     if( is_accept_item() ){
         zemu_log_stack("action_accept");
