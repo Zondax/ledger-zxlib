@@ -300,6 +300,18 @@ zemu_debug:
 zemu_test:
 	cd $(TESTS_ZEMU_DIR) && yarn test$(COIN)
 
+.PHONY: zemu_standard
+zemu_standard:
+	cd $(TESTS_ZEMU_DIR) && yarn standard$(COIN)
+
+.PHONY: zemu_ultralight
+zemu_ultralight:
+	cd $(TESTS_ZEMU_DIR) && yarn ultralight$(COIN)
+
+.PHONY: zemu_crowdloan
+zemu_crowdloan:
+	cd $(TESTS_ZEMU_DIR) && yarn crowdloan$(COIN)
+
 .PHONY: rust_test
 rust_test:
 	cd app/rust && cargo test
