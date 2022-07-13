@@ -37,6 +37,7 @@
 #if defined(TARGET_NANOX) || defined(TARGET_NANOS2)
 
 void account_enabled();
+void blind_enabled();
 
 static void h_expert_toggle();
 static void h_expert_update();
@@ -52,6 +53,16 @@ static void h_account_update();
 #ifdef APP_SECRET_MODE_ENABLED
 static void h_secret_click();
 #endif
+
+#ifdef APP_BLIND_MODE_ENABLED
+static void h_blind_toggle();
+static void h_blind_update();
+#endif
+
+#define MAX_REVIEW_UX_SCREENS 10
+static void h_shortcut(unsigned int);
+static void run_ux_review_flow(ReviewType reviewType, const ux_flow_step_t* const start_step);
+const ux_flow_step_t *ux_review_flow[MAX_REVIEW_UX_SCREENS];
 
 #include "ux.h"
 ux_state_t G_ux;
@@ -77,11 +88,18 @@ UX_STEP_CB(ux_idle_flow_6_step, pb, os_sched_exit(-1), { &C_icon_dashboard, "Qui
 UX_STEP_CB_INIT(ux_idle_flow_7_step, bn,  h_account_update(), h_account_toggle(), { "Account:", viewdata.value, });
 #endif
 
+#ifdef APP_BLIND_MODE_ENABLED
+UX_STEP_CB_INIT(ux_idle_flow_8_step, bn,  h_blind_update(), h_blind_toggle(), { "Blind signing:", viewdata.value, });
+#endif
+
 const ux_flow_step_t *const ux_idle_flow [] = {
   &ux_idle_flow_1_step,
   &ux_idle_flow_2_step,
 #ifdef APP_ACCOUNT_MODE_ENABLED
   &ux_idle_flow_7_step,
+#endif
+#ifdef APP_BLIND_MODE_ENABLED
+  &ux_idle_flow_8_step,
 #endif
   &ux_idle_flow_3_step,
   &ux_idle_flow_4_step,
@@ -112,22 +130,17 @@ UX_FLOW(
 
 ///////////
 
-UX_FLOW_DEF_NOCB(ux_review_flow_1_review_title, pbb, { &C_icon_app, "Please", "review",});
+UX_FLOW_DEF_NOCB(ux_review_flow_1_review_title, pbb, { &C_icon_app, REVIEW_SCREEN_TITLE, REVIEW_SCREEN_TXN_VALUE,});
+UX_FLOW_DEF_NOCB(ux_review_flow_2_review_title, pbb, { &C_icon_app, REVIEW_SCREEN_TITLE, REVIEW_SCREEN_ADDR_VALUE,});
+UX_FLOW_DEF_NOCB(ux_review_flow_3_review_title, pbb, { &C_icon_app, "Review", "configuration",});
+
 UX_STEP_INIT(ux_review_flow_2_start_step, NULL, NULL, { h_review_loop_start(); });
 UX_STEP_NOCB_INIT(ux_review_flow_2_step, bnnn_paging, { h_review_loop_inside(); }, { .title = viewdata.key, .text = viewdata.value, });
 UX_STEP_INIT(ux_review_flow_2_end_step, NULL, NULL, { h_review_loop_end(); });
 UX_STEP_VALID(ux_review_flow_3_step, pb, h_approve(0), { &C_icon_validate_14, APPROVE_LABEL });
 UX_STEP_VALID(ux_review_flow_4_step, pb, h_reject(mustReply), { &C_icon_crossmark, REJECT_LABEL });
 
-const ux_flow_step_t *const ux_review_flow[] = {
-  &ux_review_flow_1_review_title,
-  &ux_review_flow_2_start_step,
-  &ux_review_flow_2_step,
-  &ux_review_flow_2_end_step,
-  &ux_review_flow_3_step,
-  &ux_review_flow_4_step,
-  FLOW_END_STEP,
-};
+UX_STEP_CB_INIT(ux_review_flow_5_step, pb,  NULL, h_shortcut(0), { &C_icon_eye, BLIND_SIGNING_STR });
 
 //////////////////////////
 //////////////////////////
@@ -248,6 +261,24 @@ void h_account_update() {
 }
 #endif
 
+#ifdef APP_BLIND_MODE_ENABLED
+void h_blind_toggle() {
+    if (app_mode_expert() && !app_mode_blind()) {
+        blind_enabled();
+        return;
+    }
+    app_mode_set_blind(0);
+    ux_flow_init(0, ux_idle_flow, &ux_idle_flow_8_step);
+}
+
+void h_blind_update() {
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "disabled");
+    if (app_mode_blind()) {
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "enabled");
+    }
+}
+#endif
+
 #ifdef APP_SECRET_MODE_ENABLED
 void h_secret_click() {
     if (COIN_SECRET_REQUIRED_CLICKS == 0) {
@@ -270,6 +301,10 @@ void h_secret_click() {
     ux_flow_init(0, ux_idle_flow, &ux_idle_flow_4_step);
 }
 #endif
+
+static void h_shortcut(__Z_UNUSED unsigned int _) {
+    run_ux_review_flow(REVIEW_TXN, &ux_review_flow_3_step);
+}
 
 //////////////////////////
 //////////////////////////
@@ -304,7 +339,31 @@ void view_review_show_impl(unsigned int requireReply){
     if(G_ux.stack_count == 0) {
         ux_stack_push();
     }
-    ux_flow_init(0, ux_review_flow, NULL);
+
+    run_ux_review_flow((ReviewType)mustReply, NULL);
+}
+
+// Build review UX flow and run it
+void run_ux_review_flow(ReviewType reviewType, const ux_flow_step_t* const start_step) {
+    uint8_t index = 0;
+    if(reviewType == REVIEW_ADDRESS) {
+        ux_review_flow[index++] = &ux_review_flow_2_review_title;
+    } else if (reviewType == REVIEW_UI) {
+        ux_review_flow[index++] = &ux_review_flow_3_review_title;
+    } else {
+        ux_review_flow[index++] = &ux_review_flow_1_review_title;
+        if(app_mode_blind()) {
+            ux_review_flow[index++] = &ux_review_flow_5_step;
+        }
+    }
+    ux_review_flow[index++] = &ux_review_flow_2_start_step;
+    ux_review_flow[index++] = &ux_review_flow_2_step;
+    ux_review_flow[index++] = &ux_review_flow_2_end_step;
+    ux_review_flow[index++] = &ux_review_flow_3_step;
+    ux_review_flow[index++] = &ux_review_flow_4_step;
+    ux_review_flow[index++] = FLOW_END_STEP;
+
+    ux_flow_init(0, ux_review_flow, start_step);
 }
 
 void view_message_impl(char *title, char *message) {

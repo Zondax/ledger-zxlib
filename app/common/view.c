@@ -68,6 +68,18 @@ void h_initialize(__Z_UNUSED unsigned int _) {
     UX_WAIT();
 }
 
+uint8_t getIntroPages() {
+#if defined(APP_BLIND_MODE_ENABLED) && defined(TARGET_NANOS)
+    if (review_type == REVIEW_ADDRESS || !app_mode_blind()) {
+        return INTRO_PAGES - 1;
+    }
+#endif
+    return INTRO_PAGES;
+}
+
+bool h_paging_intro_screen() {
+    return viewdata.itemIdx < getIntroPages();
+}
 ///////////////////////////////////
 // Paging related
 
@@ -178,8 +190,9 @@ void h_review_action(unsigned int requireReply) {
         return;
     }
 
+    // Need to use this shortcut for BlindSigning
     zemu_log_stack("quick accept");
-    if (app_mode_expert()) {
+    if (app_mode_expert() || app_mode_blind()) {
         set_accept_item();
         h_review_update();
         return;

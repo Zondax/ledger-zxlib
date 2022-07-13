@@ -34,6 +34,7 @@ static bool exceed_pixel_in_display(const uint8_t length);
 
 void h_initialize();
 void account_enabled();
+void blind_enabled();
 
 static void h_expert_toggle();
 static void h_expert_update();
@@ -50,6 +51,22 @@ static void h_account_toggle();
 static void h_account_update();
 #endif
 
+#ifdef APP_BLIND_MODE_ENABLED
+static void h_blind_toggle();
+static void h_blind_update();
+#endif
+
+enum MAINMENU_SCREENS {
+    SCREEN_HOME = 0,
+    SCREEN_EXPERT,
+#ifdef APP_ACCOUNT_MODE_ENABLED
+    SCREEN_ACCOUNT,
+#endif
+#ifdef APP_BLIND_MODE_ENABLED
+    SCREEN_BLIND,
+#endif
+};
+
 ux_state_t ux;
 extern ux_menu_state_t ux_menu;
 static unsigned int mustReply = 0;
@@ -65,6 +82,10 @@ const ux_menu_entry_t menu_main[] = {
 
 #ifdef APP_ACCOUNT_MODE_ENABLED
     {NULL, h_account_toggle, 0, &C_icon_app, "Account:", viewdata.value, 33, 12},
+#endif
+
+#ifdef APP_BLIND_MODE_ENABLED
+    {NULL, h_blind_toggle, 0, &C_icon_app, "Blind signing:", viewdata.value, 33, 12},
 #endif
 
     {NULL, NULL, 0, &C_icon_app, APPVERSION_LINE1, APPVERSION_LINE2, 33, 12},
@@ -156,14 +177,19 @@ static unsigned int view_review_button(unsigned int button_mask, __Z_UNUSED unsi
 
 const bagl_element_t* idle_preprocessor(const ux_menu_entry_t* entry, bagl_element_t* element) {
     switch(ux_menu.current_entry) {
-        case 0:
+        case SCREEN_HOME:
             break;
-        case 1:
+        case SCREEN_EXPERT:
             h_expert_update();
             break;
-        case 2:
 #ifdef APP_ACCOUNT_MODE_ENABLED
+        case SCREEN_ACCOUNT:
             h_account_update();
+#endif
+            break;
+#ifdef APP_BLIND_MODE_ENABLED
+        case SCREEN_BLIND:
+            h_blind_update();
 #endif
             break;
         default:
@@ -298,6 +324,24 @@ void h_account_update() {
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, ACCOUNT_DEFAULT);
     if (app_mode_account()) {
         snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, ACCOUNT_SECONDARY);
+    }
+}
+#endif
+
+#ifdef APP_BLIND_MODE_ENABLED
+void h_blind_toggle() {
+    if (app_mode_expert() && !app_mode_blind()) {
+        blind_enabled();
+        return;
+    }
+    app_mode_set_blind(0);
+    view_idle_show(SCREEN_BLIND, NULL);
+}
+
+void h_blind_update() {
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "disabled");
+    if (app_mode_blind()) {
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "enabled");
     }
 }
 #endif
