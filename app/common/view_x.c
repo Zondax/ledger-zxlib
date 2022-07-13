@@ -61,14 +61,14 @@ static void h_blind_update();
 
 #define MAX_REVIEW_UX_SCREENS 10
 static void h_shortcut(unsigned int);
-static void run_ux_review_flow(ReviewType reviewType, const ux_flow_step_t* const start_step);
+static void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t* const start_step);
 const ux_flow_step_t *ux_review_flow[MAX_REVIEW_UX_SCREENS];
 
 #include "ux.h"
 ux_state_t G_ux;
 bolos_ux_params_t G_ux_params;
 uint8_t flow_inside_loop;
-static unsigned int mustReply = 0;
+extern unsigned int review_type;
 
 
 UX_STEP_NOCB(ux_idle_flow_1_step, pbb, { &C_icon_app, MENU_MAIN_APP_LINE1, viewdata.key,});
@@ -138,7 +138,7 @@ UX_STEP_INIT(ux_review_flow_2_start_step, NULL, NULL, { h_review_loop_start(); }
 UX_STEP_NOCB_INIT(ux_review_flow_2_step, bnnn_paging, { h_review_loop_inside(); }, { .title = viewdata.key, .text = viewdata.value, });
 UX_STEP_INIT(ux_review_flow_2_end_step, NULL, NULL, { h_review_loop_end(); });
 UX_STEP_VALID(ux_review_flow_3_step, pb, h_approve(0), { &C_icon_validate_14, APPROVE_LABEL });
-UX_STEP_VALID(ux_review_flow_4_step, pb, h_reject(mustReply), { &C_icon_crossmark, REJECT_LABEL });
+UX_STEP_VALID(ux_review_flow_4_step, pb, h_reject(review_type), { &C_icon_crossmark, REJECT_LABEL });
 
 UX_STEP_CB_INIT(ux_review_flow_5_step, pb,  NULL, h_shortcut(0), { &C_icon_eye, BLIND_SIGNING_STR });
 
@@ -331,7 +331,7 @@ void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
 }
 
 void view_review_show_impl(unsigned int requireReply){
-    mustReply = requireReply;
+    review_type = requireReply;
     h_paging_init();
     h_paging_decrease();
     ////
@@ -340,22 +340,32 @@ void view_review_show_impl(unsigned int requireReply){
         ux_stack_push();
     }
 
-    run_ux_review_flow((ReviewType)mustReply, NULL);
+    run_ux_review_flow((review_type_e)review_type, NULL);
 }
 
 // Build review UX flow and run it
-void run_ux_review_flow(ReviewType reviewType, const ux_flow_step_t* const start_step) {
+void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t* const start_step) {
     uint8_t index = 0;
-    if(reviewType == REVIEW_ADDRESS) {
-        ux_review_flow[index++] = &ux_review_flow_2_review_title;
-    } else if (reviewType == REVIEW_UI) {
+
+    switch (reviewType)
+    {
+    case REVIEW_UI:
         ux_review_flow[index++] = &ux_review_flow_3_review_title;
-    } else {
+        break;
+
+    case REVIEW_ADDRESS:
+        ux_review_flow[index++] = &ux_review_flow_2_review_title;
+        break;
+
+    case REVIEW_TXN:
+    default:
         ux_review_flow[index++] = &ux_review_flow_1_review_title;
         if(app_mode_blind()) {
             ux_review_flow[index++] = &ux_review_flow_5_step;
         }
+        break;
     }
+
     ux_review_flow[index++] = &ux_review_flow_2_start_step;
     ux_review_flow[index++] = &ux_review_flow_2_step;
     ux_review_flow[index++] = &ux_review_flow_2_end_step;
