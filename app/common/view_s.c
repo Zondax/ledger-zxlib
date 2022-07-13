@@ -69,7 +69,7 @@ enum MAINMENU_SCREENS {
 
 ux_state_t ux;
 extern ux_menu_state_t ux_menu;
-static unsigned int mustReply = 0;
+extern unsigned int review_type;
 
 void os_exit(uint32_t id) {
     (void)id;
@@ -212,6 +212,12 @@ const bagl_element_t *view_prepro(const bagl_element_t *element) {
             }
             UX_CALLBACK_SET_INTERVAL(2000);
             break;
+        case UIID_ICONREVIEW:
+            if (!h_paging_intro_screen()){
+                return NULL;
+            }
+            UX_CALLBACK_SET_INTERVAL(2000);
+            break;
         case UIID_LABELSCROLL:
             UX_CALLBACK_SET_INTERVAL(
                 MAX(3000, 1000 + bagl_label_roundtrip_duration_ms(element, 7))
@@ -257,7 +263,7 @@ void h_review_button_right() {
 
 void h_review_button_both() {
     zemu_log_stack("h_review_button_both");
-    h_review_action(mustReply);
+    h_review_action(review_type);
 }
 
 //////////////////////////
@@ -368,7 +374,7 @@ void h_secret_click() {
 
 void view_review_show_impl(unsigned int requireReply) {
     zemu_log_stack("view_review_show_impl");
-    mustReply = requireReply;
+    review_type = requireReply;
 
     h_paging_init();
 
