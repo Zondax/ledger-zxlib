@@ -341,7 +341,7 @@ void view_review_show_impl(unsigned int requireReply) {
 
 void splitValueField() {
     print_value2("");
-    const uint16_t vlen = strlen(viewdata.value);
+    const uint16_t vlen = strnlen(viewdata.value), MAX_CHARS_PER_VALUE1_LINE;
     if (vlen > MAX_CHARS_PER_VALUE2_LINE - 1) {
         snprintf(viewdata.value2, MAX_CHARS_PER_VALUE2_LINE, "%s", viewdata.value + MAX_CHARS_PER_VALUE_LINE);
         viewdata.value[MAX_CHARS_PER_VALUE_LINE] = 0;
@@ -354,7 +354,7 @@ void splitValueAddress() {
         exceeding_max = exceed_pixel_in_display(len);
     }
     print_value2("");
-    const uint16_t vlen = strlen(viewdata.value);
+    const uint16_t vlen = strnlen(viewdata.value, MAX_CHARS_PER_VALUE1_LINE);
     //if viewdata.value == NULL --> len = 0
     if (vlen > len && len > 0) {
         snprintf(viewdata.value2, MAX_CHARS_PER_VALUE2_LINE, "%s", viewdata.value + len);

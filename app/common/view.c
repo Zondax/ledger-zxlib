@@ -264,7 +264,7 @@ zxerr_t h_review_update_data() {
         viewdata.itemCount++;
 
         if (viewdata.pageCount > 1) {
-            uint8_t keyLen = strlen(viewdata.key);
+            uint8_t keyLen = strnlen(viewdata.key, MAX_CHARS_PER_KEY_LINE);
             if (keyLen < MAX_CHARS_PER_KEY_LINE) {
                 snprintf(viewdata.key + keyLen,
                          MAX_CHARS_PER_KEY_LINE - keyLen,
