@@ -56,6 +56,7 @@ __Z_INLINE const char *getMonth(uint8_t tm_mon) {
 }
 
 zxerr_t printTime(char *out, uint16_t outLen, uint64_t t);
+zxerr_t printTimeSpecialFormat(char *out, uint16_t outLen, uint64_t t);
 
 #ifdef __cplusplus
 }
