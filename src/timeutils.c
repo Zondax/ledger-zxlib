@@ -444,7 +444,9 @@ const uint32_t yearLookup[] = {
 // ARM does not implement gmtime. This is a simple alternative implementation
 // based on section 4.16
 // https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html
-zxerr_t printTime(char *out, uint16_t outLen, uint64_t t) {
+static zxerr_t extractTime(uint64_t t, uint8_t *sec, uint8_t *min, uint8_t *hour,
+                           uint16_t *day, uint8_t *month, uint16_t *year) {
+
     uint8_t tm_sec;
     uint8_t tm_min;
     uint8_t tm_hour;
@@ -490,6 +492,25 @@ zxerr_t printTime(char *out, uint16_t outLen, uint64_t t) {
     }
     tm_mon++;
 
+    *sec = tm_sec;
+    *min = tm_min;
+    *hour = tm_hour;
+    *day = tm_day;
+    *month = tm_mon;
+    *year = tm_year;
+
+    return zxerr_ok;
+}
+
+zxerr_t printTime(char *out, uint16_t outLen, uint64_t t) {
+    uint8_t tm_sec;
+    uint8_t tm_min;
+    uint8_t tm_hour;
+    uint16_t tm_day;
+    uint8_t tm_mon;
+    uint16_t tm_year;
+
+    CHECK_ZXERR(extractTime(t, &tm_sec, &tm_min, &tm_hour, &tm_day, &tm_mon, &tm_year))
     const char *monthName = getMonth(tm_mon);
 
     // YYYYmmdd HH:MM:SS
@@ -502,6 +523,28 @@ zxerr_t printTime(char *out, uint16_t outLen, uint64_t t) {
 
     return zxerr_ok;
 }
+
+zxerr_t printTimeSpecialFormat(char *out, uint16_t outLen, uint64_t t) {
+    uint8_t tm_sec;
+    uint8_t tm_min;
+    uint8_t tm_hour;
+    uint16_t tm_day;
+    uint8_t tm_mon;
+    uint16_t tm_year;
+
+    CHECK_ZXERR(extractTime(t, &tm_sec, &tm_min, &tm_hour, &tm_day, &tm_mon, &tm_year))
+
+    // YYYYmmdd HH:MM:SS
+    snprintf(out, outLen, "%d-%02d-%02dT%02d:%02d:%02dZ",
+             tm_year,
+             tm_mon,
+             tm_day,
+             tm_hour, tm_min, tm_sec
+    );
+
+    return zxerr_ok;
+}
+
 
 #ifdef __cplusplus
 }
