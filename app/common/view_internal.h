@@ -43,9 +43,9 @@
 #define APPROVE_LABEL "APPROVE"
 #define REJECT_LABEL "REJECT"
 
-#define BLIND_SIGNING_TITLE "Blind"
-#define BLIND_SIGNING_VALUE "Signing"
-#define BLIND_SIGNING_STR "Blind Signing"
+#define SHORTCUT_TITLE "Skip"
+#define SHORTCUT_VALUE "fields"
+#define SHORTCUT_STR "Skip fields"
 
 //Review string can be customizable in each app
 #if !defined(REVIEW_SCREEN_TITLE) && !defined(REVIEW_SCREEN_TX_VALUE) && !defined(REVIEW_SCREEN_ADDR_VALUE)
@@ -60,13 +60,13 @@ static const char* review_addrvalue = REVIEW_SCREEN_ADDR_VALUE;
 static const char* review_keyconfig = "Review";
 static const char* review_configvalue = "configuration";
 
-static const char* blindsigning_key = BLIND_SIGNING_TITLE;
-static const char* blindsigning_value = BLIND_SIGNING_VALUE;
+static const char* shortcut_key = SHORTCUT_TITLE;
+static const char* shortcut_value = SHORTCUT_VALUE;
 
 #if defined(TARGET_NANOS)
-    #if defined(REVIEW_SCREEN_ENABLED) && defined(APP_BLIND_MODE_ENABLED)
+    #if defined(REVIEW_SCREEN_ENABLED) && defined(SHORTCUT_MODE_ENABLED)
         #define INTRO_PAGES 2
-    #elif defined(REVIEW_SCREEN_ENABLED) || defined(APP_BLIND_MODE_ENABLED)
+    #elif defined(REVIEW_SCREEN_ENABLED) || defined(SHORTCUT_MODE_ENABLED)
         #define INTRO_PAGES 1
     #else
         #define INTRO_PAGES 0

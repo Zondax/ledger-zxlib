@@ -70,9 +70,9 @@ void h_initialize(__Z_UNUSED unsigned int _) {
 }
 
 uint8_t getIntroPages() {
-#if defined(APP_BLIND_MODE_ENABLED) && defined(TARGET_NANOS)
-    if (review_type == REVIEW_ADDRESS || !app_mode_blind()) {
-        return INTRO_PAGES - 1;
+#if defined(SHORTCUT_MODE_ENABLED) && defined(TARGET_NANOS)
+    if (review_type == REVIEW_ADDRESS || !app_mode_shortcut()) {
+        return INTRO_PAGES ? INTRO_PAGES - 1 : 0;
     }
 #endif
     return INTRO_PAGES;
@@ -192,9 +192,8 @@ void h_review_action(unsigned int requireReply) {
         return;
     }
 
-    // Need to use this shortcut for BlindSigning
     zemu_log_stack("quick accept");
-    if (app_mode_expert() || app_mode_blind()) {
+    if (app_mode_expert() || app_mode_shortcut()) {
         set_accept_item();
         h_review_update();
         return;
@@ -272,18 +271,18 @@ zxerr_t h_review_update_data() {
                     break;
                 }
                 break;
-        #if defined(APP_BLIND_MODE_ENABLED)
+        #if defined(SHORTCUT_MODE_ENABLED)
             case 1:
-                intro_key = PIC(blindsigning_key);
-                intro_value = PIC(blindsigning_value);
+                intro_key = PIC(shortcut_key);
+                intro_value = PIC(shortcut_value);
                 break;
         #endif
             default:
                 return zxerr_no_data;
         }
-#elif defined(APP_BLIND_MODE_ENABLED)
-        intro_key = PIC(blindsigning_key);
-        intro_value = PIC(blindsigning_value);
+#elif defined(SHORTCUT_MODE_ENABLED)
+        intro_key = PIC(shortcut_key);
+        intro_value = PIC(shortcut_value);
 #else
         return zxerr_no_data;
 #endif
@@ -298,11 +297,16 @@ zxerr_t h_review_update_data() {
 
     do {
         CHECK_ZXERR(viewdata.viewfuncGetNumItems(&viewdata.itemCount))
-        viewdata.itemCount+= getIntroPages();
+        viewdata.itemCount += getIntroPages();
+
+        if (viewdata.itemIdx - getIntroPages() < 0) {
+          return zxerr_out_of_bounds;
+        }
+        const uint8_t realItemIdx = viewdata.itemIdx - getIntroPages();
 
         //Verify how many chars fit in display (nanos)
         CHECK_ZXERR(viewdata.viewfuncGetItem(
-                viewdata.itemIdx - getIntroPages(),
+                realItemIdx,
                 viewdata.key, MAX_CHARS_PER_KEY_LINE,
                 viewdata.value, MAX_CHARS_PER_VALUE1_LINE,
                 0, &viewdata.pageCount))
@@ -311,7 +315,7 @@ zxerr_t h_review_update_data() {
 
         // be sure we are not out of bounds
         CHECK_ZXERR(viewdata.viewfuncGetItem(
-                viewdata.itemIdx - getIntroPages(),
+                realItemIdx,
                 viewdata.key, MAX_CHARS_PER_KEY_LINE,
                 viewdata.value, dyn_max_char_per_line1,
                 0, &viewdata.pageCount))
@@ -320,7 +324,7 @@ zxerr_t h_review_update_data() {
             viewdata.pageIdx = viewdata.pageCount - 1;
         }
         CHECK_ZXERR(viewdata.viewfuncGetItem(
-                viewdata.itemIdx - getIntroPages(),
+                realItemIdx,
                 viewdata.key, MAX_CHARS_PER_KEY_LINE,
                 viewdata.value, dyn_max_char_per_line1,
                 viewdata.pageIdx, &viewdata.pageCount))

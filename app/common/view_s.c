@@ -34,7 +34,7 @@ static bool exceed_pixel_in_display(const uint8_t length);
 
 void h_initialize();
 void account_enabled();
-void blind_enabled();
+void shortcut_enabled();
 
 static void h_expert_toggle();
 static void h_expert_update();
@@ -51,9 +51,9 @@ static void h_account_toggle();
 static void h_account_update();
 #endif
 
-#ifdef APP_BLIND_MODE_ENABLED
-static void h_blind_toggle();
-static void h_blind_update();
+#ifdef SHORTCUT_MODE_ENABLED
+static void h_shortcut_toggle();
+static void h_shortcut_update();
 #endif
 
 enum MAINMENU_SCREENS {
@@ -62,8 +62,8 @@ enum MAINMENU_SCREENS {
 #ifdef APP_ACCOUNT_MODE_ENABLED
     SCREEN_ACCOUNT,
 #endif
-#ifdef APP_BLIND_MODE_ENABLED
-    SCREEN_BLIND,
+#ifdef SHORTCUT_MODE_ENABLED
+    SCREEN_SHORTCUT,
 #endif
 };
 
@@ -84,8 +84,8 @@ const ux_menu_entry_t menu_main[] = {
     {NULL, h_account_toggle, 0, &C_icon_app, "Account:", viewdata.value, 33, 12},
 #endif
 
-#ifdef APP_BLIND_MODE_ENABLED
-    {NULL, h_blind_toggle, 0, &C_icon_app, "Blind signing:", viewdata.value, 33, 12},
+#ifdef SHORTCUT_MODE_ENABLED
+    {NULL, h_shortcut_toggle, 0, &C_icon_app, "Shortcut mode:", viewdata.value, 33, 12},
 #endif
 
     {NULL, NULL, 0, &C_icon_app, APPVERSION_LINE1, APPVERSION_LINE2, 33, 12},
@@ -185,13 +185,13 @@ const bagl_element_t* idle_preprocessor(const ux_menu_entry_t* entry, bagl_eleme
 #ifdef APP_ACCOUNT_MODE_ENABLED
         case SCREEN_ACCOUNT:
             h_account_update();
-#endif
             break;
-#ifdef APP_BLIND_MODE_ENABLED
-        case SCREEN_BLIND:
-            h_blind_update();
 #endif
+#ifdef SHORTCUT_MODE_ENABLED
+        case SCREEN_SHORTCUT:
+            h_shortcut_update();
             break;
+#endif
         default:
             break;
     }
@@ -334,19 +334,19 @@ void h_account_update() {
 }
 #endif
 
-#ifdef APP_BLIND_MODE_ENABLED
-void h_blind_toggle() {
-    if (app_mode_expert() && !app_mode_blind()) {
-        blind_enabled();
+#ifdef SHORTCUT_MODE_ENABLED
+void h_shortcut_toggle() {
+    if (app_mode_expert() && !app_mode_shortcut()) {
+        shortcut_enabled();
         return;
     }
-    app_mode_set_blind(0);
-    view_idle_show(SCREEN_BLIND, NULL);
+    app_mode_set_shortcut(0);
+    view_idle_show(SCREEN_SHORTCUT, NULL);
 }
 
-void h_blind_update() {
+void h_shortcut_update() {
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "disabled");
-    if (app_mode_blind()) {
+    if (app_mode_shortcut()) {
         snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "enabled");
     }
 }
@@ -391,7 +391,7 @@ void view_review_show_impl(unsigned int requireReply) {
 
 void splitValueField() {
     print_value2("");
-    const uint16_t vlen = strnlen(viewdata.value), MAX_CHARS_PER_VALUE1_LINE;
+    const uint16_t vlen = strnlen(viewdata.value, MAX_CHARS_PER_VALUE1_LINE);
     if (vlen > MAX_CHARS_PER_VALUE2_LINE - 1) {
         snprintf(viewdata.value2, MAX_CHARS_PER_VALUE2_LINE, "%s", viewdata.value + MAX_CHARS_PER_VALUE_LINE);
         viewdata.value[MAX_CHARS_PER_VALUE_LINE] = 0;
