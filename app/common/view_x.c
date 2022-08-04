@@ -37,7 +37,7 @@
 #if defined(TARGET_NANOX) || defined(TARGET_NANOS2)
 
 void account_enabled();
-void blind_enabled();
+void shortcut_enabled();
 
 static void h_expert_toggle();
 static void h_expert_update();
@@ -54,9 +54,9 @@ static void h_account_update();
 static void h_secret_click();
 #endif
 
-#ifdef APP_BLIND_MODE_ENABLED
-static void h_blind_toggle();
-static void h_blind_update();
+#ifdef SHORTCUT_MODE_ENABLED
+static void h_shortcut_toggle();
+static void h_shortcut_update();
 #endif
 
 #define MAX_REVIEW_UX_SCREENS 10
@@ -88,8 +88,8 @@ UX_STEP_CB(ux_idle_flow_6_step, pb, os_sched_exit(-1), { &C_icon_dashboard, "Qui
 UX_STEP_CB_INIT(ux_idle_flow_7_step, bn,  h_account_update(), h_account_toggle(), { "Account:", viewdata.value, });
 #endif
 
-#ifdef APP_BLIND_MODE_ENABLED
-UX_STEP_CB_INIT(ux_idle_flow_8_step, bn,  h_blind_update(), h_blind_toggle(), { "Blind signing:", viewdata.value, });
+#ifdef SHORTCUT_MODE_ENABLED
+UX_STEP_CB_INIT(ux_idle_flow_8_step, bn,  h_shortcut_update(), h_shortcut_toggle(), { "Shortcut mode:", viewdata.value, });
 #endif
 
 const ux_flow_step_t *const ux_idle_flow [] = {
@@ -98,7 +98,7 @@ const ux_flow_step_t *const ux_idle_flow [] = {
 #ifdef APP_ACCOUNT_MODE_ENABLED
   &ux_idle_flow_7_step,
 #endif
-#ifdef APP_BLIND_MODE_ENABLED
+#ifdef SHORTCUT_MODE_ENABLED
   &ux_idle_flow_8_step,
 #endif
   &ux_idle_flow_3_step,
@@ -140,7 +140,7 @@ UX_STEP_INIT(ux_review_flow_2_end_step, NULL, NULL, { h_review_loop_end(); });
 UX_STEP_VALID(ux_review_flow_3_step, pb, h_approve(0), { &C_icon_validate_14, APPROVE_LABEL });
 UX_STEP_VALID(ux_review_flow_4_step, pb, h_reject(review_type), { &C_icon_crossmark, REJECT_LABEL });
 
-UX_STEP_CB_INIT(ux_review_flow_5_step, pb,  NULL, h_shortcut(0), { &C_icon_eye, BLIND_SIGNING_STR });
+UX_STEP_CB_INIT(ux_review_flow_5_step, pb,  NULL, h_shortcut(0), { &C_icon_eye, SHORTCUT_STR });
 
 //////////////////////////
 //////////////////////////
@@ -261,19 +261,19 @@ void h_account_update() {
 }
 #endif
 
-#ifdef APP_BLIND_MODE_ENABLED
-void h_blind_toggle() {
-    if (app_mode_expert() && !app_mode_blind()) {
-        blind_enabled();
+#ifdef SHORTCUT_MODE_ENABLED
+void h_shortcut_toggle() {
+    if (app_mode_expert() && !app_mode_shortcut()) {
+        shortcut_enabled();
         return;
     }
-    app_mode_set_blind(0);
+    app_mode_set_shortcut(0);
     ux_flow_init(0, ux_idle_flow, &ux_idle_flow_8_step);
 }
 
-void h_blind_update() {
+void h_shortcut_update() {
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "disabled");
-    if (app_mode_blind()) {
+    if (app_mode_shortcut()) {
         snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "enabled");
     }
 }
@@ -360,7 +360,7 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t* const st
     case REVIEW_TXN:
     default:
         ux_review_flow[index++] = &ux_review_flow_1_review_title;
-        if(app_mode_blind()) {
+        if(app_mode_shortcut()) {
             ux_review_flow[index++] = &ux_review_flow_5_step;
         }
         break;
