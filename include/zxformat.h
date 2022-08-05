@@ -74,7 +74,7 @@ __Z_INLINE void bip32_to_str(char *s, uint32_t max, const uint32_t *path, uint8_
         // Warning: overcomplicated because Ledger's snprintf does not return number of written bytes
 
         snprintf(s + offset, max - offset, "%d", path[i] & 0x7FFFFFFFu);
-        written = strlen(s + offset);
+        written = strnlen(s + offset, max - offset);
         if (written == 0 || written >= max - offset) {
             snprintf(s, max, "ERROR");
             return;
@@ -83,7 +83,7 @@ __Z_INLINE void bip32_to_str(char *s, uint32_t max, const uint32_t *path, uint8_
 
         if ((path[i] & 0x80000000u) != 0) {
             snprintf(s + offset, max - offset, "'");
-            written = strlen(s + offset);
+            written = strnlen(s + offset, max - offset);
             if (written == 0 || written >= max - offset) {
                 snprintf(s, max, "ERROR");
                 return;
@@ -93,7 +93,7 @@ __Z_INLINE void bip32_to_str(char *s, uint32_t max, const uint32_t *path, uint8_
 
         if (i != pathLen - 1) {
             snprintf(s + offset, max - offset, "/");
-            written = strlen(s + offset);
+            written = strnlen(s + offset, max - offset);
             if (written == 0 || written >= max - offset) {
                 snprintf(s, max, "ERROR");
                 return;
@@ -233,7 +233,7 @@ __Z_INLINE uint16_t fpuint64_to_str(char *out, uint16_t outLen, const uint64_t v
     MEMZERO(buffer, sizeof(buffer));
     uint64_to_str(buffer, sizeof(buffer), value);
     fpstr_to_str(out, outLen, buffer, decimals);
-    return (uint16_t) strlen(out);
+    return (uint16_t)strnlen(out, outLen);
 }
 
 __Z_INLINE void number_inplace_trimming(char *s, uint8_t non_trimmed) {

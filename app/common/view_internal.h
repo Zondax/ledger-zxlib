@@ -43,6 +43,45 @@
 #define APPROVE_LABEL "APPROVE"
 #define REJECT_LABEL "REJECT"
 
+#define SHORTCUT_TITLE "Skip"
+#define SHORTCUT_VALUE "fields"
+#define SHORTCUT_STR "Skip fields"
+
+//Review string can be customizable in each app
+#if !defined(REVIEW_SCREEN_TITLE) && !defined(REVIEW_SCREEN_TX_VALUE) && !defined(REVIEW_SCREEN_ADDR_VALUE)
+    #define REVIEW_SCREEN_TITLE "Please"
+    #define REVIEW_SCREEN_TXN_VALUE "review"
+    #define REVIEW_SCREEN_ADDR_VALUE "review"
+#endif
+
+static const char* review_key = REVIEW_SCREEN_TITLE;
+static const char* review_txvalue = REVIEW_SCREEN_TXN_VALUE;
+static const char* review_addrvalue = REVIEW_SCREEN_ADDR_VALUE;
+static const char* review_keyconfig = "Review";
+static const char* review_configvalue = "configuration";
+
+static const char* shortcut_key = SHORTCUT_TITLE;
+static const char* shortcut_value = SHORTCUT_VALUE;
+
+#if defined(TARGET_NANOS)
+    #if defined(REVIEW_SCREEN_ENABLED) && defined(SHORTCUT_MODE_ENABLED)
+        #define INTRO_PAGES 2
+    #elif defined(REVIEW_SCREEN_ENABLED) || defined(SHORTCUT_MODE_ENABLED)
+        #define INTRO_PAGES 1
+    #else
+        #define INTRO_PAGES 0
+    #endif
+#else
+    #define INTRO_PAGES 0
+#endif
+
+typedef enum {
+  REVIEW_UI = 0,
+  REVIEW_ADDRESS,
+  REVIEW_TXN,
+} review_type_e;
+
+
 #if defined(TARGET_NANOS)
 #define INCLUDE_ACTIONS_AS_ITEMS 2
 #define INCLUDE_ACTIONS_COUNT (INCLUDE_ACTIONS_AS_ITEMS-1)
@@ -119,6 +158,8 @@ void h_paging_increase();
 bool h_paging_can_decrease();
 
 void h_paging_decrease();
+
+bool h_paging_intro_screen();
 
 void view_review_show_impl(unsigned int requireReply);
 

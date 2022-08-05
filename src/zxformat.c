@@ -99,7 +99,7 @@ uint8_t intstr_to_fpstr_inplace(char *number, size_t number_max_size, uint8_t de
         const uint16_t padSize = decimalPlaces - numChars + 1;
         MEMMOVE(number + padSize, number, numChars);
         MEMSET(number, '0', padSize);
-        numChars = strlen(number);
+        numChars = strnlen(number, number_max_size);
     }
 
     // add decimal point
@@ -107,14 +107,13 @@ uint8_t intstr_to_fpstr_inplace(char *number, size_t number_max_size, uint8_t de
     MEMMOVE(number + pointPosition + 1, number + pointPosition, decimalPlaces);  // shift content
     number[pointPosition] = '.';
 
-    numChars = strlen(number);
+    numChars = strnlen(number, number_max_size);
     return numChars;
 }
 
 size_t z_strlen(const char *buffer, size_t maxSize) {
     if (buffer == NULL) return 0;
-    const size_t tmp = strlen(buffer);
-    return tmp < maxSize ? tmp : maxSize;
+    return strnlen(buffer, maxSize);
 }
 
 zxerr_t z_str3join(char *buffer, size_t bufferSize, const char *prefix, const char *suffix) {

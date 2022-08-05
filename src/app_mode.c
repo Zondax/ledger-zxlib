@@ -23,6 +23,7 @@ typedef struct {
 
 typedef struct {
     uint8_t secret;
+    uint8_t shortcut;
 } app_mode_temporary_t;
 
 app_mode_temporary_t app_mode_temporary;
@@ -37,6 +38,7 @@ app_mode_persistent_t NV_CONST N_appmode_impl __attribute__ ((aligned(64)));
 
 void app_mode_reset(){
     app_mode_temporary.secret = 0;
+    app_mode_temporary.shortcut = 0;
 }
 
 bool app_mode_expert() {
@@ -73,6 +75,7 @@ void app_mode_reset() {
     app_mode.expert = 0;
     app_mode.account = 0;
     app_mode_temporary.secret = 0;
+    app_mode_temporary.shortcut = 0;
 }
 
 bool app_mode_expert() {
@@ -104,4 +107,12 @@ bool app_mode_secret() {
 
 void app_mode_set_secret(uint8_t val) {
     app_mode_temporary.secret = val;
+}
+
+bool app_mode_shortcut() {
+    return app_mode_temporary.shortcut;
+}
+
+void app_mode_set_shortcut(uint8_t val) {
+    app_mode_temporary.shortcut = val;
 }
