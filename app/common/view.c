@@ -126,6 +126,14 @@ void h_paging_increase() {
     }
 }
 
+void h_paging_next_item() {
+    // passed page count, go to next index
+    if (viewdata.itemCount > 0 && viewdata.itemIdx < (viewdata.itemCount - 1 + INCLUDE_ACTIONS_COUNT)) {
+        viewdata.itemIdx++;
+        viewdata.pageIdx = 0;
+    }
+}
+
 bool h_paging_can_decrease() {
     if (viewdata.pageIdx != 0) {
         zemu_log_stack("h_paging_can_decrease");

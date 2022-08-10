@@ -48,6 +48,8 @@ static void h_review_loop_end();
 #ifdef APP_ACCOUNT_MODE_ENABLED
 static void h_account_toggle();
 static void h_account_update();
+void account_callback(int8_t *displayIdx, uint8_t *pageIdx, uint8_t pageCount);
+static void dummy_callback(unsigned int _);
 #endif
 
 #ifdef APP_SECRET_MODE_ENABLED
@@ -135,8 +137,13 @@ UX_FLOW_DEF_NOCB(ux_review_flow_2_review_title, pbb, { &C_icon_app, REVIEW_SCREE
 UX_FLOW_DEF_NOCB(ux_review_flow_3_review_title, pbb, { &C_icon_app, "Review", "configuration",});
 
 UX_STEP_INIT(ux_review_flow_2_start_step, NULL, NULL, { h_review_loop_start(); });
-UX_STEP_NOCB_INIT(ux_review_flow_2_step, bnnn_paging, { h_review_loop_inside(); }, { .title = viewdata.key, .text = viewdata.value, });
+
+// UX_STEP_NOCB_INIT(ux_review_flow_2_step, bnnn_paging, { h_review_loop_inside(); }, { .title = viewdata.key, .text = viewdata.value, });
+UX_STEP_CB_INIT(ux_review_flow_2_step, bnnn_paging, h_review_loop_inside(), dummy_callback(0),
+                { .title = viewdata.key, .text = viewdata.value, });
+
 UX_STEP_INIT(ux_review_flow_2_end_step, NULL, NULL, { h_review_loop_end(); });
+
 UX_STEP_VALID(ux_review_flow_3_step, pb, h_approve(0), { &C_icon_validate_14, APPROVE_LABEL });
 UX_STEP_VALID(ux_review_flow_4_step, pb, h_reject(review_type), { &C_icon_crossmark, REJECT_LABEL });
 
@@ -246,7 +253,7 @@ void h_expert_update() {
 
 #ifdef APP_ACCOUNT_MODE_ENABLED
 void h_account_toggle() {
-    if(app_mode_expert()) {
+    if(true) {
         account_enabled();
     } else {
         ux_flow_init(0, ux_idle_flow, &ux_idle_flow_7_step);
@@ -254,10 +261,17 @@ void h_account_toggle() {
 }
 
 void h_account_update() {
+    ZEMU_LOGF(100, "ACCOUNT UPDATE\n")
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, ACCOUNT_DEFAULT);
     if (app_mode_account()) {
         snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, ACCOUNT_SECONDARY);
     }
+}
+
+void dummy_callback(unsigned int _){
+    ZEMU_LOGF(100, "DUMMY CALLBACK\n")
+    account_callback(&viewdata.itemIdx, &viewdata.pageIdx, viewdata.pageCount);
+    ux_flow_init(0, ux_review_flow, &ux_review_flow_2_step);
 }
 #endif
 
@@ -268,7 +282,7 @@ void h_shortcut_toggle() {
         return;
     }
     app_mode_set_shortcut(0);
-    ux_flow_init(0, ux_idle_flow, &ux_idle_flow_8_step);
+    ux_flow_init(0, ux_flow_Review, &ux_idle_flow_8_step);
 }
 
 void h_shortcut_update() {

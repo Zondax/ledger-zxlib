@@ -154,6 +154,7 @@ void h_paging_init();
 bool h_paging_can_increase();
 
 void h_paging_increase();
+void h_paging_next_item();
 
 bool h_paging_can_decrease();
 
