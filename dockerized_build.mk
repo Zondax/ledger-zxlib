@@ -225,13 +225,13 @@ dev_ca_delete: check_python
 	@python -m ledgerblue.resetCustomCA --targetId 0x31100004
 
 # This target will setup a custom developer certificate
-.PHONY: dev_ca2
-dev_ca2: check_python
-	@python -m ledgerblue.setupCustomCA --targetId 0x33000004 --public $(SCP_PUBKEY) --name zondax
+.PHONY: dev_caS2
+dev_caS2: check_python
+	@python -m ledgerblue.setupCustomCA --targetId 0x33100004 --public $(SCP_PUBKEY) --name zondax
 
-.PHONY: dev_ca_delete2
-dev_ca_delete2: check_python
-	@python -m ledgerblue.resetCustomCA --targetId 0x33000004
+.PHONY: dev_ca_deleteS2
+dev_ca_deleteS2: check_python
+	@python -m ledgerblue.resetCustomCA --targetId 0x33100004
 
 ########################## VUE Section ###############################
 
