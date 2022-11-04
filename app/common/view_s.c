@@ -204,19 +204,19 @@ const bagl_element_t *view_prepro(const bagl_element_t *element) {
             if (!h_paging_can_decrease()){
                 return NULL;
             }
-            UX_CALLBACK_SET_INTERVAL(2000);
+            UX_CALLBACK_SET_INTERVAL(2000)
             break;
         case UIID_ICONRIGHT:
             if (!h_paging_can_increase()){
                 return NULL;
             }
-            UX_CALLBACK_SET_INTERVAL(2000);
+            UX_CALLBACK_SET_INTERVAL(2000)
             break;
         case UIID_ICONREVIEW:
             if (!h_paging_intro_screen()){
                 return NULL;
             }
-            UX_CALLBACK_SET_INTERVAL(2000);
+            UX_CALLBACK_SET_INTERVAL(2000)
             break;
         case UIID_LABELSCROLL:
             UX_CALLBACK_SET_INTERVAL(
@@ -240,7 +240,7 @@ void h_review_update() {
     zxerr_t err = h_review_update_data();
     switch(err) {
         case zxerr_ok:
-            UX_DISPLAY(view_review, view_prepro);
+            UX_DISPLAY(view_review, view_prepro)
             break;
         default:
             view_error_show();
@@ -298,11 +298,11 @@ void view_idle_show_impl(uint8_t item_idx, char *statusString) {
 void view_message_impl(char *title, char *message) {
     snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", title);
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "%s", message);
-    UX_DISPLAY(view_message, view_prepro_idle);
+    UX_DISPLAY(view_message, view_prepro_idle)
 }
 
 void view_error_show_impl() {
-    UX_DISPLAY(view_error, view_prepro);
+    UX_DISPLAY(view_error, view_prepro)
 }
 
 void h_expert_toggle() {
@@ -381,7 +381,7 @@ void view_review_show_impl(unsigned int requireReply) {
     zxerr_t err = h_review_update_data();
     switch(err) {
         case zxerr_ok:
-            UX_DISPLAY(view_review, view_prepro);
+            UX_DISPLAY(view_review, view_prepro)
             break;
         default:
             view_error_show();
@@ -391,7 +391,7 @@ void view_review_show_impl(unsigned int requireReply) {
 
 void splitValueField() {
     print_value2("");
-    const uint16_t vlen = strnlen(viewdata.value, MAX_CHARS_PER_VALUE1_LINE);
+    const uint16_t vlen = (uint16_t) strnlen(viewdata.value, MAX_CHARS_PER_VALUE1_LINE);
     if (vlen > MAX_CHARS_PER_VALUE2_LINE - 1) {
         snprintf(viewdata.value2, MAX_CHARS_PER_VALUE2_LINE, "%s", viewdata.value + MAX_CHARS_PER_VALUE_LINE);
         viewdata.value[MAX_CHARS_PER_VALUE_LINE] = 0;
@@ -404,7 +404,7 @@ void splitValueAddress() {
         exceeding_max = exceed_pixel_in_display(len);
     }
     print_value2("");
-    const uint16_t vlen = strnlen(viewdata.value, MAX_CHARS_PER_VALUE1_LINE);
+    const uint16_t vlen = (uint16_t) strnlen(viewdata.value, MAX_CHARS_PER_VALUE1_LINE);
     //if viewdata.value == NULL --> len = 0
     if (vlen > len && len > 0) {
         snprintf(viewdata.value2, MAX_CHARS_PER_VALUE2_LINE, "%s", viewdata.value + len);
