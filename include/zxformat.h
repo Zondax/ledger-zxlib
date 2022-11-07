@@ -22,6 +22,8 @@ extern "C" {
 #include "zxmacros.h"
 #include "zxerror.h"
 
+#define IS_PRINTABLE(c) ((c >= 0x20 && c <= 0x7e) || (c >= 0x80 && c <= 0xFF))
+
 #define NUM_TO_STR(TYPE) __Z_INLINE const char * TYPE##_to_str(char *data, int dataLen, TYPE##_t number) { \
     if (dataLen < 2) return "Buffer too small";     \
     MEMZERO(data, dataLen);                         \
