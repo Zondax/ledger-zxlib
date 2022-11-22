@@ -102,6 +102,7 @@ typedef struct {
     viewfunc_getItem_t viewfuncGetItem;
     viewfunc_getNumItems_t viewfuncGetNumItems;
     viewfunc_accept_t viewfuncAccept;
+    viewfunc_initialize_t viewfuncInitialize;
 
 #ifdef APP_SECRET_MODE_ENABLED
     uint8_t secret_click_count;

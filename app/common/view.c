@@ -65,6 +65,11 @@ void h_error_accept(__Z_UNUSED unsigned int _) {
 }
 
 void h_initialize(__Z_UNUSED unsigned int _) {
+    ZEMU_LOGF(50, "Initialize function\n")
+    if (viewdata.viewfuncInitialize != NULL) {
+        viewdata.viewfuncInitialize();
+    }
+
     view_idle_show(0, NULL);
     UX_WAIT();
 }
@@ -365,6 +370,10 @@ void view_init(void) {
 #endif
 }
 
+void view_initialize_show(uint8_t item_idx, char *statusString) {
+    view_initialize_show_impl(item_idx, statusString);
+}
+
 void view_idle_show(uint8_t item_idx, char *statusString) {
     view_idle_show_impl(item_idx, statusString);
 }
@@ -379,6 +388,10 @@ void view_review_init(viewfunc_getItem_t viewfuncGetItem,
     viewdata.viewfuncGetItem = viewfuncGetItem;
     viewdata.viewfuncGetNumItems = viewfuncGetNumItems;
     viewdata.viewfuncAccept = viewfuncAccept;
+}
+
+void view_initialize_init(viewfunc_initialize_t viewFuncInit) {
+    viewdata.viewfuncInitialize = viewFuncInit;
 }
 
 void view_review_show(unsigned int requireReply) {

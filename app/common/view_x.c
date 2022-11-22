@@ -39,6 +39,7 @@
 void account_enabled();
 void shortcut_enabled();
 
+void h_initialize();
 static void h_expert_toggle();
 static void h_expert_update();
 static void h_review_loop_start();
@@ -105,6 +106,21 @@ const ux_flow_step_t *const ux_idle_flow [] = {
   &ux_idle_flow_4_step,
   &ux_idle_flow_5_step,
   &ux_idle_flow_6_step,
+  FLOW_END_STEP,
+};
+
+///////////
+UX_STEP_CB_INIT(ux_menu_init_flow_2_step, bn,  NULL, h_initialize(), { "Click to", "Initialize", });
+UX_STEP_NOCB(ux_menu_init_flow_4_step, bn, { "Developed by:", "Zondax.ch", });
+
+const ux_flow_step_t *const ux_menu_initialize [] = {
+  &ux_idle_flow_1_step,
+  &ux_menu_init_flow_2_step,
+  &ux_idle_flow_3_step,
+  &ux_menu_init_flow_4_step,
+  &ux_idle_flow_5_step,
+  &ux_idle_flow_6_step,
+
   FLOW_END_STEP,
 };
 
@@ -328,6 +344,19 @@ void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
         ux_stack_push();
     }
     ux_flow_init(0, ux_idle_flow, NULL);
+}
+
+void view_initialize_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
+    if (statusString == NULL ) {
+        snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", "Not Ready");
+    } else {
+        snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", statusString);
+    }
+
+    if(G_ux.stack_count == 0) {
+        ux_stack_push();
+    }
+     ux_flow_init(0, ux_menu_initialize, NULL);
 }
 
 void view_review_show_impl(unsigned int requireReply){

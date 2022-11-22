@@ -104,9 +104,8 @@ const ux_menu_entry_t menu_main[] = {
 };
 
 const ux_menu_entry_t menu_initialize[] = {
-    {NULL, NULL, 0, &C_icon_app, MENU_MAIN_APP_LINE1, viewdata.key, 33, 12},
+    {NULL, NULL, 0, &C_icon_app, MENU_MAIN_APP_LINE1, "Not Ready", 33, 12},
     {NULL, h_initialize, 0, &C_icon_app, "Click to", "Initialize", 33, 12},
-    {NULL, h_expert_toggle, 0, &C_icon_app, "Expert mode:", viewdata.value, 33, 12},
     {NULL, NULL, 0, &C_icon_app, APPVERSION_LINE1, APPVERSION_LINE2, 33, 12},
     {NULL, NULL, 0, &C_icon_app, "Developed by:", "Zondax.ch", 33, 12},
     {NULL, NULL, 0, &C_icon_app, "License: ", "Apache 2.0", 33, 12},
