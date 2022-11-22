@@ -39,6 +39,7 @@
 void account_enabled();
 void shortcut_enabled();
 
+void h_initialize();
 static void h_expert_toggle();
 static void h_expert_update();
 static void h_review_loop_start();
@@ -105,6 +106,31 @@ const ux_flow_step_t *const ux_idle_flow [] = {
   &ux_idle_flow_4_step,
   &ux_idle_flow_5_step,
   &ux_idle_flow_6_step,
+  FLOW_END_STEP,
+};
+
+///////////
+UX_STEP_NOCB(ux_menu_init_flow_1_step, pbb, { &C_icon_app, MENU_MAIN_APP_LINE1, "Not Ready",});
+UX_STEP_CB_INIT(ux_menu_init_flow_2_step, bn,  NULL, h_initialize(), { "Click to", "Initialize", });
+UX_STEP_NOCB(ux_menu_init_flow_3_step, bn, { APPVERSION_LINE1, APPVERSION_LINE2, });
+
+#ifdef APP_SECRET_MODE_ENABLED
+UX_STEP_CB(ux_menu_init_flow_4_step, bn, h_secret_click(), { "Developed by:", "Zondax.ch", });
+#else
+UX_STEP_NOCB(ux_menu_init_flow_4_step, bn, { "Developed by:", "Zondax.ch", });
+#endif
+
+UX_STEP_NOCB(ux_menu_init_flow_5_step, bn, { "License:", "Apache 2.0", });
+UX_STEP_CB(ux_menu_init_flow_6_step, pb, os_sched_exit(-1), { &C_icon_dashboard, "Quit",});
+
+
+const ux_flow_step_t *const ux_menu_initialize [] = {
+  &ux_menu_init_flow_1_step,
+  &ux_menu_init_flow_2_step,
+  &ux_menu_init_flow_3_step,
+  &ux_menu_init_flow_4_step,
+  &ux_menu_init_flow_5_step,
+  &ux_menu_init_flow_6_step,
   FLOW_END_STEP,
 };
 
@@ -328,6 +354,15 @@ void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
         ux_stack_push();
     }
     ux_flow_init(0, ux_idle_flow, NULL);
+}
+
+void view_initialize_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
+    if (statusString == NULL ) {
+        snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", MENU_MAIN_APP_LINE2);
+    } else {
+        snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", statusString);
+    }
+     ux_flow_init(0, ux_menu_initialize, NULL);
 }
 
 void view_review_show_impl(unsigned int requireReply){

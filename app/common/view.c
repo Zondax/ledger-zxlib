@@ -67,6 +67,8 @@ void h_error_accept(__Z_UNUSED unsigned int _) {
 void h_initialize(__Z_UNUSED unsigned int _) {
     view_idle_show(0, NULL);
     UX_WAIT();
+    app_crypto_init();
+    view_idle_show(0, NULL);
 }
 
 uint8_t getIntroPages() {
@@ -363,6 +365,10 @@ void view_init(void) {
 #ifdef APP_SECRET_MODE_ENABLED
     viewdata.secret_click_count = 0;
 #endif
+}
+
+void view_initialize_show(uint8_t item_idx, char *statusString) {
+    view_initialize_show_impl(item_idx, statusString);
 }
 
 void view_idle_show(uint8_t item_idx, char *statusString) {
