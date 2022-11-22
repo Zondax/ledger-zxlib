@@ -66,11 +66,12 @@ void h_error_accept(__Z_UNUSED unsigned int _) {
 
 void h_initialize(__Z_UNUSED unsigned int _) {
     ZEMU_LOGF(50, "Initialize function\n")
-    view_idle_show(0, NULL);
-    UX_WAIT();
     if (viewdata.viewfuncInitialize != NULL) {
         viewdata.viewfuncInitialize();
     }
+
+    view_idle_show(0, NULL);
+    UX_WAIT();
 }
 
 uint8_t getIntroPages() {

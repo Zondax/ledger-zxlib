@@ -37,7 +37,7 @@ typedef zxerr_t (*viewfunc_getItem_t)(int8_t displayIdx,
 
 typedef void (*viewfunc_accept_t)();
 
-typedef void (*viewfunc_initialize_t)();
+typedef zxerr_t (*viewfunc_initialize_t)();
 
 #ifdef APP_SECRET_MODE_ENABLED
 zxerr_t secret_enabled();
