@@ -502,6 +502,13 @@ static zxerr_t extractTime(uint64_t t, uint8_t *sec, uint8_t *min, uint8_t *hour
     return zxerr_ok;
 }
 
+zxerr_t decodeTime(timedata_t* td, uint64_t t) {
+    CHECK_ZXERR(extractTime(t, &td->tm_sec, &td->tm_min, &td->tm_hour,
+                            &td->tm_day, &td->tm_mon, &td->tm_year))
+    td->monthName = (char*) getMonth(td->tm_mon);
+    return zxerr_ok;
+}
+
 zxerr_t printTime(char *out, uint16_t outLen, uint64_t t) {
     uint8_t tm_sec;
     uint8_t tm_min;
