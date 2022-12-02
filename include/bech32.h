@@ -20,6 +20,7 @@ extern "C" {
 #endif
 
 #include "zxerror.h"
+#include "segwit_addr.h"
 
 #define MAX_INPUT_SIZE 64
 
@@ -32,7 +33,8 @@ zxerr_t bech32EncodeFromBytes(char *out,
                               const char *hrp,
                               const uint8_t *in,
                               size_t in_len,
-                              uint8_t pad);
+                              uint8_t pad,
+                              bech32_encoding enc);
 
 #ifdef __cplusplus
 }

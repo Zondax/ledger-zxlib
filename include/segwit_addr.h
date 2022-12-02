@@ -64,23 +64,36 @@ int segwit_addr_decode(
         const char *addr
 );
 
-/** Encode a Bech32 string
+/** Supported encodings. */
+typedef enum {
+    BECH32_ENCODING_NONE,
+    BECH32_ENCODING_BECH32,
+    BECH32_ENCODING_BECH32M
+} bech32_encoding;
+
+#define BECH32M_CONST   0x2bc830a3
+#define BECH32_CONST    1
+
+/** Encode a Bech32 or Bech32m string
  *
  *  Out: output:  Pointer to a buffer of size strlen(hrp) + data_len + 8 that
  *                will be updated to contain the null-terminated Bech32 string.
  *  In: hrp :     Pointer to the null-terminated human readable part.
  *      data :    Pointer to an array of 5-bit values.
  *      data_len: Length of the data array.
+ *      enc:      Which encoding to use (BECH32_ENCODING_BECH32{,M}).
+
  *  Returns 1 if successful.
  */
 int bech32_encode(
         char *output,
         const char *hrp,
         const uint8_t *data,
-        size_t data_len
+        size_t data_len,
+        bech32_encoding enc
 );
 
-/** Decode a Bech32 string
+/** Decode a Bech32 or Bech32m string
  *
  *  Out: hrp:      Pointer to a buffer of size strlen(input) - 6. Will be
  *                 updated to contain the null-terminated human readable part.
@@ -89,9 +102,11 @@ int bech32_encode(
  *       data_len: Pointer to a size_t that will be updated to be the number
  *                 of entries in data.
  *  In: input:     Pointer to a null-terminated Bech32 string.
- *  Returns 1 if successful.
+ *  Returns BECH32_ENCODING_BECH32{,M} to indicate decoding was successful
+ *  with the specified encoding standard. BECH32_ENCODING_NONE is returned if
+ *  decoding failed.
  */
-int bech32_decode(
+bech32_encoding bech32_decode(
         char *hrp,
         uint8_t *data,
         size_t *data_len,

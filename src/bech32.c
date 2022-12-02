@@ -26,7 +26,8 @@ zxerr_t bech32EncodeFromBytes(char *out,
                               const char *hrp,
                               const uint8_t *in,
                               size_t in_len,
-                              uint8_t pad) {
+                              uint8_t pad,
+                              bech32_encoding enc) {
     MEMZERO(out, out_len);
 
     if (in_len > MAX_INPUT_SIZE) {
@@ -49,7 +50,7 @@ zxerr_t bech32EncodeFromBytes(char *out,
         return zxerr_out_of_bounds;
     }
 
-    int err = bech32_encode(out, hrp, tmp_data, tmp_size);
+    int err = bech32_encode(out, hrp, tmp_data, tmp_size, enc);
     if (err == 0) {
         return zxerr_encoding_failed;
     }
