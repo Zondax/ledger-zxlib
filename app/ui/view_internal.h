@@ -81,16 +81,6 @@ typedef enum {
   REVIEW_TXN,
 } review_type_e;
 
-
-#if defined(TARGET_NANOS)
-#define INCLUDE_ACTIONS_AS_ITEMS 2
-#define INCLUDE_ACTIONS_COUNT (INCLUDE_ACTIONS_AS_ITEMS-1)
-typedef uint8_t max_char_display;
-#else
-#define INCLUDE_ACTIONS_COUNT 0
-typedef int max_char_display;
-#endif
-
 typedef struct {
     struct {
         char key[MAX_CHARS_PER_KEY_LINE];
@@ -129,10 +119,6 @@ extern view_t viewdata;
 #define print_value2(...) snprintf(viewdata.value2, sizeof(viewdata.value2), __VA_ARGS__);
 #endif
 
-void splitValueField();
-void splitValueAddress();
-max_char_display get_max_char_per_line();
-
 ///////////////////////////////////////////////
 ///////////////////////////////////////////////
 ///////////////////////////////////////////////
@@ -141,8 +127,6 @@ max_char_display get_max_char_per_line();
 ///////////////////////////////////////////////
 ///////////////////////////////////////////////
 ///////////////////////////////////////////////
-
-void view_initialize_show_impl(uint8_t item_idx, char *statusString);
 
 void view_idle_show_impl(uint8_t item_idx, char *statusString);
 
@@ -152,23 +136,13 @@ void view_error_show_impl();
 
 void h_paging_init();
 
-bool h_paging_can_increase();
-
-void h_paging_increase();
-
-bool h_paging_can_decrease();
-
-void h_paging_decrease();
-
-bool h_paging_intro_screen();
-
 void view_review_show_impl(unsigned int requireReply);
+
+void view_initialize_show_impl(uint8_t item_idx, char *statusString);
 
 void h_approve(unsigned int _);
 
 void h_reject(unsigned int requireReply);
-
-void h_review_action(unsigned int requireReply);
 
 void h_review_update();
 
