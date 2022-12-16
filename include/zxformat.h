@@ -285,6 +285,66 @@ __Z_INLINE uint32_t array_to_hexstr(char *dst, uint16_t dstLen, const uint8_t *s
     return (uint32_t) (count * 2);
 }
 
+__Z_INLINE uint32_t array_to_hexstr_uppercase(char *dst, uint16_t dstLen, const uint8_t *src, uint8_t count) {
+    MEMZERO(dst, dstLen);
+    if (dstLen < (count * 2 + 1)) {
+        return 0;
+    }
+
+    const char hexchars[] = "0123456789ABCDEF";
+    for (uint8_t i = 0; i < count; i++, src++) {
+        *dst++ = hexchars[*src >> 4u];
+        *dst++ = hexchars[*src & 0x0Fu];
+    }
+    *dst = 0; // terminate string
+
+    return (uint32_t) (count * 2);
+}
+
+__Z_INLINE zxerr_t to_uppercase(uint8_t *letter) {
+    if (letter == NULL) {
+        return zxerr_no_data;
+    }
+    //Check if lowercase letter
+    if(*letter >= 0x61  && *letter <= 0x7A) {
+        *letter = *letter - 0x20;
+    }
+    return zxerr_ok;
+}
+
+__Z_INLINE zxerr_t to_lowercase(uint8_t *letter) {
+    if (letter == NULL) {
+        return zxerr_no_data;
+    }
+    //Check if uppercase letter
+    if(*letter >= 0x41  && *letter <= 0x5A) {
+        *letter = *letter + 0x20;
+    }
+    return zxerr_ok;
+}
+
+__Z_INLINE zxerr_t array_to_uppercase(uint8_t *input, uint16_t inputLen) {
+    if (input == NULL) {
+        return zxerr_no_data;
+    }
+
+    for (uint16_t i = 0; i < inputLen; i++) {
+        to_uppercase(input+i);
+    }
+    return zxerr_ok;
+}
+
+__Z_INLINE zxerr_t array_to_lowercase(uint8_t *input, uint16_t inputLen) {
+    if (input == NULL) {
+        return zxerr_no_data;
+    }
+
+    for (uint16_t i = 0; i < inputLen; i++) {
+        to_uppercase(input+i);
+    }
+    return zxerr_ok;
+}
+
 __Z_INLINE void pageStringExt(char *outValue, uint16_t outValueLen,
                               const char *inValue, uint16_t inValueLen,
                               uint8_t pageIdx, uint8_t *pageCount) {
