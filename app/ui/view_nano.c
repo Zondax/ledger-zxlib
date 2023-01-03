@@ -1,6 +1,5 @@
 /*******************************************************************************
-*   (c) 2018, 2019 Zondax GmbH
-*   (c) 2016 Ledger
+*   (c) 2018 - 2022 Zondax GmbH
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -14,6 +13,12 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
+#include "bolos_target.h"
+
+#if defined(TARGET_NANOS) || defined(TARGET_NANOS2) || defined(TARGET_NANOX)
+
+#include "view_internal.h"
+#include "view_nano.h"
 
 #include "view.h"
 #include "coin.h"
@@ -35,44 +40,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-view_t viewdata;
-unsigned int review_type = 0;
-
-void h_approve(__Z_UNUSED unsigned int _) {
-    zemu_log_stack("h_approve");
-
-    view_idle_show(0, NULL);
-    UX_WAIT();
-    if (viewdata.viewfuncAccept != NULL) {
-        viewdata.viewfuncAccept();
-    }
-}
-
-void h_reject(unsigned int requireReply) {
-    zemu_log_stack("h_reject");
-
-    view_idle_show(0, NULL);
-    UX_WAIT();
-    if(requireReply > 0) {
-        app_reject();
-    }
-}
-
-void h_error_accept(__Z_UNUSED unsigned int _) {
-    view_idle_show(0, NULL);
-    UX_WAIT();
-    app_reply_error();
-}
-
-void h_initialize(__Z_UNUSED unsigned int _) {
-    ZEMU_LOGF(50, "Initialize function\n")
-    if (viewdata.viewfuncInitialize != NULL) {
-        viewdata.viewfuncInitialize();
-    }
-
-    view_idle_show(0, NULL);
-    UX_WAIT();
-}
+extern unsigned int review_type;
 
 uint8_t getIntroPages() {
 #if defined(SHORTCUT_MODE_ENABLED) && defined(TARGET_NANOS)
@@ -87,18 +55,19 @@ bool h_paging_intro_screen() {
     return viewdata.itemIdx < getIntroPages();
 }
 
-///////////////////////////////////
-// Paging related
-
-void h_paging_init() {
-    zemu_log_stack("h_paging_init");
-
-    viewdata.itemIdx = 0;
-    viewdata.pageIdx = 0;
-    viewdata.pageCount = 1;
-    viewdata.itemCount = 0xFF;
+void h_initialize(__Z_UNUSED unsigned int _) {
+    view_idle_show(0, NULL);
+    UX_WAIT();
 }
 
+void view_error_show() {
+    snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "ERROR");
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "SHOWING DATA");
+    view_error_show_impl();
+}
+
+///////////////////////////////////
+// Paging related
 bool h_paging_can_increase() {
     if (viewdata.pageIdx + 1 < viewdata.pageCount) {
         zemu_log_stack("h_paging_can_increase");
@@ -147,9 +116,7 @@ bool h_paging_can_decrease() {
 }
 
 void h_paging_decrease() {
-    char buffer[50];
-    snprintf(buffer, sizeof(buffer), "h_paging_decrease Idx %d", viewdata.itemIdx);
-    zemu_log_stack(buffer);
+    ZEMU_LOGF(50, "h_paging_decrease Idx %d\n", viewdata.itemIdx)
 
     if (viewdata.pageIdx != 0) {
         viewdata.pageIdx--;
@@ -164,9 +131,6 @@ void h_paging_decrease() {
         viewdata.pageIdx = 255;
     }
 }
-
-///////////////////////////////////
-// Paging related
 
 #ifdef INCLUDE_ACTIONS_AS_ITEMS
 bool is_accept_item(){
@@ -337,7 +301,7 @@ zxerr_t h_review_update_data() {
         viewdata.itemCount++;
 
         if (viewdata.pageCount > 1) {
-            uint8_t keyLen = (uint8_t) strnlen(viewdata.key, MAX_CHARS_PER_KEY_LINE);
+            uint8_t keyLen = strnlen(viewdata.key, MAX_CHARS_PER_KEY_LINE);
             if (keyLen < MAX_CHARS_PER_KEY_LINE) {
                 snprintf(viewdata.key + keyLen,
                          MAX_CHARS_PER_KEY_LINE - keyLen,
@@ -358,50 +322,8 @@ zxerr_t h_review_update_data() {
 
 ///////////////////////////////////
 // General
-
 void io_seproxyhal_display(const bagl_element_t *element) {
-    io_seproxyhal_display_default((bagl_element_t *) element);
+    io_seproxyhal_display_default(element);
 }
 
-void view_init(void) {
-    UX_INIT();
-#ifdef APP_SECRET_MODE_ENABLED
-    viewdata.secret_click_count = 0;
 #endif
-}
-
-void view_initialize_show(uint8_t item_idx, char *statusString) {
-    view_initialize_show_impl(item_idx, statusString);
-}
-
-void view_idle_show(uint8_t item_idx, char *statusString) {
-    view_idle_show_impl(item_idx, statusString);
-}
-
-void view_message_show(char *title, char *message) {
-    view_message_impl(title, message);
-}
-
-void view_review_init(viewfunc_getItem_t viewfuncGetItem,
-                      viewfunc_getNumItems_t viewfuncGetNumItems,
-                      viewfunc_accept_t viewfuncAccept) {
-    viewdata.viewfuncGetItem = viewfuncGetItem;
-    viewdata.viewfuncGetNumItems = viewfuncGetNumItems;
-    viewdata.viewfuncAccept = viewfuncAccept;
-}
-
-void view_initialize_init(viewfunc_initialize_t viewFuncInit) {
-    viewdata.viewfuncInitialize = viewFuncInit;
-}
-
-void view_review_show(unsigned int requireReply) {
-    // Set > 0 to reply apdu message
-    view_review_show_impl(requireReply);
-}
-
-void view_error_show() {
-    snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "ERROR");
-    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "SHOWING DATA");
-    splitValueField();
-    view_error_show_impl();
-}

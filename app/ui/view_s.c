@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   (c) 2018, 2019 Zondax GmbH
+*   (c) 2018 - 2022 Zondax AG
 *   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,9 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
+#include "bolos_target.h"
+
+#if defined(TARGET_NANOS)
 
 #include "app_mode.h"
 #include "view.h"
@@ -24,15 +27,14 @@
 #include "zxmacros.h"
 #include "view_templates.h"
 #include "zxutils_ledger.h"
+#include "view_nano.h"
 
-#if defined(TARGET_NANOS)
 #define BAGL_WIDTH 128
 #define BAGL_HEIGHT 32
 #define BAGL_WIDTH_MARGIN 10
 
 static bool exceed_pixel_in_display(const uint8_t length);
 
-void h_initialize();
 void account_enabled();
 void shortcut_enabled();
 

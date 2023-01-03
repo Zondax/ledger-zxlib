@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   (c) 2018 - 2022 Zondax GmbH
+*   (c) 2018 - 2022 Zondax AG
 *   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,10 @@
 *  limitations under the License.
 ********************************************************************************/
 
+#include "bolos_target.h"
+
+#if defined(TARGET_NANOX) || defined(TARGET_NANOS2)
+
 #include "app_mode.h"
 #include "view.h"
 #include "view_internal.h"
@@ -25,6 +29,7 @@
 #include "zxmacros.h"
 #include "view_templates.h"
 #include "tx.h"
+#include "view_nano.h"
 
 #ifdef APP_SECRET_MODE_ENABLED
 #include "secret.h"
@@ -34,25 +39,22 @@
 #include <string.h>
 #include <stdio.h>
 
-#if defined(TARGET_NANOX) || defined(TARGET_NANOS2)
-
 void account_enabled();
 void shortcut_enabled();
 
-void h_initialize();
 static void h_expert_toggle();
 static void h_expert_update();
 static void h_review_loop_start();
 static void h_review_loop_inside();
 static void h_review_loop_end();
 
+#ifdef APP_SECRET_MODE_ENABLED
+static void h_secret_click();
+#endif
+
 #ifdef APP_ACCOUNT_MODE_ENABLED
 static void h_account_toggle();
 static void h_account_update();
-#endif
-
-#ifdef APP_SECRET_MODE_ENABLED
-static void h_secret_click();
 #endif
 
 #ifdef SHORTCUT_MODE_ENABLED

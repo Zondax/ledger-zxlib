@@ -14,7 +14,32 @@
 *  limitations under the License.
 ********************************************************************************/
 #pragma once
+#include "bolos_target.h"
+#include <stdint.h>
 
-#define ZXLIB_MAJOR     16
-#define ZXLIB_MINOR     0
-#define ZXLIB_PATCH     0
+#if defined(TARGET_NANOS)
+#define INCLUDE_ACTIONS_AS_ITEMS 2
+#define INCLUDE_ACTIONS_COUNT (INCLUDE_ACTIONS_AS_ITEMS-1)
+typedef uint8_t max_char_display;
+#else
+#define INCLUDE_ACTIONS_COUNT 0
+typedef int max_char_display;
+#endif
+
+void splitValueField();
+void splitValueAddress();
+max_char_display get_max_char_per_line();
+
+void h_initialize();
+
+bool h_paging_can_increase();
+
+void h_paging_increase();
+
+bool h_paging_can_decrease();
+
+void h_paging_decrease();
+
+bool h_paging_intro_screen();
+
+void h_review_action(unsigned int requireReply);
