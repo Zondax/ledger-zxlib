@@ -21,6 +21,7 @@ extern "C" {
 
 #include "zxmacros.h"
 #include "zxerror.h"
+#include "stdlib.h"
 
 #define IS_PRINTABLE(c) (c >= 0x20 && c <= 0x7e)
 
@@ -299,6 +300,23 @@ __Z_INLINE uint32_t array_to_hexstr_uppercase(char *dst, uint16_t dstLen, const 
     *dst = 0; // terminate string
 
     return (uint32_t) (count * 2);
+}
+
+__Z_INLINE uint32_t hexstr_to_array(uint8_t *dst, uint16_t dstLen, const char *src, const uint16_t srcLen) {
+    MEMZERO(dst, dstLen);
+    if (srcLen % 2 != 0 || dstLen < srcLen/2) {
+        return 0;
+    }
+
+    for (size_t i = 0; i < srcLen/2; i++) {
+        char byte_string[3];
+        byte_string[0] = src[i*2];
+        byte_string[1] = src[i*2 + 1];
+        byte_string[2] = '\0';
+        dst[i] = (uint8_t) strtol(byte_string, NULL, 16);
+    }
+
+  return srcLen/2;
 }
 
 __Z_INLINE zxerr_t to_uppercase(uint8_t *letter) {
