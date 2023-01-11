@@ -21,7 +21,6 @@ extern "C" {
 
 #include "zxmacros.h"
 #include "zxerror.h"
-#include "stdlib.h"
 
 #define IS_PRINTABLE(c) (c >= 0x20 && c <= 0x7e)
 
@@ -309,11 +308,11 @@ __Z_INLINE uint32_t hexstr_to_array(uint8_t *dst, uint16_t dstLen, const char *s
     }
 
     for (size_t i = 0; i < srcLen/2; i++) {
-        char byte_string[3];
-        byte_string[0] = src[i*2];
-        byte_string[1] = src[i*2 + 1];
-        byte_string[2] = '\0';
-        dst[i] = (uint8_t) strtol(byte_string, NULL, 16);
+        uint8_t ch0 = src[2 * i];
+        uint8_t ch1 = src[2 * i + 1];
+        uint8_t nib0 = (ch0 & 0xF) + (ch0 >> 6) | ((ch0 >> 3) & 0x8);
+        uint8_t nib1 = (ch1 & 0xF) + (ch1 >> 6) | ((ch1 >> 3) & 0x8);
+        dst[i] = (nib0 << 4) | nib1;
     }
 
   return srcLen/2;
