@@ -94,4 +94,59 @@ namespace {
         EXPECT_STREQ(buffer, "ERR???");
     }
 
+    TEST(FORMAT, array2hexstr_1) {
+        uint8_t s[] = {0x12,0x34,0x56,0x78};
+        char data[10];
+
+        auto length = array_to_hexstr(data, sizeof(data), s, sizeof(s));
+
+        EXPECT_STREQ(data, "12345678");
+    }
+
+    TEST(FORMAT, array2hexstr_2) {
+        uint8_t s[] = {0xFA, 0x5D, 0x34, 0x87};
+        char data[10];
+
+        auto length = array_to_hexstr(data, sizeof(data), s, sizeof(s));
+
+        EXPECT_STREQ(data, "FA5D3487");
+    }
+
+    TEST(FORMAT, array2hexstr_small_buffer) {
+        uint8_t s[] = {0xFA, 0x5D, 0x34, 0x87};
+        char data[4];
+
+        EXPECT_EQ(0, array_to_hexstr(data, sizeof(data), s, sizeof(s)));
+    }
+
+    TEST(FORMAT, hexstr2array_1) {
+        char s[] = "12345678";
+        uint8_t data[20];
+
+        auto length = hexstr_to_array(data, sizeof(data), s, strlen(s));
+
+        ASSERT_THAT(data[0], testing::Eq(0x12));
+        ASSERT_THAT(data[1], testing::Eq(0x34));
+        ASSERT_THAT(data[2], testing::Eq(0x56));
+        ASSERT_THAT(data[3], testing::Eq(0x78));
+    }
+
+    TEST(FORMAT, hexstr2array_2) {
+        char s[] = "FA2345DE";
+        uint8_t data[10];
+
+        auto length = hexstr_to_array(data, sizeof(data), s, strlen(s));
+
+        ASSERT_THAT(data[0], testing::Eq(0xFA));
+        ASSERT_THAT(data[1], testing::Eq(0x23));
+        ASSERT_THAT(data[2], testing::Eq(0x45));
+        ASSERT_THAT(data[3], testing::Eq(0xDE));
+    }
+
+     TEST(FORMAT, hexstr2array_odd_value) {
+        char s[] = "FA2345DEA";
+        uint8_t data[10];
+
+        EXPECT_EQ(0, hexstr_to_array(data, sizeof(data), s, strlen(s)));
+    }
 }
