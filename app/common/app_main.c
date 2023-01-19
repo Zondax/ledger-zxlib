@@ -135,7 +135,13 @@ void app_init() {
     USB_power(1);
 
     app_mode_reset();
+#ifdef HAVE_SWAP
+    if (!G_swap_state.called_from_swap) {
+        view_idle_show(0, NULL);
+    }
+#else
     view_idle_show(0, NULL);
+#endif // HAVE_SWAP
 
 #ifdef HAVE_BLE
     // Enable Bluetooth
