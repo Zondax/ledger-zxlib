@@ -145,6 +145,11 @@ void app_init() {
 
 #ifdef HAVE_BLE
     // Enable Bluetooth
+#ifdef HAVE_SWAP
+    if (G_swap_state.called_from_swap) {
+        memset(&G_io_asynch_ux_callback, 0, sizeof(G_io_asynch_ux_callback));
+    }
+#endif // HAVE_SWAP
     BLE_power(0, NULL);
     BLE_power(1, "Nano X");
 #endif // HAVE_BLE
