@@ -213,7 +213,7 @@ void app_main() {
             {
             #ifdef HAVE_SWAP
                 if (G_swap_state.called_from_swap && G_swap_state.should_exit) {
-                    os_lib_end();
+                    os_sched_exit(0);
                 }
             #endif
             }
