@@ -58,7 +58,7 @@ void view_message_show(char *title, char *message);
 /// view_error (error view)
 void view_error_show();
 
-void view_costum_error_show(char *title, char *statusString);
+void view_custom_error_show(char *title, char *statusString);
 
 void view_review_init(viewfunc_getItem_t viewfuncGetItem,
                       viewfunc_getNumItems_t viewfuncGetNumItems,
