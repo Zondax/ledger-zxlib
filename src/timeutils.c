@@ -444,109 +444,83 @@ const uint32_t yearLookup[] = {
 // ARM does not implement gmtime. This is a simple alternative implementation
 // based on section 4.16
 // https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html
-static zxerr_t extractTime(uint64_t t, uint8_t *sec, uint8_t *min, uint8_t *hour,
-                           uint16_t *day, uint8_t *month, uint16_t *year) {
+zxerr_t extractTime(uint64_t time, timedata_t *date) {
+    if (date == NULL) {
+        return zxerr_no_data;
+    }
+    MEMZERO(date, sizeof(timedata_t));
 
-    uint8_t tm_sec;
-    uint8_t tm_min;
-    uint8_t tm_hour;
-    uint16_t tm_day;
-    uint8_t tm_mon;
-    uint16_t tm_year;
+    date->tm_sec = (uint8_t) (time % 60);
+    time -= date->tm_sec;
+    time /= 60;
 
-    tm_sec = (uint8_t) (t % 60);
-    t -= tm_sec;
-    t /= 60;
+    date->tm_min = (uint8_t) (time % 60);
+    time -= date->tm_min;
+    time /= 60;
 
-    tm_min = (uint8_t) (t % 60);
-    t -= tm_min;
-    t /= 60;
-
-    tm_hour = (uint8_t) (t % 24);
-    t -= tm_hour;
-    t /= 24;
+    date->tm_hour = (uint8_t) (time % 24);
+    time -= date->tm_hour;
+    time /= 24;
 
     // Look up tm_year
-    tm_year = 0;
+    date->tm_year = 0;
     const uint16_t yearLookupSize = sizeof(yearLookup)/sizeof(yearLookup[0]);
-    while (tm_year < yearLookupSize && yearLookup[tm_year] <= t) tm_year++;
+    while (date->tm_year < yearLookupSize && yearLookup[date->tm_year] <= time) date->tm_year++;
 
-    if (tm_year == 0 || tm_year == yearLookupSize) {
+    if (date->tm_year == 0 || date->tm_year == yearLookupSize) {
         return zxerr_out_of_bounds;
     }
-    tm_year--;
+    date->tm_year--;
 
-    tm_day = (uint16_t) (t - yearLookup[tm_year] + 1);
-    tm_year = (uint16_t) (1970 + tm_year);
+    date->tm_day = (uint16_t) (time - yearLookup[date->tm_year] + 1);
+    date->tm_year = (uint16_t) (1970 + date->tm_year);
 
     // Get day/month
-    uint8_t leap = (uint8_t) (tm_year % 4 == 0 && (tm_year % 100 != 0 || tm_year % 400 == 0) ? 1 : 0);
+    uint8_t leap = (uint8_t) (date->tm_year % 4 == 0 && (date->tm_year % 100 != 0 || date->tm_year % 400 == 0) ? 1 : 0);
 
-    for (tm_mon = 0; tm_mon < 12; tm_mon++) {
-        uint8_t tmp = monthDays[tm_mon];
-        tmp += (tm_mon == 1 ? leap : 0);
-        if (tm_day <= tmp) {
+    for (date->tm_mon = 0; date->tm_mon < 12; date->tm_mon++) {
+        uint8_t tmp = monthDays[date->tm_mon];
+        tmp += (date->tm_mon == 1 ? leap : 0);
+        if (date->tm_day <= tmp) {
             break;
         }
-        tm_day -= tmp;
+        date->tm_day -= tmp;
     }
-    tm_mon++;
-
-    *sec = tm_sec;
-    *min = tm_min;
-    *hour = tm_hour;
-    *day = tm_day;
-    *month = tm_mon;
-    *year = tm_year;
+    date->tm_mon++;
+    date->monthName = getMonth(date->tm_mon);
 
     return zxerr_ok;
 }
 
 zxerr_t decodeTime(timedata_t* td, uint64_t t) {
-    CHECK_ZXERR(extractTime(t, &td->tm_sec, &td->tm_min, &td->tm_hour,
-                            &td->tm_day, &td->tm_mon, &td->tm_year))
-    td->monthName = (char*) getMonth(td->tm_mon);
-    return zxerr_ok;
+    return extractTime(t, td);
 }
 
 zxerr_t printTime(char *out, uint16_t outLen, uint64_t t) {
-    uint8_t tm_sec;
-    uint8_t tm_min;
-    uint8_t tm_hour;
-    uint16_t tm_day;
-    uint8_t tm_mon;
-    uint16_t tm_year;
-
-    CHECK_ZXERR(extractTime(t, &tm_sec, &tm_min, &tm_hour, &tm_day, &tm_mon, &tm_year))
-    const char *monthName = getMonth(tm_mon);
+    timedata_t date;
+    CHECK_ZXERR(extractTime(t, &date))
 
     // YYYYmmdd HH:MM:SS
     snprintf(out, outLen, "%02d%s%04d %02d:%02d:%02dUTC",
-             tm_day,
-             monthName,
-             tm_year,
-             tm_hour, tm_min, tm_sec
+             date.tm_day,
+             date.monthName,
+             date.tm_year,
+             date.tm_hour, date.tm_min, date.tm_sec
     );
 
     return zxerr_ok;
 }
 
 zxerr_t printTimeSpecialFormat(char *out, uint16_t outLen, uint64_t t) {
-    uint8_t tm_sec;
-    uint8_t tm_min;
-    uint8_t tm_hour;
-    uint16_t tm_day;
-    uint8_t tm_mon;
-    uint16_t tm_year;
-
-    CHECK_ZXERR(extractTime(t, &tm_sec, &tm_min, &tm_hour, &tm_day, &tm_mon, &tm_year))
+    timedata_t date;
+    CHECK_ZXERR(extractTime(t, &date))
 
     // YYYYmmdd HH:MM:SS
     snprintf(out, outLen, "%d-%02d-%02dT%02d:%02d:%02dZ",
-             tm_year,
-             tm_mon,
-             tm_day,
-             tm_hour, tm_min, tm_sec
+             date.tm_year,
+             date.tm_mon,
+             date.tm_day,
+             date.tm_hour, date.tm_min, date.tm_sec
     );
 
     return zxerr_ok;
