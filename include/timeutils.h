@@ -62,12 +62,15 @@ typedef struct {
     uint16_t tm_day;
     uint8_t tm_mon;
     uint16_t tm_year;
-    char *monthName;
+    const char *monthName;
 } timedata_t;
 
 zxerr_t printTime(char *out, uint16_t outLen, uint64_t t);
 zxerr_t printTimeSpecialFormat(char *out, uint16_t outLen, uint64_t t);
 zxerr_t decodeTime(timedata_t *timedata, uint64_t t);
+
+// Convert seconds since epoch to UTC date
+zxerr_t extractTime(uint64_t time, timedata_t *date);
 
 #ifdef __cplusplus
 }
