@@ -15,6 +15,6 @@
 ********************************************************************************/
 #pragma once
 
-#define ZXLIB_MAJOR     16
+#define ZXLIB_MAJOR     17
 #define ZXLIB_MINOR     0
-#define ZXLIB_PATCH     9
+#define ZXLIB_PATCH     0
