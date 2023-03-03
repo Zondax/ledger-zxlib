@@ -22,12 +22,16 @@ TESTS_JS_PACKAGE?=
 TESTS_JS_DIR?=
 
 LEDGER_SRC=$(CURDIR)/app
-DOCKER_APP_SRC=/project
+DOCKER_APP_SRC=/app
 DOCKER_APP_BIN=$(DOCKER_APP_SRC)/app/bin/app.elf
 
-DOCKER_BOLOS_SDKS=/project/deps/nanos-secure-sdk
-DOCKER_BOLOS_SDKX=/project/deps/nanox-secure-sdk
-DOCKER_BOLOS_SDKS2=/project/deps/nanosplus-secure-sdk
+DOCKER_BOLOS_SDKS = NANOS_SDK
+DOCKER_BOLOS_SDKX = NANOX_SDK
+DOCKER_BOLOS_SDKS2 = NANOSP_SDK
+
+TARGET_S = nanos
+TARGET_X = nanox
+TARGET_S2 = nanos2
 
 # Note: This is not an SSH key, and being public represents no risk
 SCP_PUBKEY=049bc79d139c70c83a4b19e8922e5ee3e0080bb14a2e8b0752aa42cda90a1463f689b0fa68c1c0246845c2074787b649d0d8a6c0b97d4607065eee3057bdf16b83
@@ -35,13 +39,15 @@ SCP_PRIVKEY=ff701d781f43ce106f72dc26a46b6a83e053b5d07bb3d4ceab79c91ca822a66b
 
 INTERACTIVE:=$(shell [ -t 0 ] && echo 1)
 USERID:=$(shell id -u)
+GROUPID:=$(shell id -g)
 $(info USERID                : $(USERID))
+$(info GROUPID               : $(GROUPID))
 $(info TESTS_ZEMU_DIR        : $(TESTS_ZEMU_DIR))
 $(info EXAMPLE_VUE_DIR       : $(EXAMPLE_VUE_DIR))
 $(info TESTS_JS_DIR          : $(TESTS_JS_DIR))
 $(info TESTS_JS_PACKAGE      : $(TESTS_JS_PACKAGE))
 
-DOCKER_IMAGE_ZONDAX=zondax/builder-bolos:latest
+DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:latest
 DOCKER_IMAGE_LEDGER=ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
 
 ifdef INTERACTIVE
@@ -63,17 +69,17 @@ endif
 define run_docker
 	docker run $(TTY_SETTING) $(INTERACTIVE_SETTING) --rm \
 	-e SCP_PRIVKEY=$(SCP_PRIVKEY) \
-	-e BOLOS_SDK=$(1) \
-	-e BOLOS_ENV=/opt/bolos \
-	-u $(USERID) \
-	-v $(shell pwd):/project \
+	-e SDK_VARNAME=$(1) \
+	-e TARGET=$(2) \
+	-u $(USERID):$(GROUPID) \
+	-v $(shell realpath .):/app \
 	-e SUPPORT_SR25519=$(SUPPORT_SR25519) \
 	-e SUBSTRATE_PARSER_FULL=$(SUBSTRATE_PARSER_FULL) \
 	-e DISABLE_PREVIOUS=$(DISABLE_PREVIOUS) \
 	-e DISABLE_CURRENT=$(DISABLE_CURRENT) \
 	-e COIN=$(COIN) \
 	-e APP_TESTING=$(APP_TESTING) \
-	$(DOCKER_IMAGE_ZONDAX) "$(2)"
+	$(DOCKER_IMAGE_ZONDAX) "$(3)"
 endef
 
 define run_docker_ledger
@@ -83,12 +89,9 @@ define run_docker_ledger
 endef
 
 all:
-	@$(MAKE) clean_output
-	@$(MAKE) clean_build
+	@$(MAKE) clean
 	@$(MAKE) buildS
-	@$(MAKE) clean_build
 	@$(MAKE) buildX
-	@$(MAKE) clean_build
 	@$(MAKE) buildS2
 
 .PHONY: check_python
@@ -111,15 +114,15 @@ ledger_lint:
 
 .PHONY: build_rustS
 build_rustS:
-	$(call run_docker,$(DOCKER_BOLOS_SDKS),make -C $(DOCKER_APP_SRC) rust)
+	$(call run_docker,$(DOCKER_BOLOS_SDKS),$(TARGET_S),make -j $(NPROC) rust)
 
 .PHONY: build_rustX
 build_rustX:
-	$(call run_docker,$(DOCKER_BOLOS_SDKX),make -C $(DOCKER_APP_SRC) rust)
+	$(call run_docker,$(DOCKER_BOLOS_SDKX),$(TARGET_X,)make -j $(NPROC) rust)
 
 .PHONY: build_rustS2
 build_rustS2:
-	$(call run_docker,$(DOCKER_BOLOS_SDKS2),make -C $(DOCKER_APP_SRC) rust)
+	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),make -j $(NPROC) rust)
 
 .PHONY: convert_icon
 convert_icon:
@@ -127,60 +130,57 @@ convert_icon:
 	@convert $(LEDGER_SRC)/nanos_icon.gif -crop 14x14+1+1 +repage -negate $(LEDGER_SRC)/nanox_icon.gif
 
 .PHONY: buildS
-buildS: build_rustS
-	$(call run_docker,$(DOCKER_BOLOS_SDKS),make -j $(NPROC) -C $(DOCKER_APP_SRC))
+buildS:
+	$(call run_docker,$(DOCKER_BOLOS_SDKS),$(TARGET_S),make -j $(NPROC))
 
 .PHONY: buildX
-buildX: build_rustX
-	$(call run_docker,$(DOCKER_BOLOS_SDKX),make -j $(NPROC) -C $(DOCKER_APP_SRC))
+buildX:
+	$(call run_docker,$(DOCKER_BOLOS_SDKX),$(TARGET_X),make -j $(NPROC))
 
 .PHONY: buildS2
-buildS2: build_rustS2
-	$(call run_docker,$(DOCKER_BOLOS_SDKS2),make -j $(NPROC) -C $(DOCKER_APP_SRC))
+buildS2:
+	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),make -j $(NPROC))
+
+.PHONY: clean_glyphs
+clean_glyphs:
+	@echo "Removing glyphs files"
+	@rm -f app/glyphs/glyphs.c app/glyphs/glyphs.h || true
 
 .PHONY: clean_output
 clean_output:
 	@echo "Removing output files"
 	@rm -f app/output/app* || true
 
-.PHONY: clean
+.PHONY: clean_build
 clean_build:
-	$(call run_docker,$(DOCKER_BOLOS_SDKS),make -C $(DOCKER_APP_SRC) clean)
+	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),make clean)
 
 .PHONY: clean
-clean: clean_output clean_build
+clean: clean_output clean_build clean_glyphs
 
 .PHONY: listvariants
 listvariants:
-	$(call run_docker,$(DOCKER_BOLOS_SDKS),make -C $(DOCKER_APP_SRC) listvariants)
+	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),make listvariants)
 
 .PHONY: shellS
 shellS:
-	$(call run_docker,$(DOCKER_BOLOS_SDKS) -t,bash)
+	$(call run_docker,$(DOCKER_BOLOS_SDKS) -t,$(TARGET_S),bash)
 
 .PHONY: shellX
 shellX:
-	$(call run_docker,$(DOCKER_BOLOS_SDKX) -t,bash)
+	$(call run_docker,$(DOCKER_BOLOS_SDKX) -t,$(TARGET_X),bash)
 
 .PHONY: shellS2
 shellS2:
-	$(call run_docker,$(DOCKER_BOLOS_SDKS2) -t,bash)
+	$(call run_docker,$(DOCKER_BOLOS_SDKS2) -t,$(TARGET_S2),bash)
 
-.PHONY: load
-load:
+.PHONY: loadS
+loadS:
 	${LEDGER_SRC}/pkg/installer_s.sh load
 
-.PHONY: delete
-delete:
+.PHONY: deleteS
+deleteS:
 	${LEDGER_SRC}/pkg/installer_s.sh delete
-
-.PHONY: loadX
-loadX:
-	${LEDGER_SRC}/pkg/installer_x.sh load
-
-.PHONY: deleteX
-deleteX:
-	${LEDGER_SRC}/pkg/installer_x.sh delete
 
 .PHONY: loadS2
 loadS2:
@@ -215,11 +215,6 @@ dev_init_secondary: check_python show_info_recovery_mode
 dev_ca: check_python
 	@python -m ledgerblue.setupCustomCA --targetId 0x31100004 --public $(SCP_PUBKEY) --name zondax
 
-# This target will setup a custom developer certificate
-.PHONY: dev_caX
-dev_caX: check_python
-	@python -m ledgerblue.setupCustomCA --targetId 0x33000004 --public $(SCP_PUBKEY) --name zondax
-
 .PHONY: dev_ca_delete
 dev_ca_delete: check_python
 	@python -m ledgerblue.resetCustomCA --targetId 0x31100004
@@ -232,33 +227,6 @@ dev_caS2: check_python
 .PHONY: dev_ca_deleteS2
 dev_ca_deleteS2: check_python
 	@python -m ledgerblue.resetCustomCA --targetId 0x33100004
-
-########################## VUE Section ###############################
-
-.PHONY: vue_install_js_link
-ifeq ($(TESTS_JS_DIR),)
-vue_install_js_link:
-	@echo "No local package defined"
-else
-vue_install_js_link:
-	# First unlink everything
-	cd $(TESTS_JS_DIR) && yarn unlink || true
-	cd $(EXAMPLE_VUE_DIR) && yarn unlink $(TESTS_JS_PACKAGE) || true
-#	# Now build and link
-	cd $(TESTS_JS_DIR) && yarn install && yarn build && yarn link || true
-	cd $(EXAMPLE_VUE_DIR) && yarn link $(TESTS_JS_PACKAGE) && yarn install || true
-	@echo
-	# List linked packages
-	@echo
-	@cd $(EXAMPLE_VUE_DIR) && ( ls -l node_modules ; ls -l node_modules/@* ) | grep ^l || true
-	@echo
-endif
-
-.PHONY: vue
-vue: vue_install_js_link
-	cd $(EXAMPLE_VUE_DIR) && yarn install && yarn serve
-
-########################## VUE Section ###############################
 
 .PHONY: zemu_install_js_link
 ifeq ($(TESTS_JS_DIR),)
