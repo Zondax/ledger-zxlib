@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   (c) 2018 Zondax GmbH
+*   (c) 2018 - 2023 Zondax AG
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 ********************************************************************************/
 #pragma once
 
-#if defined (TARGET_NANOS) || defined(TARGET_NANOX) || defined(TARGET_NANOS2)
+#if defined (TARGET_NANOS) || defined(TARGET_NANOX) || defined(TARGET_NANOS2) || defined(TARGET_STAX)
 
 #include "os.h"
 #include "cx.h"
@@ -36,10 +36,14 @@
 #define NV_CONST const
 #define NV_VOLATILE volatile
 #define IS_UX_ALLOWED (G_ux_params.len != BOLOS_UX_IGNORE && G_ux_params.len != BOLOS_UX_CONTINUE)
-#else
+#elif defined(TARGET_NANOS)
 #define NV_CONST
 #define NV_VOLATILE
 #define IS_UX_ALLOWED (G_ux_params.len != BOLOS_UX_IGNORE && G_ux_params.len != BOLOS_UX_CONTINUE)
+#else
+#define NV_CONST const
+#define NV_VOLATILE volatile
+#define IS_UX_ALLOWED false
 #endif
 
 #define CHECK_APP_CANARY() check_app_canary();
@@ -48,9 +52,14 @@ extern unsigned int app_stack_canary;
 
 #define WAIT_EVENT() io_seproxyhal_spi_recv(G_io_seproxyhal_spi_buffer, sizeof(G_io_seproxyhal_spi_buffer), 0)
 
+#if defined(TARGET_NANOS) || defined(TARGET_NANOX) || defined(TARGET_NANOS2)
 #define UX_WAIT()  \
     while (!UX_DISPLAYED()) {  WAIT_EVENT();  UX_DISPLAY_NEXT_ELEMENT(); } \
     WAIT_EVENT(); \
     io_seproxyhal_general_status(); \
     WAIT_EVENT()
+#else
+#define UX_WAIT(){}
+#endif
+
 #endif

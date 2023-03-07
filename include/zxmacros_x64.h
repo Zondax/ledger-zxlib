@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   (c) 2018 Zondax GmbH
+*   (c) 2018 - 2023 Zondax AG
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 ********************************************************************************/
 #pragma once
 
-#if !defined (TARGET_NANOS) && !defined(TARGET_NANOX) && !defined(TARGET_NANOS2)
+#if !defined (TARGET_NANOS) && !defined(TARGET_NANOX) && !defined(TARGET_NANOS2) && !defined(TARGET_STAX)
 
 // This macros are kept for backwards compatibility
 // the most recent SDK has unified implementations and deprecated the original os_***

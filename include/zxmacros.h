@@ -44,7 +44,7 @@ extern void explicit_bzero(void *s, size_t n) __THROW __nonnull ((1));
 #include "bolos_target.h"
 #endif
 
-#if defined (TARGET_NANOS) || defined(TARGET_NANOX) || defined(TARGET_NANOS2)
+#if defined (TARGET_NANOS) || defined(TARGET_NANOX) || defined(TARGET_NANOS2) || defined(TARGET_STAX)
 #include "zxmacros_ledger.h"
 #else
 
@@ -91,7 +91,7 @@ if( os_global_pin_is_validated() != BOLOS_UX_OK ) { \
     THROW(APDU_CODE_COMMAND_NOT_ALLOWED); \
 }
 
-#if (defined (TARGET_NANOS) || defined(TARGET_NANOX) || defined(TARGET_NANOS2))
+#if (defined (TARGET_NANOS) || defined(TARGET_NANOX) || defined(TARGET_NANOS2) || defined(TARGET_STAX))
 #if defined(ZEMU_LOGGING)
 __Z_INLINE void zemu_log(const char *buf)
 {

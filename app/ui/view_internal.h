@@ -28,6 +28,10 @@
 #define MAX_CHARS_PER_KEY_LINE      64
 #define MAX_CHARS_PER_VALUE1_LINE   4096
 #define MAX_CHARS_HEXMESSAGE        160
+#elif defined(TARGET_STAX)
+#define MAX_CHARS_PER_KEY_LINE      64
+#define MAX_CHARS_PER_VALUE1_LINE   180
+#define MAX_CHARS_HEXMESSAGE        160
 #else
 #ifndef MAX_CHARS_PER_VALUE_LINE
 #define MAX_CHARS_PER_VALUE_LINE    (17)
@@ -81,12 +85,22 @@ typedef enum {
   REVIEW_TXN,
 } review_type_e;
 
+#define FIELDS_PER_PAGE 4
+#define MAX_LINES_PER_FIELD 8
+
 typedef struct {
     struct {
+#if defined(TARGET_STAX)
+        char* key;
+        char* value;
+        char keys[FIELDS_PER_PAGE][MAX_CHARS_PER_KEY_LINE];
+        char values[FIELDS_PER_PAGE][MAX_CHARS_PER_VALUE1_LINE];
+#else
         char key[MAX_CHARS_PER_KEY_LINE];
         char value[MAX_CHARS_PER_VALUE1_LINE];
 #if defined(TARGET_NANOS)
         char value2[MAX_CHARS_PER_VALUE2_LINE];
+#endif
 #endif
     };
     viewfunc_getItem_t viewfuncGetItem;
