@@ -135,6 +135,7 @@ void app_init() {
     USB_power(1);
 
     app_mode_reset();
+#ifndef POSTPONE_MAIN_SCREEN_INIT
 #ifdef HAVE_SWAP
     if (!G_swap_state.called_from_swap) {
         view_idle_show(0, NULL);
@@ -142,6 +143,7 @@ void app_init() {
 #else
     view_idle_show(0, NULL);
 #endif // HAVE_SWAP
+#endif // POSTPONE_MAIN_SCREEN_INIT
 
 #ifdef HAVE_BLE
     // Enable Bluetooth
