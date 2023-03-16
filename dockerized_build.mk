@@ -1,5 +1,5 @@
 #*******************************************************************************
-#*   (c) 2019-2021 Zondax GmbH
+#*   (c) 2018 - 2023 Zondax AG
 #*
 #*  Licensed under the Apache License, Version 2.0 (the "License");
 #*  you may not use this file except in compliance with the License.
@@ -28,10 +28,12 @@ DOCKER_APP_BIN=$(DOCKER_APP_SRC)/app/bin/app.elf
 DOCKER_BOLOS_SDKS = NANOS_SDK
 DOCKER_BOLOS_SDKX = NANOX_SDK
 DOCKER_BOLOS_SDKS2 = NANOSP_SDK
+DOCKER_BOLOS_SDKST = STAX_SDK
 
 TARGET_S = nanos
 TARGET_X = nanox
 TARGET_S2 = nanos2
+TARGET_ST = stax
 
 # Note: This is not an SSH key, and being public represents no risk
 SCP_PUBKEY=049bc79d139c70c83a4b19e8922e5ee3e0080bb14a2e8b0752aa42cda90a1463f689b0fa68c1c0246845c2074787b649d0d8a6c0b97d4607065eee3057bdf16b83
@@ -47,7 +49,7 @@ $(info EXAMPLE_VUE_DIR       : $(EXAMPLE_VUE_DIR))
 $(info TESTS_JS_DIR          : $(TESTS_JS_DIR))
 $(info TESTS_JS_PACKAGE      : $(TESTS_JS_PACKAGE))
 
-DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:latest
+DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:ledger-eb27b9eb2917620b95f5df03a16ea61d62ef2032
 DOCKER_IMAGE_LEDGER=ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
 
 ifdef INTERACTIVE
@@ -91,8 +93,14 @@ endef
 all:
 	@$(MAKE) clean
 	@$(MAKE) buildS
+	@$(MAKE) clean_glyphs
 	@$(MAKE) buildX
+	@$(MAKE) clean_glyphs
 	@$(MAKE) buildS2
+ifdef ZXLIB_COMPILE_STAX
+	@$(MAKE) clean_glyphs
+	@$(MAKE) buildST
+endif # ZXLIB_COMPILE_STAX
 
 .PHONY: check_python
 check_python:
@@ -124,6 +132,10 @@ build_rustX:
 build_rustS2:
 	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),make -j $(NPROC) rust)
 
+.PHONY: build_rustST
+build_rustST:
+	$(call run_docker,$(DOCKER_BOLOS_SDKST),$(TARGET_ST),make -j $(NPROC) rust)
+
 .PHONY: convert_icon
 convert_icon:
 	@convert $(LEDGER_SRC)/tmp.gif -monochrome -size 16x16 -depth 1 $(LEDGER_SRC)/nanos_icon.gif
@@ -140,6 +152,10 @@ buildX:
 .PHONY: buildS2
 buildS2:
 	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),make -j $(NPROC))
+
+.PHONY: buildST
+buildST: build_rustST
+	$(call run_docker,$(DOCKER_BOLOS_SDKST),$(TARGET_ST),make -j $(NPROC))
 
 .PHONY: clean_glyphs
 clean_glyphs:
@@ -189,6 +205,14 @@ loadS2:
 .PHONY: deleteS2
 deleteS2:
 	${LEDGER_SRC}/pkg/installer_s2.sh delete
+
+.PHONY: loadST
+loadST:
+	${LEDGER_SRC}/pkg/installer_stax.sh load
+
+.PHONY: deleteST
+deleteST:
+	${LEDGER_SRC}/pkg/installer_stax.sh delete
 
 .PHONY: show_info_recovery_mode
 show_info_recovery_mode:
