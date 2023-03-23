@@ -36,33 +36,40 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
 unsigned char io_event(__Z_UNUSED unsigned char channel) {
     switch (G_io_seproxyhal_spi_buffer[0]) {
-        case SEPROXYHAL_TAG_FINGER_EVENT: //
-            UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
-            break;
 
-        case SEPROXYHAL_TAG_BUTTON_PUSH_EVENT: // for Nano
+        case SEPROXYHAL_TAG_BUTTON_PUSH_EVENT:  // for Nano
 #ifdef HAVE_BAGL
             UX_BUTTON_PUSH_EVENT(G_io_seproxyhal_spi_buffer);
 #endif
             break;
 
+        case SEPROXYHAL_TAG_STATUS_EVENT:
+            if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID &&  //
+                !(U4BE(G_io_seproxyhal_spi_buffer, 3) &      //
+                  SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
+                THROW(EXCEPTION_IO_RESET);
+            }
+
+        /* fallthrough */
         case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
 #ifdef HAVE_BAGL
-            if (!UX_DISPLAYED())
-                UX_DISPLAYED_EVENT();
+            UX_DISPLAYED_EVENT({});
+#elif HAVE_NBGL
+            UX_DEFAULT_EVENT();
 #endif
             break;
 
-        case SEPROXYHAL_TAG_TICKER_EVENT: { //
-            UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
-                    if (UX_ALLOWED) {
-                        UX_REDISPLAY();
-                    }
-            });
+#ifdef HAVE_NBGL
+        case SEPROXYHAL_TAG_FINGER_EVENT:
+            UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
             break;
-        }
+#endif
 
-            // unknown events are acknowledged
+        case SEPROXYHAL_TAG_TICKER_EVENT:
+            UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {});
+            break;
+
+        // unknown events are acknowledged
         default:
             UX_DEFAULT_EVENT();
             break;
@@ -153,7 +160,7 @@ void app_init() {
     }
 #endif // HAVE_SWAP
     BLE_power(0, NULL);
-    BLE_power(1, "Nano X");
+    BLE_power(1, NULL);
 #endif // HAVE_BLE
 
 }
