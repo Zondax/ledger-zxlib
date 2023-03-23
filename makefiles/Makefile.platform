@@ -41,7 +41,6 @@ ifeq ($(TARGET_NAME),TARGET_NANOS)
 else ifeq ($(TARGET_NAME),TARGET_STAX)
 # Stax
 	DEFINES += IO_SEPROXYHAL_BUFFER_SIZE_B=300
-	DEFINES += HAVE_UX_FLOW
 	DEFINES += NBGL_QRCODE
 
 #	Required by SDK
@@ -120,9 +119,6 @@ APP_SOURCE_PATH += $(ZXLIB_DIR)/app/ui
 
 SDK_SOURCE_PATH += lib_stusb lib_stusb_impl
 
-ifeq ($(TARGET_NAME),TARGET_STAX)
-	SDK_SOURCE_PATH += lib_nbgl/src
-	SDK_SOURCE_PATH += lib_ux_stax
-else
+ifneq ($(TARGET_NAME),TARGET_STAX)
 	SDK_SOURCE_PATH += lib_ux
 endif
