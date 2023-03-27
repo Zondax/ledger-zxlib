@@ -38,13 +38,19 @@ zxerr_t account_enabled();
 zxerr_t shortcut_enabled();
 #endif
 
+#define APPROVE_LABEL_STAX "Sign transaction?"
+#define REJECT_LABEL_STAX "Reject"
+#define HOLD_TO_APPROVE_MSG "Hold to approve"
 
 ux_state_t G_ux;
 bolos_ux_params_t G_ux_params;
 extern unsigned int review_type;
 
 static nbgl_layoutTagValue_t pairs[FIELDS_PER_PAGE];
+
+static nbgl_layoutTagValue_t pair;
 static nbgl_layoutTagValueList_t pairList;
+static nbgl_pageInfoLongPress_t infoLongPress;
 
 static nbgl_layoutSwitch_t settings[4];
 
@@ -425,7 +431,7 @@ static bool transaction_screen_callback(uint8_t page, nbgl_pageContent_t *conten
             content->type = TAG_VALUE_LIST;
             content->tagValueList.pairs = pairs;
             content->tagValueList.wrapping = false;
-            content->tagValueList.nbMaxLinesForValue = MAX_LINES_PER_FIELD;
+            content->tagValueList.nbMaxLinesForValue = MAX_LINES_PER_FIELD;;
 
             for (uint8_t i = 0; i < content->tagValueList.nbPairs; i++) {
                 pairs[i].item = viewdata.keys[i];
@@ -436,8 +442,8 @@ static bool transaction_screen_callback(uint8_t page, nbgl_pageContent_t *conten
         case zxerr_no_data: {
             content->type = INFO_LONG_PRESS;
             content->infoLongPress.icon = &C_icon_stax_64;
-            content->infoLongPress.text = "Sign transaction?";
-            content->infoLongPress.longPressText = "Hold to approve";
+            content->infoLongPress.text = APPROVE_LABEL_STAX;
+            content->infoLongPress.longPressText = HOLD_TO_APPROVE_MSG;
             break;
         }
         default:
@@ -449,23 +455,13 @@ static bool transaction_screen_callback(uint8_t page, nbgl_pageContent_t *conten
     return true;
 }
 
-static void review_transaction() {
-    const zxerr_t err = navigate_pages(0, LAST_PAGE_FOR_REVIEW, &total_pages);
-    if (err != zxerr_ok) {
-        view_error_show();
-        return;
-    }
-    nbgl_useCaseRegularReview(0, total_pages + 1, REJECT_LABEL, NULL, transaction_screen_callback, confirm_transaction_callback);
-}
-
-
 static void review_transaction_shortcut() {
     const zxerr_t err = navigate_pages(0, LAST_PAGE_FOR_REVIEW, &total_pages);
     if (err != zxerr_ok) {
         view_error_show();
         return;
     }
-    nbgl_useCaseForwardOnlyReview(REJECT_LABEL, NULL, transaction_screen_callback, confirm_transaction_callback);
+    nbgl_useCaseForwardOnlyReview(REJECT_LABEL_STAX, NULL, transaction_screen_callback, confirm_transaction_callback);
 }
 
 static void review_configuration() {
@@ -507,6 +503,47 @@ static void review_address() {
     nbgl_useCaseAddressConfirmationExt(viewdata.value, confirm_transaction_callback, extraPagesPtr);
 }
 
+static nbgl_layoutTagValue_t* update_item_callback(uint8_t index) {
+    uint8_t internalIndex = index % FIELDS_PER_PAGE;
+
+    viewdata.itemIdx = index;
+    viewdata.key = viewdata.keys[internalIndex];
+    viewdata.value = viewdata.values[internalIndex];
+
+    const zxerr_t err = h_review_update_data();
+    if (err != zxerr_ok) {
+        ZEMU_LOGF(50, "Error retrieving Item: %d\n", index)
+        view_error_show();
+        return NULL;
+    }
+
+    pair.item = viewdata.key;
+    pair.value = viewdata.value;
+    return &pair;
+}
+
+static void review_transaction_static() {
+    if (viewdata.viewfuncGetNumItems == NULL) {
+        ZEMU_LOGF(50, "GetNumItems==NULL\n")
+        view_error_show();
+        return;
+    }
+
+    infoLongPress.icon = &C_icon_stax_64;
+    infoLongPress.text = APPROVE_LABEL_STAX;
+    infoLongPress.longPressText = HOLD_TO_APPROVE_MSG;
+
+    pairList.nbMaxLinesForValue = MAX_LINES_PER_FIELD;
+    viewdata.viewfuncGetNumItems(&viewdata.itemCount);
+
+    pairList.nbPairs = viewdata.itemCount;
+    pairList.pairs = NULL; // to indicate that callback should be used
+    pairList.callback = update_item_callback;
+    pairList.startIndex = 0;
+
+    nbgl_useCaseStaticReview(&pairList, &infoLongPress, REJECT_LABEL_STAX, confirm_transaction_callback);
+}
+
 void view_review_show_impl(unsigned int requireReply){
     review_type = (review_type_e) requireReply;
     h_paging_init();
@@ -525,7 +562,7 @@ void view_review_show_impl(unsigned int requireReply){
             nbgl_useCaseReviewStart(&C_icon_stax_64,
                                     "Review configuration",
                                     NULL,
-                                    REJECT_LABEL,
+                                    REJECT_LABEL_STAX,
                                     review_configuration,
                                     h_reject_internal);
             break;
@@ -533,7 +570,7 @@ void view_review_show_impl(unsigned int requireReply){
             nbgl_useCaseReviewStart(&C_icon_stax_64,
                                     "Review address",
                                     NULL,
-                                    REJECT_LABEL,
+                                    REJECT_LABEL_STAX,
                                     review_address,
                                     h_reject_internal);
             break;
@@ -543,8 +580,8 @@ void view_review_show_impl(unsigned int requireReply){
             nbgl_useCaseReviewStart(&C_icon_stax_64,
                                     "Review transaction",
                                     NULL,
-                                    REJECT_LABEL,
-                                    app_mode_shortcut() ? review_transaction_shortcut : review_transaction,
+                                    REJECT_LABEL_STAX,
+                                    app_mode_shortcut() ? review_transaction_shortcut : review_transaction_static,
                                     h_reject_internal);
     }
 }
