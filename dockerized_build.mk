@@ -214,6 +214,22 @@ loadST:
 deleteST:
 	${LEDGER_SRC}/pkg/installer_stax.sh delete
 
+.PHONY: sizeS
+sizeS:
+	$(CURDIR)/deps/ledger-zxlib/scripts/getSize.py nanos
+
+.PHONY: sizeS2
+sizeS2:
+	$(CURDIR)/deps/ledger-zxlib/scripts/getSize.py nanos2
+
+.PHONY: sizeX
+sizeX:
+	$(CURDIR)/deps/ledger-zxlib/scripts/getSize.py nanox
+
+.PHONY: sizeST
+sizeST:
+	$(CURDIR)/deps/ledger-zxlib/scripts/getSize.py stax
+
 .PHONY: show_info_recovery_mode
 show_info_recovery_mode:
 	@echo "This command requires a Ledger Nano S in recovery mode. To go into recovery mode, follow:"
