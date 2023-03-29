@@ -31,7 +31,7 @@ bool_t bignumLittleEndian_bcdprint(char *outBuffer, uint16_t outBufferLen,
         return bool_false;
     }
 
-    for (uint8_t i = 0; i < inBCDLen; i++, inBCD++) {
+    for (uint16_t i = 0; i < inBCDLen; i++, inBCD++) {
         if (started || *inBCD != 0) {
             if (started || (*inBCD >> 4u) != 0) {
                 *outBuffer = hexchars[*inBCD >> 4u];
@@ -55,7 +55,7 @@ void bignumLittleEndian_to_bcd(uint8_t *bcdOut, uint16_t bcdOutLen,
     MEMZERO(bcdOut, bcdOutLen);
 
     uint8_t carry = 0;
-    for (uint16_t bitIdx = 0; bitIdx < binValueLen * 8; bitIdx++) {
+    for (uint32_t bitIdx = 0; bitIdx < binValueLen * 8; bitIdx++) {
         // Fix bcd
         for (uint16_t j = 0; j < bcdOutLen; j++) {
             if ((bcdOut[j] & 0x0Fu) > 0x04u) {
@@ -121,7 +121,7 @@ void bignumBigEndian_to_bcd(uint8_t *bcdOut, uint16_t bcdOutLen,
     MEMZERO(bcdOut, bcdOutLen);
 
     uint8_t carry = 0;
-    for (uint16_t bitIdx = 0; bitIdx < binValueLen * 8; bitIdx++) {
+    for (uint32_t bitIdx = 0; bitIdx < binValueLen * 8; bitIdx++) {
         // Fix bcd
         for (uint16_t j = 0; j < bcdOutLen; j++) {
             if ((bcdOut[j] & 0x0Fu) > 0x04u) {
