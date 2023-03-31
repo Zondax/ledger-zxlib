@@ -79,12 +79,6 @@ static const char* shortcut_value = SHORTCUT_VALUE;
     #define INTRO_PAGES 0
 #endif
 
-typedef enum {
-  REVIEW_UI = 0,
-  REVIEW_ADDRESS,
-  REVIEW_TXN,
-} review_type_e;
-
 #define FIELDS_PER_PAGE 4
 #define MAX_LINES_PER_FIELD 8
 

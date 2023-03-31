@@ -39,6 +39,12 @@ typedef void (*viewfunc_accept_t)();
 
 typedef zxerr_t (*viewfunc_initialize_t)();
 
+typedef enum {
+  REVIEW_UI = 0,
+  REVIEW_ADDRESS,
+  REVIEW_TXN,
+} review_type_e;
+
 #ifdef APP_SECRET_MODE_ENABLED
 zxerr_t secret_enabled();
 #endif
@@ -64,4 +70,4 @@ void view_review_init(viewfunc_getItem_t viewfuncGetItem,
                       viewfunc_getNumItems_t viewfuncGetNumItems,
                       viewfunc_accept_t viewfuncAccept);
 
-void view_review_show(unsigned int requireReply);
+void view_review_show(review_type_e reviewKind);
