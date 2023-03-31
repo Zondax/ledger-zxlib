@@ -62,9 +62,9 @@ void view_initialize_init(viewfunc_initialize_t viewFuncInit) {
     viewdata.viewfuncInitialize = viewFuncInit;
 }
 
-void view_review_show(unsigned int requireReply) {
+void view_review_show(review_type_e reviewKind) {
     // Set > 0 to reply apdu message
-    view_review_show_impl(requireReply);
+    view_review_show_impl((unsigned int)reviewKind);
 }
 
 void view_initialize_show(uint8_t item_idx, char *statusString) {
