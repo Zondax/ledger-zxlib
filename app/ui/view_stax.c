@@ -311,8 +311,8 @@ void setting_screen() {
     //Set return button top-left (true) botton-left (false)
     const bool return_button_top_left = true;
     const uint8_t init_page = 0;
-    const uint8_t total_pages = 2;
-    nbgl_useCaseSettings(MENU_MAIN_APP_LINE1, init_page, total_pages, return_button_top_left,
+    const uint8_t settings_pages = 2;
+    nbgl_useCaseSettings(MENU_MAIN_APP_LINE1, init_page, settings_pages, return_button_top_left,
                         view_idle_show_impl_callback, settings_screen_callback, settings_toggle_callback);
 }
 

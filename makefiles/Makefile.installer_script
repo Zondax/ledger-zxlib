@@ -15,7 +15,7 @@
 #  limitations under the License.
 #*******************************************************************************
 
-all: bin/app.elf
+all: default
 	@echo "#!/usr/bin/env bash" > $(OUTPUT_INSTALLER)
 	@echo "APPNAME=\"${APPNAME}\"" >> $(OUTPUT_INSTALLER)
 	@echo "APPVERSION=\"${APPVERSION}\"" >> $(OUTPUT_INSTALLER)
