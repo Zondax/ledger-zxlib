@@ -46,7 +46,7 @@ ux_state_t G_ux;
 bolos_ux_params_t G_ux_params;
 extern unsigned int review_type;
 
-static nbgl_layoutTagValue_t pairs[FIELDS_PER_PAGE];
+static nbgl_layoutTagValue_t pairs[NB_MAX_DISPLAYED_PAIRS_IN_REVIEW];
 
 static nbgl_layoutTagValue_t pair;
 static nbgl_layoutTagValueList_t pairList;
@@ -117,18 +117,18 @@ static void confirm_transaction_callback(bool confirm) {
         return;
     }
 
-    char* message = NULL;
+    const char* message = NULL;
     switch (review_type) {
         case REVIEW_UI:
-            message = PIC(ui_choice_message);
+            message = ui_choice_message;
             break;
 
         case REVIEW_ADDRESS:
-            message = PIC(add_choice_message);
+            message = add_choice_message;
             break;
 
         case REVIEW_TXN:
-            message = PIC(txn_choice_message);
+            message = txn_choice_message;
             break;
 
         default:
@@ -221,8 +221,8 @@ static bool settings_screen_callback(uint8_t page, nbgl_pageContent_t* content) 
         case 0: {
             content->type = INFOS_LIST;
             content->infosList.nbInfos = sizeof(INFO_KEYS)/sizeof(INFO_KEYS[0]);
-            content->infosList.infoContents = (const char**) INFO_VALUES;
-            content->infosList.infoTypes = (const char**) INFO_KEYS;
+            content->infosList.infoContents = INFO_VALUES;
+            content->infosList.infoTypes = INFO_KEYS;
             break;
         }
 
@@ -277,7 +277,7 @@ static bool settings_screen_callback(uint8_t page, nbgl_pageContent_t* content) 
     return true;
 }
 
-static void settings_toggle_callback(int token, uint8_t index) {
+static void settings_toggle_callback(int token, __Z_UNUSED uint8_t index) {
     switch (token) {
         case EXPERT_MODE_TOKEN:
             h_expert_toggle();
@@ -333,91 +333,32 @@ void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
     nbgl_useCaseHome(MENU_MAIN_APP_LINE1, &C_icon_stax_64, viewdata.key, settings_icon, setting_screen, app_quit);
 }
 
-static uint16_t computeTextLines(const char* text) {
-    return nbgl_getTextNbLinesInWidth(BAGL_FONT_INTER_REGULAR_32px,
-                text,
-                SCREEN_WIDTH-2*BORDER_MARGIN,
-                false);
-}
-
-zxerr_t navigate_pages(uint8_t initialPage, uint8_t finalPage, uint8_t *countedPages) {
-    uint8_t pages = 0;
-    uint8_t accumLines = 0;
-    uint8_t itemsPerPage = 0;
-    viewdata.key = viewdata.keys[0];
-    viewdata.value = viewdata.values[0];
-
-    for (viewdata.itemIdx = 0; viewdata.itemIdx < viewdata.itemCount; viewdata.itemIdx++) {
-        if (pages == finalPage) {
-            break;
-        }
-
-        CHECK_ZXERR(h_review_update_data())
-        const uint16_t currentValueLines = computeTextLines(viewdata.value);
-
-        const uint8_t totalLines = accumLines + currentValueLines;
-        const bool addItemToCurrentPage =      (totalLines <= 6 && itemsPerPage <= 3)     // Display 6 lines limiting items to 4
-                                            || (totalLines <= 7 && itemsPerPage <= 2)     // Display 7 lines limiting items to 3
-                                            || (totalLines == 8 && itemsPerPage < 1);     // Display 8 lines only for 1 items on screen
-
-        if (addItemToCurrentPage) {
-            accumLines = totalLines;
-            itemsPerPage++;
-        } else {
-            // Move item to next page
-            accumLines = currentValueLines;
-            pages++;
-            itemsPerPage = 1;
-        }
-    }
-
-    // Return counted pages
-    if (countedPages != NULL) {
-        *countedPages = pages + 1;
-    }
-
-    return zxerr_ok;
-}
-
 static zxerr_t update_data_page(uint8_t page, uint8_t *elementsPerPage) {
     if (elementsPerPage == NULL) {
         return zxerr_unknown;
     }
 
     *elementsPerPage = 0;
-    uint8_t itemsPerPage = 0;
-    uint8_t accumLines = 0;
+    bool tooLongToFit = false;
+    uint8_t pageIdx = 0;
+    uint8_t itemIdx = 0;
 
-    // Navigate until current page
-    CHECK_ZXERR(navigate_pages(0, page, NULL))
-
-    if (viewdata.itemIdx > 0) {
-        viewdata.itemIdx--;
+    // Move until current page
+    while (pageIdx < page) {
+        const uint8_t fieldsInPage = nbgl_useCaseGetNbTagValuesInPage(pairList.nbPairs, &pairList, itemIdx, &tooLongToFit);
+        itemIdx += fieldsInPage;
+        pageIdx++;
     }
 
-    for (; viewdata.itemIdx < viewdata.itemCount; viewdata.itemIdx++) {
-        if (itemsPerPage >= FIELDS_PER_PAGE) {
-            break;
-        }
-        viewdata.key = viewdata.keys[itemsPerPage];
-        viewdata.value = viewdata.values[itemsPerPage];
+    // Get printeable items for this page and retrieve them
+    const uint8_t fieldsInCurrentPage = nbgl_useCaseGetNbTagValuesInPage(pairList.nbPairs, &pairList, itemIdx, &tooLongToFit);
+    for (uint8_t idx = 0; idx < fieldsInCurrentPage; idx++) {
+        viewdata.itemIdx = itemIdx + idx;
+        viewdata.key = viewdata.keys[idx];
+        viewdata.value = viewdata.values[idx];
         CHECK_ZXERR(h_review_update_data())
-
-        const uint16_t currentValueLines = computeTextLines(viewdata.value);
-        const uint8_t totalLines = accumLines + currentValueLines;
-
-        const bool addItemToCurrentPage =      (totalLines <= 6 && itemsPerPage <= 3)     // Display 6 lines limiting items to 4
-                                            || (totalLines <= 7 && itemsPerPage <= 2)     // Display 7 lines limiting items to 3
-                                            || (totalLines == 8 && itemsPerPage < 1);     // Display 8 lines only for 1 items on screen
-
-        if (!addItemToCurrentPage) {
-            break;
-        }
-        accumLines = totalLines;
-        itemsPerPage++;
     }
-
-    *elementsPerPage = itemsPerPage;
+    *elementsPerPage = fieldsInCurrentPage;
 
     return zxerr_ok;
 }
@@ -431,7 +372,7 @@ static bool transaction_screen_callback(uint8_t page, nbgl_pageContent_t *conten
             content->type = TAG_VALUE_LIST;
             content->tagValueList.pairs = pairs;
             content->tagValueList.wrapping = false;
-            content->tagValueList.nbMaxLinesForValue = MAX_LINES_PER_FIELD;;
+            content->tagValueList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;;
 
             for (uint8_t i = 0; i < content->tagValueList.nbPairs; i++) {
                 pairs[i].item = viewdata.keys[i];
@@ -453,15 +394,6 @@ static bool transaction_screen_callback(uint8_t page, nbgl_pageContent_t *conten
     }
 
     return true;
-}
-
-static void review_transaction_shortcut() {
-    const zxerr_t err = navigate_pages(0, LAST_PAGE_FOR_REVIEW, &total_pages);
-    if (err != zxerr_ok) {
-        view_error_show();
-        return;
-    }
-    nbgl_useCaseForwardOnlyReview(REJECT_LABEL_STAX, NULL, transaction_screen_callback, confirm_transaction_callback);
 }
 
 static void review_configuration() {
@@ -504,22 +436,39 @@ static void review_address() {
 }
 
 static nbgl_layoutTagValue_t* update_item_callback(uint8_t index) {
-    uint8_t internalIndex = index % FIELDS_PER_PAGE;
+    uint8_t internalIndex = index % NB_MAX_DISPLAYED_PAIRS_IN_REVIEW;
 
     viewdata.itemIdx = index;
     viewdata.key = viewdata.keys[internalIndex];
     viewdata.value = viewdata.values[internalIndex];
 
-    const zxerr_t err = h_review_update_data();
-    if (err != zxerr_ok) {
-        ZEMU_LOGF(50, "Error retrieving Item: %d\n", index)
-        view_error_show();
-        return NULL;
-    }
-
+    h_review_update_data();
     pair.item = viewdata.key;
     pair.value = viewdata.value;
     return &pair;
+}
+
+static void review_transaction_shortcut() {
+    if (viewdata.viewfuncGetNumItems == NULL) {
+        ZEMU_LOGF(50, "GetNumItems==NULL\n")
+        view_error_show();
+        return;
+    }
+
+    infoLongPress.icon = &C_icon_stax_64;
+    infoLongPress.text = APPROVE_LABEL_STAX;
+    infoLongPress.longPressText = HOLD_TO_APPROVE_MSG;
+
+    pairList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;
+    viewdata.viewfuncGetNumItems(&viewdata.itemCount);
+
+    pairList.nbPairs = viewdata.itemCount;
+    pairList.pairs = NULL; // to indicate that callback should be used
+    pairList.callback = update_item_callback;
+    pairList.startIndex = 0;
+
+    total_pages = nbgl_useCaseGetNbPagesForTagValueList(&pairList);
+    nbgl_useCaseForwardOnlyReview(REJECT_LABEL_STAX, NULL, transaction_screen_callback, confirm_transaction_callback);
 }
 
 static void review_transaction_static() {
@@ -533,7 +482,7 @@ static void review_transaction_static() {
     infoLongPress.text = APPROVE_LABEL_STAX;
     infoLongPress.longPressText = HOLD_TO_APPROVE_MSG;
 
-    pairList.nbMaxLinesForValue = MAX_LINES_PER_FIELD;
+    pairList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;
     viewdata.viewfuncGetNumItems(&viewdata.itemCount);
 
     pairList.nbPairs = viewdata.itemCount;
