@@ -50,7 +50,7 @@ unsigned char io_event(__Z_UNUSED unsigned char channel) {
                 THROW(EXCEPTION_IO_RESET);
             }
 
-        /* fallthrough */
+        __attribute__((fallthrough));
         case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
 #ifdef HAVE_BAGL
             UX_DISPLAYED_EVENT({});

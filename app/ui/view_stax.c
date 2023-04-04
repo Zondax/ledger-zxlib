@@ -311,8 +311,8 @@ void setting_screen() {
     //Set return button top-left (true) botton-left (false)
     const bool return_button_top_left = true;
     const uint8_t init_page = 0;
-    const uint8_t total_pages = 2;
-    nbgl_useCaseSettings(MENU_MAIN_APP_LINE1, init_page, total_pages, return_button_top_left,
+    const uint8_t settings_pages = 2;
+    nbgl_useCaseSettings(MENU_MAIN_APP_LINE1, init_page, settings_pages, return_button_top_left,
                         view_idle_show_impl_callback, settings_screen_callback, settings_toggle_callback);
 }
 
@@ -358,7 +358,7 @@ zxerr_t navigate_pages(uint8_t initialPage, uint8_t finalPage, uint8_t *countedP
         const uint8_t totalLines = accumLines + currentValueLines;
         const bool addItemToCurrentPage =      (totalLines <= 6 && itemsPerPage <= 3)     // Display 6 lines limiting items to 4
                                             || (totalLines <= 7 && itemsPerPage <= 2)     // Display 7 lines limiting items to 3
-                                            || (totalLines == 8 && itemsPerPage <= 1);    // Display 8 lines only for 1 or 2 items on screen
+                                            || (totalLines == 8 && itemsPerPage < 1);     // Display 8 lines only for 1 items on screen
 
         if (addItemToCurrentPage) {
             accumLines = totalLines;
@@ -408,7 +408,7 @@ static zxerr_t update_data_page(uint8_t page, uint8_t *elementsPerPage) {
 
         const bool addItemToCurrentPage =      (totalLines <= 6 && itemsPerPage <= 3)     // Display 6 lines limiting items to 4
                                             || (totalLines <= 7 && itemsPerPage <= 2)     // Display 7 lines limiting items to 3
-                                            || (totalLines == 8 && itemsPerPage <= 1);    // Display 8 lines only for 1 or 2 items on screen
+                                            || (totalLines == 8 && itemsPerPage < 1);     // Display 8 lines only for 1 items on screen
 
         if (!addItemToCurrentPage) {
             break;
