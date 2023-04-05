@@ -29,6 +29,7 @@
 #define MAX_CHARS_PER_VALUE1_LINE   4096
 #define MAX_CHARS_HEXMESSAGE        160
 #elif defined(TARGET_STAX)
+#include "nbgl_use_case.h"
 #define MAX_CHARS_PER_KEY_LINE      64
 #define MAX_CHARS_PER_VALUE1_LINE   180
 #define MAX_CHARS_HEXMESSAGE        160
@@ -79,16 +80,13 @@ static const char* shortcut_value = SHORTCUT_VALUE;
     #define INTRO_PAGES 0
 #endif
 
-#define FIELDS_PER_PAGE 4
-#define MAX_LINES_PER_FIELD 8
-
 typedef struct {
     struct {
 #if defined(TARGET_STAX)
         char* key;
         char* value;
-        char keys[FIELDS_PER_PAGE][MAX_CHARS_PER_KEY_LINE];
-        char values[FIELDS_PER_PAGE][MAX_CHARS_PER_VALUE1_LINE];
+        char keys[NB_MAX_DISPLAYED_PAIRS_IN_REVIEW][MAX_CHARS_PER_KEY_LINE];
+        char values[NB_MAX_DISPLAYED_PAIRS_IN_REVIEW][MAX_CHARS_PER_VALUE1_LINE];
 #else
         char key[MAX_CHARS_PER_KEY_LINE];
         char value[MAX_CHARS_PER_VALUE1_LINE];

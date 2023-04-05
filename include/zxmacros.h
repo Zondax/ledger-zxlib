@@ -15,13 +15,13 @@
 ********************************************************************************/
 #pragma once
 
+#ifdef __cplusplus
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-use-nullptr"
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #pragma ide diagnostic ignored "OCUnusedMacroInspection"
 #pragma ide diagnostic ignored "modernize-deprecated-headers"
 
-#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -119,6 +119,6 @@ __Z_INLINE void zemu_log(__Z_UNUSED const char *msg) {
 
 #ifdef __cplusplus
 }
+#pragma clang diagnostic pop
 #endif
 
-#pragma clang diagnostic pop

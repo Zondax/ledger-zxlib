@@ -15,8 +15,10 @@
 ********************************************************************************/
 #include "zxmacros.h"
 
+#ifdef __cplusplus
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
+#endif
 
 void handle_stack_overflow() {
     zemu_log("!!!!!!!!!!!!!!!!!!!!!! CANARY TRIGGERED!!! STACK OVERFLOW DETECTED\n");
@@ -27,7 +29,9 @@ void handle_stack_overflow() {
 #endif
 }
 
+#ifdef __cplusplus
 #pragma clang diagnostic pop
+#endif
 
 __Z_UNUSED void check_app_canary() {
 #if defined (TARGET_NANOS) || defined(TARGET_NANOX) || defined(TARGET_NANOS2) || defined(TARGET_STAX)
