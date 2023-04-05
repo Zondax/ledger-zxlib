@@ -44,6 +44,10 @@ static void h_review_button_left();
 static void h_review_button_right();
 static void h_review_button_both();
 
+bool is_accept_item();
+void set_accept_item();
+bool is_reject_item();
+
 #ifdef APP_SECRET_MODE_ENABLED
 static void h_secret_click();
 #endif
@@ -176,7 +180,7 @@ static unsigned int view_review_button(unsigned int button_mask, __Z_UNUSED unsi
     return 0;
 }
 
-const bagl_element_t* idle_preprocessor(const ux_menu_entry_t* entry, bagl_element_t* element) {
+const bagl_element_t* idle_preprocessor(__Z_UNUSED const ux_menu_entry_t* entry, bagl_element_t* element) {
     switch(ux_menu.current_entry) {
         case SCREEN_HOME:
             break;
@@ -260,6 +264,27 @@ void h_review_button_right() {
     zemu_log_stack("h_review_button_right");
     h_paging_increase();
     h_review_update();
+}
+
+static void h_review_action(unsigned int requireReply) {
+    if( is_accept_item() ){
+        zemu_log_stack("action_accept");
+        h_approve(1);
+        return;
+    }
+
+    if( is_reject_item() ){
+        zemu_log_stack("action_reject");
+        h_reject(requireReply);
+        return;
+    }
+
+    zemu_log_stack("quick accept");
+    if (app_mode_expert() || app_mode_shortcut()) {
+        set_accept_item();
+        h_review_update();
+        return;
+    }
 }
 
 void h_review_button_both() {
