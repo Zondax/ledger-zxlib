@@ -41,5 +41,3 @@ bool h_paging_can_decrease();
 void h_paging_decrease();
 
 bool h_paging_intro_screen();
-
-void h_review_action(unsigned int requireReply);

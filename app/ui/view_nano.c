@@ -157,29 +157,6 @@ bool is_reject_item(){
 }
 #endif
 
-void h_review_action(unsigned int requireReply) {
-#ifdef INCLUDE_ACTIONS_AS_ITEMS
-    if( is_accept_item() ){
-        zemu_log_stack("action_accept");
-        h_approve(1);
-        return;
-    }
-
-    if( is_reject_item() ){
-        zemu_log_stack("action_reject");
-        h_reject(requireReply);
-        return;
-    }
-
-    zemu_log_stack("quick accept");
-    if (app_mode_expert() || app_mode_shortcut()) {
-        set_accept_item();
-        h_review_update();
-        return;
-    }
-#endif
-}
-
 zxerr_t h_review_update_data() {
     if (viewdata.viewfuncGetNumItems == NULL) {
         zemu_log_stack("h_review_update_data - GetNumItems==NULL");
