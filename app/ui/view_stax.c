@@ -39,12 +39,17 @@ zxerr_t shortcut_enabled();
 #endif
 
 #define APPROVE_LABEL_STAX "Sign transaction?"
-#define REJECT_LABEL_STAX "Reject"
-#define HOLD_TO_APPROVE_MSG "Hold to approve"
+#define REJECT_LABEL_STAX "Reject transaction"
+#define CANCEL_LABEL "Cancel"
+#define HOLD_TO_APPROVE_MSG "Hold to sign"
+
+static const char HOME_TEXT[] = "This application enables\nsigning transactions on the\n" MENU_MAIN_APP_LINE1 " network";
 
 ux_state_t G_ux;
 bolos_ux_params_t G_ux_params;
 extern unsigned int review_type;
+
+const char *txn_intro_message = NULL;
 
 static nbgl_layoutTagValue_t pairs[NB_MAX_DISPLAYED_PAIRS_IN_REVIEW];
 
@@ -83,8 +88,12 @@ void app_quit(void) {
     os_sched_exit(-1);
 }
 
-void h_reject_internal(void) {
+static void h_reject_internal(void) {
     h_reject(review_type);
+}
+
+static void h_approve_internal(void) {
+    h_approve(review_type);
 }
 
 static void view_idle_show_impl_callback() {
@@ -98,20 +107,42 @@ static const char* txn_choice_message = "Reject transaction?";
 static const char* add_choice_message = "Reject address?";
 static const char* ui_choice_message = "Reject configuration?";
 
+static const char* txn_verified = "Transaction signed";
+static const char* txn_cancelled = "Transaction rejected";
+
+static const char* add_verified = "Address verified";
+static const char* add_cancelled = "Address verification\ncancelled";
+
 static void h_expert_toggle() {
     app_mode_set_expert(!app_mode_expert());
 }
 
 static void confirm_callback(bool confirm) {
-    confirm ? h_approve(review_type) : h_reject(review_type);
-}
-static void reject_confirmation_callback(bool reject) {
-    if (reject) {
-        confirm_callback(false);
+    const char* message = NULL;
+    switch (review_type) {
+        case REVIEW_ADDRESS:
+            message = confirm ? add_verified : add_cancelled;
+            break;
+
+        case REVIEW_TXN:
+            message = confirm ? txn_verified : txn_cancelled;
+            break;
+
+        case REVIEW_UI:
+        default:
+            confirm ? h_approve(review_type) : h_reject(review_type);
+            return;
     }
+    nbgl_useCaseStatus(message, confirm, (confirm ? h_approve_internal : h_reject_internal));
 }
 
-static void confirm_transaction_callback(bool confirm) {
+static void cancel(void) {
+    ZEMU_LOGF(50, "Cancelling...\n")
+    confirm_callback(false);
+}
+
+static void action_callback(bool confirm) {
+    ZEMU_LOGF(50, "Check action callback: %d\n", confirm)
     if (confirm) {
         confirm_callback(confirm);
         return;
@@ -137,13 +168,15 @@ static void confirm_transaction_callback(bool confirm) {
             return;
     }
 
-    nbgl_useCaseChoice(&C_round_warning_64px,
-                        message,
+    nbgl_useCaseConfirm(message,
                         NULL,
                         "Yes, reject",
                         "Go back",
-                        reject_confirmation_callback);
+                        cancel);
+}
 
+static void check_cancel(void) {
+    action_callback(false);
 }
 
 static void confirm_setting(bool confirm) {
@@ -318,19 +351,19 @@ void setting_screen() {
 
 void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
     viewdata.key = viewdata.keys[0];
+    const char *home_text = HOME_TEXT;
     if (statusString == NULL ) {
-        snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", MENU_MAIN_APP_LINE2);
 #ifdef APP_SECRET_MODE_ENABLED
         if (app_mode_secret()) {
             snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", MENU_MAIN_APP_LINE2_SECRET);
+            home_text = viewdata.key;
         }
 #endif
     } else {
         snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", statusString);
     }
-
     const bool settings_icon = true;
-    nbgl_useCaseHome(MENU_MAIN_APP_LINE1, &C_icon_stax_64, viewdata.key, settings_icon, setting_screen, app_quit);
+    nbgl_useCaseHome(MENU_MAIN_APP_LINE1, &C_icon_stax_64, home_text, settings_icon, setting_screen, app_quit);
 }
 
 static zxerr_t update_data_page(uint8_t page, uint8_t *elementsPerPage) {
@@ -432,7 +465,7 @@ static void review_address() {
     viewdata.value = viewdata.values[0];
     h_review_update_data();
 
-    nbgl_useCaseAddressConfirmationExt(viewdata.value, confirm_transaction_callback, extraPagesPtr);
+    nbgl_useCaseAddressConfirmationExt(viewdata.value, action_callback, extraPagesPtr);
 }
 
 static nbgl_layoutTagValue_t* update_item_callback(uint8_t index) {
@@ -468,7 +501,7 @@ static void review_transaction_shortcut() {
     pairList.startIndex = 0;
 
     total_pages = nbgl_useCaseGetNbPagesForTagValueList(&pairList);
-    nbgl_useCaseForwardOnlyReview(REJECT_LABEL_STAX, NULL, transaction_screen_callback, confirm_transaction_callback);
+    nbgl_useCaseForwardOnlyReview(REJECT_LABEL_STAX, NULL, transaction_screen_callback, action_callback);
 }
 
 static void review_transaction_static() {
@@ -490,48 +523,52 @@ static void review_transaction_static() {
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
 
-    nbgl_useCaseStaticReview(&pairList, &infoLongPress, REJECT_LABEL_STAX, confirm_transaction_callback);
+    nbgl_useCaseStaticReview(&pairList, &infoLongPress, REJECT_LABEL_STAX, action_callback);
 }
 
 void view_review_show_impl(unsigned int requireReply){
     review_type = (review_type_e) requireReply;
-    h_paging_init();
 
+    // Retrieve intro text for transaction
+    txn_intro_message = NULL;
     viewdata.key = viewdata.keys[0];
     viewdata.value = viewdata.values[0];
-    zxerr_t err = h_review_update_data();
-    if (err != zxerr_ok) {
-        ZEMU_LOGF(50, "Error updating data\n")
-        view_error_show();
-        return;
+    if (viewdata.viewfuncGetItem != NULL) {
+        const zxerr_t err = viewdata.viewfuncGetItem(0xFF, viewdata.key, MAX_CHARS_PER_KEY_LINE,
+                                                    viewdata.value, MAX_CHARS_PER_VALUE1_LINE,
+                                                    0, &viewdata.pageCount);
+        if (err == zxerr_ok) {
+            txn_intro_message = viewdata.value;
+        }
     }
+    h_paging_init();
 
     switch (review_type) {
         case REVIEW_UI:
             nbgl_useCaseReviewStart(&C_icon_stax_64,
                                     "Review configuration",
                                     NULL,
-                                    REJECT_LABEL_STAX,
+                                    CANCEL_LABEL,
                                     review_configuration,
-                                    h_reject_internal);
+                                    check_cancel);
             break;
         case REVIEW_ADDRESS:
             nbgl_useCaseReviewStart(&C_icon_stax_64,
-                                    "Review address",
+                                    "Verify " MENU_MAIN_APP_LINE1 "\naddress",
                                     NULL,
-                                    REJECT_LABEL_STAX,
+                                    CANCEL_LABEL,
                                     review_address,
-                                    h_reject_internal);
+                                    check_cancel);
             break;
 
         case REVIEW_TXN:
         default:
             nbgl_useCaseReviewStart(&C_icon_stax_64,
-                                    "Review transaction",
+                                    (txn_intro_message == NULL ? "Review transaction" : txn_intro_message),
                                     NULL,
                                     REJECT_LABEL_STAX,
                                     app_mode_shortcut() ? review_transaction_shortcut : review_transaction_static,
-                                    h_reject_internal);
+                                    check_cancel);
     }
 }
 

@@ -126,7 +126,7 @@ build_rustS:
 
 .PHONY: build_rustX
 build_rustX:
-	$(call run_docker,$(DOCKER_BOLOS_SDKX),$(TARGET_X,)make -j $(NPROC) rust)
+	$(call run_docker,$(DOCKER_BOLOS_SDKX),$(TARGET_X),make -j $(NPROC) rust)
 
 .PHONY: build_rustS2
 build_rustS2:
@@ -154,7 +154,7 @@ buildS2:
 	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),make -j $(NPROC))
 
 .PHONY: buildST
-buildST: build_rustST
+buildST:
 	$(call run_docker,$(DOCKER_BOLOS_SDKST),$(TARGET_ST),make -j $(NPROC))
 
 .PHONY: clean_glyphs
