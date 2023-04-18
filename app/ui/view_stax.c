@@ -34,10 +34,6 @@ zxerr_t secret_enabled();
 zxerr_t account_enabled();
 #endif
 
-#ifdef SHORTCUT_MODE_ENABLED
-zxerr_t shortcut_enabled();
-#endif
-
 #define APPROVE_LABEL_STAX "Sign transaction?"
 #define REJECT_LABEL_STAX "Reject transaction"
 #define CANCEL_LABEL "Cancel"
@@ -66,9 +62,6 @@ typedef enum {
     EXPERT_MODE = 0,
 #ifdef APP_ACCOUNT_MODE_ENABLED
     ACCOUNT_MODE,
-#endif
-#ifdef SHORTCUT_MODE_ENABLED
-    SHORTCUT_MODE,
 #endif
 #ifdef APP_SECRET_MODE_ENABLED
     SECRET_MODE,
@@ -280,16 +273,6 @@ static bool settings_screen_callback(uint8_t page, nbgl_pageContent_t* content) 
             }
 #endif
 
-#ifdef SHORTCUT_MODE_ENABLED
-            if (app_mode_expert() || app_mode_shortcut()) {
-                settings[SHORTCUT_MODE].initState = app_mode_shortcut();
-                settings[SHORTCUT_MODE].text = "Shortcut mode";
-                settings[SHORTCUT_MODE].tuneId = TUNE_TAP_CASUAL;
-                settings[SHORTCUT_MODE].token = SHORTCUT_MODE_TOKEN;
-                content->switchesList.nbSwitches++;
-            }
-#endif
-
 #ifdef APP_SECRET_MODE_ENABLED
             if (app_mode_expert() || app_mode_secret()) {
                 settings[SECRET_MODE].initState = app_mode_secret();
@@ -319,12 +302,6 @@ static void settings_toggle_callback(int token, __Z_UNUSED uint8_t index) {
 #ifdef APP_ACCOUNT_MODE_ENABLED
         case ACCOUNT_MODE_TOKEN:
             account_enabled();
-            break;
-#endif
-
-#ifdef SHORTCUT_MODE_ENABLED
-        case SHORTCUT_MODE_TOKEN:
-            shortcut_enabled();
             break;
 #endif
 
@@ -364,69 +341,6 @@ void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
     }
     const bool settings_icon = true;
     nbgl_useCaseHome(MENU_MAIN_APP_LINE1, &C_icon_stax_64, home_text, settings_icon, setting_screen, app_quit);
-}
-
-static zxerr_t update_data_page(uint8_t page, uint8_t *elementsPerPage) {
-    if (elementsPerPage == NULL) {
-        return zxerr_unknown;
-    }
-
-    *elementsPerPage = 0;
-    bool tooLongToFit = false;
-    uint8_t pageIdx = 0;
-    uint8_t itemIdx = 0;
-
-    // Move until current page
-    while (pageIdx < page) {
-        const uint8_t fieldsInPage = nbgl_useCaseGetNbTagValuesInPage(pairList.nbPairs, &pairList, itemIdx, &tooLongToFit);
-        itemIdx += fieldsInPage;
-        pageIdx++;
-    }
-
-    // Get printeable items for this page and retrieve them
-    const uint8_t fieldsInCurrentPage = nbgl_useCaseGetNbTagValuesInPage(pairList.nbPairs, &pairList, itemIdx, &tooLongToFit);
-    for (uint8_t idx = 0; idx < fieldsInCurrentPage; idx++) {
-        viewdata.itemIdx = itemIdx + idx;
-        viewdata.key = viewdata.keys[idx];
-        viewdata.value = viewdata.values[idx];
-        CHECK_ZXERR(h_review_update_data())
-    }
-    *elementsPerPage = fieldsInCurrentPage;
-
-    return zxerr_ok;
-}
-
-static bool transaction_screen_callback(uint8_t page, nbgl_pageContent_t *content) {
-
-    const zxerr_t err = (page == total_pages || page == LAST_PAGE_FOR_REVIEW) ? zxerr_no_data : update_data_page(page, &content->tagValueList.nbPairs);
-
-    switch(err) {
-        case zxerr_ok: {
-            content->type = TAG_VALUE_LIST;
-            content->tagValueList.pairs = pairs;
-            content->tagValueList.wrapping = false;
-            content->tagValueList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;;
-
-            for (uint8_t i = 0; i < content->tagValueList.nbPairs; i++) {
-                pairs[i].item = viewdata.keys[i];
-                pairs[i].value = viewdata.values[i];
-            }
-            break;
-        }
-        case zxerr_no_data: {
-            content->type = INFO_LONG_PRESS;
-            content->infoLongPress.icon = &C_icon_stax_64;
-            content->infoLongPress.text = APPROVE_LABEL_STAX;
-            content->infoLongPress.longPressText = HOLD_TO_APPROVE_MSG;
-            break;
-        }
-        default:
-            ZEMU_LOGF(50, "View error show\n")
-            view_error_show();
-            break;
-    }
-
-    return true;
 }
 
 static void review_configuration() {
@@ -479,29 +393,6 @@ static nbgl_layoutTagValue_t* update_item_callback(uint8_t index) {
     pair.item = viewdata.key;
     pair.value = viewdata.value;
     return &pair;
-}
-
-static void review_transaction_shortcut() {
-    if (viewdata.viewfuncGetNumItems == NULL) {
-        ZEMU_LOGF(50, "GetNumItems==NULL\n")
-        view_error_show();
-        return;
-    }
-
-    infoLongPress.icon = &C_icon_stax_64;
-    infoLongPress.text = APPROVE_LABEL_STAX;
-    infoLongPress.longPressText = HOLD_TO_APPROVE_MSG;
-
-    pairList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;
-    viewdata.viewfuncGetNumItems(&viewdata.itemCount);
-
-    pairList.nbPairs = viewdata.itemCount;
-    pairList.pairs = NULL; // to indicate that callback should be used
-    pairList.callback = update_item_callback;
-    pairList.startIndex = 0;
-
-    total_pages = nbgl_useCaseGetNbPagesForTagValueList(&pairList);
-    nbgl_useCaseForwardOnlyReview(REJECT_LABEL_STAX, NULL, transaction_screen_callback, action_callback);
 }
 
 static void review_transaction_static() {
@@ -567,7 +458,7 @@ void view_review_show_impl(unsigned int requireReply){
                                     (txn_intro_message == NULL ? "Review transaction" : txn_intro_message),
                                     NULL,
                                     REJECT_LABEL_STAX,
-                                    app_mode_shortcut() ? review_transaction_shortcut : review_transaction_static,
+                                    review_transaction_static,
                                     check_cancel);
     }
 }
