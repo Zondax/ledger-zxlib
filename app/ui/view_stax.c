@@ -55,9 +55,6 @@ static nbgl_pageInfoLongPress_t infoLongPress;
 
 static nbgl_layoutSwitch_t settings[4];
 
-static uint8_t total_pages;
-
-
 typedef enum {
     EXPERT_MODE = 0,
 #ifdef APP_ACCOUNT_MODE_ENABLED
@@ -72,7 +69,6 @@ typedef enum {
 typedef enum {
   EXPERT_MODE_TOKEN = FIRST_USER_TOKEN,
   ACCOUNT_MODE_TOKEN,
-  SHORTCUT_MODE_TOKEN,
   SECRET_MODE_TOKEN,
 } config_token_e;
 
