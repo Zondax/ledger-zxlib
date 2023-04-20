@@ -238,7 +238,7 @@ void h_review_update() {
 }
 
 static bool settings_screen_callback(uint8_t page, nbgl_pageContent_t* content) {
-    switch ((uint8_t) page)
+    switch (page)
     {
         case 0: {
             content->type = INFOS_LIST;
@@ -315,7 +315,7 @@ static void settings_toggle_callback(int token, __Z_UNUSED uint8_t index) {
 
 void setting_screen() {
     //Set return button top-left (true) botton-left (false)
-    const bool return_button_top_left = true;
+    const bool return_button_top_left = false;
     const uint8_t init_page = 0;
     const uint8_t settings_pages = 2;
     nbgl_useCaseSettings(MENU_MAIN_APP_LINE1, init_page, settings_pages, return_button_top_left,
