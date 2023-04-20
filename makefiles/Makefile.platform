@@ -100,14 +100,9 @@ LDLIBS   += -lm -lgcc -lc
 
 ##########################
 GLYPH_SRC_DIR = glyphs
-INCLUDES_PATH += $(CURDIR)/glyphs
-ifeq ($(TARGET_NAME),TARGET_STAX)
-GLYPH_FILES += $(addprefix glyphs_stax/,$(sort $(notdir $(shell find glyphs_stax/))))
-endif
 include $(BOLOS_SDK)/Makefile.glyphs
 
 APP_SOURCE_PATH += $(CURDIR)/src
-APP_SOURCE_PATH += $(CURDIR)/glyphs
 
 ZXLIB_DIR := $(CURDIR)/../deps/ledger-zxlib/
 APP_SOURCE_PATH += $(ZXLIB_DIR)/include
