@@ -406,7 +406,7 @@ __Z_INLINE void pageStringHex(char *outValue, uint16_t outValueLen,
     *pageCount = 0;
 
     //array_to_hexstr adds a null terminator
-    if (outValueLen < 1) {
+    if (outValueLen < 2) {
         return;
     }
 
@@ -414,8 +414,9 @@ __Z_INLINE void pageStringHex(char *outValue, uint16_t outValueLen,
         return;
     }
     const uint16_t msgHexLen = inValueLen * 2;
-    *pageCount = (uint8_t) (msgHexLen / outValueLen);
-    const uint16_t lastChunkLen = (msgHexLen % outValueLen);
+    // Last char from OutVal will be filled with a null terminator in array_to_hexstr function
+    *pageCount = (uint8_t) (msgHexLen / (outValueLen - 1) );
+    const uint16_t lastChunkLen = (msgHexLen % (outValueLen - 1));
 
     if (lastChunkLen > 0) {
         (*pageCount)++;
