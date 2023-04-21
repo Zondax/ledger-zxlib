@@ -298,7 +298,7 @@ void h_review_button_both() {
 //////////////////////////
 //////////////////////////
 
-void view_initialize_show_impl(uint8_t item_idx, char *statusString) {
+void view_initialize_show_impl(uint8_t item_idx, const char *statusString) {
     if (statusString == NULL ) {
         snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", MENU_MAIN_APP_LINE2);
     } else {
@@ -307,7 +307,7 @@ void view_initialize_show_impl(uint8_t item_idx, char *statusString) {
     UX_MENU_DISPLAY(item_idx, menu_initialize, NULL);
 }
 
-void view_idle_show_impl(uint8_t item_idx, char *statusString) {
+void view_idle_show_impl(uint8_t item_idx, const char *statusString) {
     if (statusString == NULL ) {
         snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", MENU_MAIN_APP_LINE2);
 #ifdef APP_SECRET_MODE_ENABLED
@@ -321,7 +321,7 @@ void view_idle_show_impl(uint8_t item_idx, char *statusString) {
     UX_MENU_DISPLAY(item_idx, menu_main, idle_preprocessor);
 }
 
-void view_message_impl(char *title, char *message) {
+void view_message_impl(const char *title, const char *message) {
     snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", title);
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "%s", message);
     UX_DISPLAY(view_message, view_prepro_idle)

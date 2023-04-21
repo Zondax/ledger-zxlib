@@ -134,9 +134,9 @@ extern view_t viewdata;
 ///////////////////////////////////////////////
 ///////////////////////////////////////////////
 
-void view_idle_show_impl(uint8_t item_idx, char *statusString);
+void view_idle_show_impl(uint8_t item_idx, const char *statusString);
 
-void view_message_impl(char *title, char *message);
+void view_message_impl(const char *title, const char *message);
 
 void view_error_show_impl();
 
@@ -144,7 +144,7 @@ void h_paging_init();
 
 void view_review_show_impl(unsigned int requireReply);
 
-void view_initialize_show_impl(uint8_t item_idx, char *statusString);
+void view_initialize_show_impl(uint8_t item_idx, const char *statusString);
 
 void h_approve(unsigned int _);
 

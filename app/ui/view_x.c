@@ -330,7 +330,7 @@ static void h_shortcut(__Z_UNUSED unsigned int _) {
 //////////////////////////
 //////////////////////////
 
-void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
+void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, const char *statusString) {
     if (statusString == NULL ) {
         snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", MENU_MAIN_APP_LINE2);
 #ifdef APP_SECRET_MODE_ENABLED
@@ -348,7 +348,7 @@ void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
     ux_flow_init(0, ux_idle_flow, NULL);
 }
 
-void view_initialize_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
+void view_initialize_show_impl(__Z_UNUSED uint8_t item_idx, const char *statusString) {
     if (statusString == NULL ) {
         snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", "Not Ready");
     } else {
@@ -407,7 +407,7 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t* const st
     ux_flow_init(0, ux_review_flow, start_step);
 }
 
-void view_message_impl(char *title, char *message) {
+void view_message_impl(const char *title, const char *message) {
     snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", title);
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", message);
     ux_layout_bnnn_paging_reset();

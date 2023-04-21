@@ -42,11 +42,11 @@ void view_init(void) {
 #endif
 }
 
-void view_idle_show(uint8_t item_idx, char *statusString) {
+void view_idle_show(uint8_t item_idx, const char *statusString) {
     view_idle_show_impl(item_idx, statusString);
 }
 
-void view_message_show(char *title, char *message) {
+void view_message_show(const char *title, const char *message) {
     view_message_impl(title, message);
 }
 
@@ -67,7 +67,7 @@ void view_review_show(review_type_e reviewKind) {
     view_review_show_impl((unsigned int)reviewKind);
 }
 
-void view_initialize_show(uint8_t item_idx, char *statusString) {
+void view_initialize_show(uint8_t item_idx, const char *statusString) {
     view_initialize_show_impl(item_idx, statusString);
 }
 
