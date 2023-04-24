@@ -96,10 +96,10 @@ static const char* txn_choice_message = "Reject transaction?";
 static const char* add_choice_message = "Reject address?";
 static const char* ui_choice_message = "Reject configuration?";
 
-static const char* txn_verified = "Transaction signed";
+static const char* txn_verified = "TRANSACTION\nSIGNED";
 static const char* txn_cancelled = "Transaction rejected";
 
-static const char* add_verified = "Address verified";
+static const char* add_verified = "ADDRESS\nVERIFIED";
 static const char* add_cancelled = "Address verification\ncancelled";
 
 static void h_expert_toggle() {
