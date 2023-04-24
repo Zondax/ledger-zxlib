@@ -322,7 +322,7 @@ void setting_screen() {
                         view_idle_show_impl_callback, settings_screen_callback, settings_toggle_callback);
 }
 
-void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, char *statusString) {
+void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, const char *statusString) {
     viewdata.key = viewdata.keys[0];
     const char *home_text = HOME_TEXT;
     if (statusString == NULL ) {

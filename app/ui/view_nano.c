@@ -70,7 +70,7 @@ void view_error_show() {
     view_error_show_impl();
 }
 
-void view_custom_error_show(char *title, char *statusString) {
+void view_custom_error_show(const char *title, const char *statusString) {
     snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", title);
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", statusString);
     view_error_show_impl();
