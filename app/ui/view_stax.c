@@ -354,19 +354,26 @@ static void review_configuration() {
 static void review_address() {
     nbgl_layoutTagValueList_t* extraPagesPtr = NULL;
 
-    if (app_mode_expert()) {
-        pairs[0].item = viewdata.keys[1];
-        pairs[0].value = viewdata.values[1];
+    uint8_t numItems = 0;
+    if (viewdata.viewfuncGetNumItems == NULL ||
+        viewdata.viewfuncGetNumItems(&numItems) != zxerr_ok ||
+        numItems > NB_MAX_DISPLAYED_PAIRS_IN_REVIEW) {
+        ZEMU_LOGF(50, "Show address error\n")
+        view_error_show();
+    }
 
-        viewdata.itemIdx = 1;
-        viewdata.key = viewdata.keys[1];
-        viewdata.value = viewdata.values[1];
+    for (uint8_t idx = 1; idx < numItems; idx++) {
+        pairs[idx - 1].item = viewdata.keys[idx];
+        pairs[idx - 1].value = viewdata.values[idx];
+
+        viewdata.itemIdx = idx;
+        viewdata.key = viewdata.keys[idx];
+        viewdata.value = viewdata.values[idx];
         h_review_update_data();
 
         pairList.nbMaxLinesForValue = 0;
-        pairList.nbPairs = 1;
+        pairList.nbPairs = idx;
         pairList.pairs = pairs;
-
         extraPagesPtr = &pairList;
     }
 
@@ -439,15 +446,20 @@ void view_review_show_impl(unsigned int requireReply){
                                     review_configuration,
                                     check_cancel);
             break;
-        case REVIEW_ADDRESS:
+        case REVIEW_ADDRESS: {
+            const char ADDRESS_TEXT[] = "Verify " MENU_MAIN_APP_LINE1 "\naddress";
+            const char *address_text = ADDRESS_TEXT;
+            #if defined(CUSTOM_ADDRESS_TEXT)
+                address_text = CUSTOM_ADDRESS_TEXT;
+            #endif
             nbgl_useCaseReviewStart(&C_icon_stax_64,
-                                    "Verify " MENU_MAIN_APP_LINE1 "\naddress",
+                                    address_text,
                                     NULL,
                                     CANCEL_LABEL,
                                     review_address,
                                     check_cancel);
             break;
-
+        }
         case REVIEW_TXN:
         default:
             nbgl_useCaseReviewStart(&C_icon_stax_64,
