@@ -339,6 +339,22 @@ void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, const char *statusString) 
     nbgl_useCaseHome(MENU_MAIN_APP_LINE1, &C_icon_stax_64, home_text, settings_icon, setting_screen, app_quit);
 }
 
+void view_message_impl(const char *title, const char *message) {
+    viewdata.value = viewdata.values[0];
+    uint32_t titleLen = 0;
+    if (title != NULL) {
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", title);
+        titleLen = strnlen(title, MAX_CHARS_PER_VALUE1_LINE);
+    }
+
+    if (message != NULL) {
+        const char sep = (titleLen > 0) ? 0x0A : 0x00;
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE - titleLen, "%c%s", sep, message);
+    }
+
+    nbgl_useCaseSpinner(viewdata.value);
+}
+
 static void review_configuration() {
     viewdata.key = viewdata.keys[0];
     viewdata.value = viewdata.values[0];
