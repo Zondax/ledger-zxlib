@@ -447,13 +447,13 @@ void view_review_show_impl(unsigned int requireReply){
                                     check_cancel);
             break;
         case REVIEW_ADDRESS: {
-            const char ADDRESS_TEXT[] = "Verify " MENU_MAIN_APP_LINE1 "\naddress";
-            const char *address_text = ADDRESS_TEXT;
             #if defined(CUSTOM_ADDRESS_TEXT)
-                address_text = CUSTOM_ADDRESS_TEXT;
+                const char ADDRESS_TEXT[] = CUSTOM_ADDRESS_TEXT;
+            #else
+                const char ADDRESS_TEXT[] = "Verify " MENU_MAIN_APP_LINE1 "\naddress";
             #endif
             nbgl_useCaseReviewStart(&C_icon_stax_64,
-                                    address_text,
+                                    ADDRESS_TEXT,
                                     NULL,
                                     CANCEL_LABEL,
                                     review_address,
