@@ -191,8 +191,8 @@ void view_custom_error_show(const char *upper, const char *lower) {
     viewdata.value = viewdata.values[0];
     MEMZERO(viewdata.key, MAX_CHARS_PER_KEY_LINE);
     MEMZERO(viewdata.value, MAX_CHARS_PER_VALUE1_LINE);
-    snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, upper);
-    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, lower);
+    snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", upper);
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", lower);
     view_error_show_impl();
 }
 
