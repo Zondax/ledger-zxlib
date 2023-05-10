@@ -121,7 +121,7 @@ const ux_menu_entry_t menu_initialize[] = {
 
 const ux_menu_entry_t menu_custom_error[] = {
     {NULL, NULL, 0, &C_icon_warning, viewdata.key, viewdata.value, 33, 12},
-    {NULL, h_error_accept, 0, &C_icon_validate, "Ok", NULL, 50, 29},
+    {NULL, h_error_accept, 0, &C_icon_validate_14, "Ok", NULL, 50, 29},
     UX_MENU_END
 };
 
