@@ -140,6 +140,8 @@ void view_message_impl(const char *title, const char *message);
 
 void view_error_show_impl();
 
+void view_custom_error_show_impl();
+
 void h_paging_init();
 
 void view_review_show_impl(unsigned int requireReply);

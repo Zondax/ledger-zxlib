@@ -148,6 +148,17 @@ UX_FLOW(
 
 ///////////
 
+UX_STEP_NOCB(ux_custom_error_flow_1_step, pbb, { &C_icon_warning, viewdata.key, viewdata.value,});
+UX_STEP_VALID(ux_custom_error_flow_2_step, pb, h_error_accept(0), { &C_icon_validate_14, "Ok"});
+
+UX_FLOW(
+    ux_custom_error_flow,
+    &ux_custom_error_flow_1_step,
+    &ux_custom_error_flow_2_step
+);
+
+///////////
+
 UX_FLOW_DEF_NOCB(ux_review_flow_1_review_title, pbb, { &C_icon_app, REVIEW_SCREEN_TITLE, REVIEW_SCREEN_TXN_VALUE,});
 UX_FLOW_DEF_NOCB(ux_review_flow_2_review_title, pbb, { &C_icon_app, REVIEW_SCREEN_TITLE, REVIEW_SCREEN_ADDR_VALUE,});
 UX_FLOW_DEF_NOCB(ux_review_flow_3_review_title, pbb, { &C_icon_app, "Review", "configuration",});
@@ -423,5 +434,13 @@ void view_error_show_impl() {
         ux_stack_push();
     }
     ux_flow_init(0, ux_error_flow, NULL);
+}
+
+void view_custom_error_show_impl() {
+    ux_layout_bnnn_paging_reset();
+    if(G_ux.stack_count == 0) {
+        ux_stack_push();
+    }
+    ux_flow_init(0, ux_custom_error_flow, NULL);
 }
 #endif

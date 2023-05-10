@@ -119,6 +119,12 @@ const ux_menu_entry_t menu_initialize[] = {
     UX_MENU_END
 };
 
+const ux_menu_entry_t menu_custom_error[] = {
+    {NULL, NULL, 0, &C_icon_warning, viewdata.key, viewdata.value, 33, 12},
+    {NULL, h_error_accept, 0, &C_icon_validate, "Ok", NULL, 50, 29},
+    UX_MENU_END
+};
+
 static const bagl_element_t view_message[] = {
     UI_BACKGROUND,
     UI_LabelLine(UIID_LABEL + 0, 0, 8, UI_SCREEN_WIDTH, UI_11PX, UI_WHITE, UI_BLACK, viewdata.key),
@@ -329,6 +335,10 @@ void view_message_impl(const char *title, const char *message) {
 
 void view_error_show_impl() {
     UX_DISPLAY(view_error, view_prepro)
+}
+
+void view_custom_error_show_impl() {
+    UX_MENU_DISPLAY(0, menu_custom_error, NULL);
 }
 
 void h_expert_toggle() {

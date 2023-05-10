@@ -186,6 +186,16 @@ void view_error_show() {
     view_error_show_impl();
 }
 
+void view_custom_error_show(const char *upper, const char *lower) {
+    viewdata.key = viewdata.keys[0];
+    viewdata.value = viewdata.values[0];
+    MEMZERO(viewdata.key, MAX_CHARS_PER_KEY_LINE);
+    MEMZERO(viewdata.value, MAX_CHARS_PER_VALUE1_LINE);
+    snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, upper);
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, lower);
+    view_error_show_impl();
+}
+
 void view_error_show_impl() {
     nbgl_useCaseChoice(&C_round_warning_64px, viewdata.key, viewdata.value, "Ok", NULL, confirm_setting);
 }
