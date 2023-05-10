@@ -64,7 +64,7 @@ void view_message_show(const char *title, const char *message);
 /// view_error (error view)
 void view_error_show();
 
-void view_custom_error_show(const char *title, const char *statusString);
+void view_custom_error_show(const char *upper, const char *lower);
 
 void view_review_init(viewfunc_getItem_t viewfuncGetItem,
                       viewfunc_getNumItems_t viewfuncGetNumItems,
