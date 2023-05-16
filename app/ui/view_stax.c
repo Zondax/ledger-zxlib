@@ -200,6 +200,21 @@ void view_error_show_impl() {
     nbgl_useCaseChoice(&C_round_warning_64px, viewdata.key, viewdata.value, "Ok", NULL, confirm_setting);
 }
 
+static uint8_t get_pair_number() {
+    uint8_t numItems = 0;
+    uint8_t numPairs = 0;
+    viewdata.viewfuncGetNumItems(&numItems);
+    for (uint8_t i = 0; i < numItems; i++) {
+        viewdata.viewfuncGetItem(
+            i,
+            viewdata.key, MAX_CHARS_PER_KEY_LINE,
+            viewdata.value, MAX_CHARS_PER_VALUE1_LINE,
+            0, &viewdata.pageCount);
+        numPairs += viewdata.pageCount;
+    }
+    return numPairs;
+}
+
 zxerr_t h_review_update_data() {
     if (viewdata.viewfuncGetNumItems == NULL) {
         ZEMU_LOGF(50, "h_review_update_data - GetNumItems == NULL\n")
@@ -221,17 +236,35 @@ zxerr_t h_review_update_data() {
 
     CHECK_ZXERR(viewdata.viewfuncGetNumItems(&viewdata.itemCount))
 
-    if (viewdata.itemIdx  >= viewdata.itemCount) {
-        return zxerr_no_data;
+    uint8_t accPages = 0;
+    for (uint8_t i = 0; i < viewdata.itemCount; i++) {
+        CHECK_ZXERR(viewdata.viewfuncGetItem(
+                i,
+                viewdata.key, MAX_CHARS_PER_KEY_LINE,
+                viewdata.value, MAX_CHARS_PER_VALUE1_LINE,
+                0, &viewdata.pageCount))
+        if (viewdata.pageCount == 0) {
+            ZEMU_LOGF(50, "pageCount is 0!")
+            return zxerr_no_data;
+        }
+
+        if (accPages + viewdata.pageCount > viewdata.itemIdx) {
+            const uint8_t innerIdx = viewdata.itemIdx - accPages;
+            CHECK_ZXERR(viewdata.viewfuncGetItem(
+                    i,
+                    viewdata.key, MAX_CHARS_PER_KEY_LINE,
+                    viewdata.value, MAX_CHARS_PER_VALUE1_LINE,
+                    innerIdx, &viewdata.pageCount))
+            if (viewdata.pageCount > 1) {
+                const uint8_t titleLen = strnlen(viewdata.key, MAX_CHARS_PER_KEY_LINE);
+                snprintf(viewdata.key + titleLen, MAX_CHARS_PER_KEY_LINE - titleLen, " (%d/%d)", innerIdx + 1, viewdata.pageCount);
+            }
+            return zxerr_ok;
+        }
+        accPages += viewdata.pageCount;
     }
 
-    CHECK_ZXERR(viewdata.viewfuncGetItem(
-            viewdata.itemIdx,
-            viewdata.key, MAX_CHARS_PER_KEY_LINE,
-            viewdata.value, MAX_CHARS_PER_VALUE1_LINE,
-            viewdata.pageIdx, &viewdata.pageCount))
-
-    return zxerr_ok;
+    return zxerr_no_data;
 }
 
 void h_review_update() {
@@ -436,9 +469,7 @@ static void review_transaction_static() {
     infoLongPress.longPressText = HOLD_TO_APPROVE_MSG;
 
     pairList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;
-    viewdata.viewfuncGetNumItems(&viewdata.itemCount);
-
-    pairList.nbPairs = viewdata.itemCount;
+    pairList.nbPairs = get_pair_number();
     pairList.pairs = NULL; // to indicate that callback should be used
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
