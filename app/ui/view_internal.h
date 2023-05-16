@@ -30,6 +30,7 @@
 #define MAX_CHARS_HEXMESSAGE        160
 #elif defined(TARGET_STAX)
 #include "nbgl_use_case.h"
+#define MAX_LINES_PER_PAGE_REVIEW   NB_MAX_LINES_IN_REVIEW
 #define MAX_CHARS_PER_KEY_LINE      64
 #define MAX_CHARS_PER_VALUE1_LINE   180
 #define MAX_CHARS_HEXMESSAGE        160
