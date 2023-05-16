@@ -501,7 +501,7 @@ void view_review_show_impl(unsigned int requireReply){
                                     NULL,
                                     CANCEL_LABEL,
                                     review_configuration,
-                                    check_cancel);
+                                    cancel);
             break;
         case REVIEW_ADDRESS: {
             #if defined(CUSTOM_ADDRESS_TEXT)
@@ -514,7 +514,7 @@ void view_review_show_impl(unsigned int requireReply){
                                     NULL,
                                     CANCEL_LABEL,
                                     review_address,
-                                    check_cancel);
+                                    cancel);
             break;
         }
         case REVIEW_TXN:
