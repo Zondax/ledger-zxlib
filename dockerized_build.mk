@@ -93,12 +93,9 @@ endef
 all:
 	@$(MAKE) clean
 	@$(MAKE) buildS
-	@$(MAKE) clean_glyphs
 	@$(MAKE) buildX
-	@$(MAKE) clean_glyphs
 	@$(MAKE) buildS2
 ifdef ZXLIB_COMPILE_STAX
-	@$(MAKE) clean_glyphs
 	@$(MAKE) buildST
 endif # ZXLIB_COMPILE_STAX
 
@@ -157,11 +154,6 @@ buildS2:
 buildST:
 	$(call run_docker,$(DOCKER_BOLOS_SDKST),$(TARGET_ST),make -j $(NPROC))
 
-.PHONY: clean_glyphs
-clean_glyphs:
-	@echo "Removing glyphs files"
-	@rm -f app/glyphs/glyphs.c app/glyphs/glyphs.h || true
-
 .PHONY: clean_output
 clean_output:
 	@echo "Removing output files"
@@ -172,7 +164,7 @@ clean_build:
 	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),make clean)
 
 .PHONY: clean
-clean: clean_output clean_build clean_glyphs
+clean: clean_output clean_build
 
 .PHONY: listvariants
 listvariants:

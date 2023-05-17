@@ -99,7 +99,6 @@ LD       := $(GCCPATH)arm-none-eabi-gcc
 LDLIBS   += -lm -lgcc -lc
 
 ##########################
-GLYPH_SRC_DIR = glyphs
 include $(BOLOS_SDK)/Makefile.glyphs
 
 APP_SOURCE_PATH += $(CURDIR)/src
