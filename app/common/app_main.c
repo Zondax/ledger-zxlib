@@ -148,6 +148,9 @@ void app_init() {
         view_idle_show(0, NULL);
     }
 #else
+    #ifdef SUPPORT_SR25519
+    zeroize_sr25519_signdata();
+    #endif
     view_idle_show(0, NULL);
 #endif // HAVE_SWAP
 #endif // POSTPONE_MAIN_SCREEN_INIT
@@ -164,9 +167,6 @@ void app_init() {
 #endif // HAVE_BLE
 
 }
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-noreturn"
 
 void app_main() {
     volatile uint32_t rx = 0, tx = 0, flags = 0;
@@ -230,5 +230,3 @@ void app_main() {
         END_TRY;
     }
 }
-
-#pragma clang diagnostic pop
