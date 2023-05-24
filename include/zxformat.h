@@ -380,6 +380,11 @@ __Z_INLINE void pageStringExt(char *outValue, uint16_t outValueLen,
     *pageCount = (uint8_t) (inValueLen / outValueLen);
     const uint16_t lastChunkLen = (inValueLen % outValueLen);
 
+    // outValueLen won't be biger than 127 but check this anyways
+    if (lastChunkLen > (UINT8_MAX-1/2) || outValueLen > (UINT8_MAX-1/2)) {
+        return;
+    }
+
     if (lastChunkLen > 0) {
         (*pageCount)++;
     }
@@ -417,6 +422,11 @@ __Z_INLINE void pageStringHex(char *outValue, uint16_t outValueLen,
     // Last char from OutVal will be filled with a null terminator in array_to_hexstr function
     *pageCount = (uint8_t) (msgHexLen / (outValueLen - 1) );
     const uint16_t lastChunkLen = (msgHexLen % (outValueLen - 1));
+
+    // outValueLen won't be biger than 127 but check this anyways
+    if (lastChunkLen > (UINT8_MAX-1/2) || outValueLen > (UINT8_MAX-1/2)) {
+        return;
+    }
 
     if (lastChunkLen > 0) {
         (*pageCount)++;
