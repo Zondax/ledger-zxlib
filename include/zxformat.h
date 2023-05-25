@@ -269,14 +269,14 @@ __Z_INLINE uint64_t uint64_from_BEarray(const uint8_t data[8]) {
     return result;
 }
 
-__Z_INLINE uint32_t array_to_hexstr(char *dst, uint16_t dstLen, const uint8_t *src, uint8_t count) {
+__Z_INLINE uint32_t array_to_hexstr(char *dst, uint16_t dstLen, const uint8_t *src, uint16_t count) {
     MEMZERO(dst, dstLen);
     if (dstLen < (count * 2 + 1)) {
         return 0;
     }
 
     const char hexchars[] = "0123456789abcdef";
-    for (uint8_t i = 0; i < count; i++, src++) {
+    for (uint16_t i = 0; i < count; i++, src++) {
         *dst++ = hexchars[*src >> 4u];
         *dst++ = hexchars[*src & 0x0Fu];
     }
@@ -285,14 +285,14 @@ __Z_INLINE uint32_t array_to_hexstr(char *dst, uint16_t dstLen, const uint8_t *s
     return (uint32_t) (count * 2);
 }
 
-__Z_INLINE uint32_t array_to_hexstr_uppercase(char *dst, uint16_t dstLen, const uint8_t *src, uint8_t count) {
+__Z_INLINE uint32_t array_to_hexstr_uppercase(char *dst, uint16_t dstLen, const uint8_t *src, uint16_t count) {
     MEMZERO(dst, dstLen);
     if (dstLen < (count * 2 + 1)) {
         return 0;
     }
 
     const char hexchars[] = "0123456789ABCDEF";
-    for (uint8_t i = 0; i < count; i++, src++) {
+    for (uint16_t i = 0; i < count; i++, src++) {
         *dst++ = hexchars[*src >> 4u];
         *dst++ = hexchars[*src & 0x0Fu];
     }
@@ -380,11 +380,6 @@ __Z_INLINE void pageStringExt(char *outValue, uint16_t outValueLen,
     *pageCount = (uint8_t) (inValueLen / outValueLen);
     const uint16_t lastChunkLen = (inValueLen % outValueLen);
 
-    // outValueLen won't be biger than 127 but check this anyways
-    if (lastChunkLen > (UINT8_MAX-1/2) || outValueLen > (UINT8_MAX-1/2)) {
-        return;
-    }
-
     if (lastChunkLen > 0) {
         (*pageCount)++;
     }
@@ -422,11 +417,6 @@ __Z_INLINE void pageStringHex(char *outValue, uint16_t outValueLen,
     // Last char from OutVal will be filled with a null terminator in array_to_hexstr function
     *pageCount = (uint8_t) (msgHexLen / (outValueLen - 1) );
     const uint16_t lastChunkLen = (msgHexLen % (outValueLen - 1));
-
-    // outValueLen won't be biger than 127 but check this anyways
-    if (lastChunkLen > (UINT8_MAX-1/2) || outValueLen > (UINT8_MAX-1/2)) {
-        return;
-    }
 
     if (lastChunkLen > 0) {
         (*pageCount)++;
