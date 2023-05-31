@@ -32,18 +32,16 @@
 #define MEMCMP memcmp
 #define MEMZERO explicit_bzero
 
+#define IS_UX_ALLOWED (G_ux_params.len != BOLOS_UX_IGNORE && G_ux_params.len != BOLOS_UX_CONTINUE)
 #if defined(TARGET_NANOX) || defined(TARGET_NANOS2)
 #define NV_CONST const
 #define NV_VOLATILE volatile
-#define IS_UX_ALLOWED (G_ux_params.len != BOLOS_UX_IGNORE && G_ux_params.len != BOLOS_UX_CONTINUE)
 #elif defined(TARGET_NANOS)
 #define NV_CONST
 #define NV_VOLATILE
-#define IS_UX_ALLOWED (G_ux_params.len != BOLOS_UX_IGNORE && G_ux_params.len != BOLOS_UX_CONTINUE)
 #else
 #define NV_CONST const
 #define NV_VOLATILE volatile
-#define IS_UX_ALLOWED false
 #endif
 
 #define CHECK_APP_CANARY() check_app_canary();
