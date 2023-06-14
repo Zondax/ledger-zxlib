@@ -106,6 +106,10 @@ static void h_expert_toggle() {
     app_mode_set_expert(!app_mode_expert());
 }
 
+static void confirm_error(__Z_UNUSED bool confirm) {
+    h_error_accept(0);
+}
+
 static void confirm_callback(bool confirm) {
     const char* message = NULL;
     switch (review_type) {
@@ -193,7 +197,8 @@ void view_custom_error_show(const char *upper, const char *lower) {
     MEMZERO(viewdata.value, MAX_CHARS_PER_VALUE1_LINE);
     snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", upper);
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", lower);
-    view_error_show_impl();
+
+    nbgl_useCaseChoice(&C_round_warning_64px, viewdata.key, viewdata.value, "Ok", "", confirm_error);
 }
 
 void view_error_show_impl() {
