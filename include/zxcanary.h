@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   (c) 2018 - 2022 Zondax GmbH
+*   (c) 2018 - 2023 Zondax AG
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -14,7 +14,15 @@
 *  limitations under the License.
 ********************************************************************************/
 #pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#define ZXLIB_MAJOR     19
-#define ZXLIB_MINOR     5
-#define ZXLIB_PATCH     5
+#include "zxerror.h"
+
+void init_zondax_canary();
+void check_zondax_canary();
+
+#ifdef __cplusplus
+}
+#endif
