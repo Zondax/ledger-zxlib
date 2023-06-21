@@ -52,7 +52,8 @@ void init_zondax_canary() {
 
 void check_zondax_canary() {
 #if defined(HAVE_ZONDAX_CANARY)
-    if (!initialized && ZONDAX_CANARY != dynamicCanary) {
+    if (!initialized || ZONDAX_CANARY != dynamicCanary) {
+        ZEMU_LOGF(50, "ZONDAX CANARY TRIGGERED!!!!!\n")
         handle_stack_overflow();
     }
 #endif
