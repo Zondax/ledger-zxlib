@@ -14,6 +14,7 @@
 *  limitations under the License.
 ********************************************************************************/
 #include "zxmacros.h"
+#include "zxcanary.h"
 
 #ifdef __cplusplus
 #pragma clang diagnostic push
@@ -36,6 +37,7 @@ void handle_stack_overflow() {
 __Z_UNUSED void check_app_canary() {
 #if defined (TARGET_NANOS) || defined(TARGET_NANOX) || defined(TARGET_NANOS2) || defined(TARGET_STAX)
     if (app_stack_canary != APP_STACK_CANARY_MAGIC) handle_stack_overflow();
+    check_zondax_canary();
 #endif
 }
 
