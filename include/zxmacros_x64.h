@@ -25,6 +25,7 @@
 #define MEMCMP memcmp
 #define MEMCPY_NV memcpy
 
+#define CX_OK 0
 #define PIC(x) (x)
 #define CHECK_APP_CANARY() {}
 #define CX_ECCINFO_PARITY_ODD 1u
