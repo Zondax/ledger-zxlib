@@ -60,4 +60,22 @@ extern unsigned int app_stack_canary;
 #define UX_WAIT(){}
 #endif
 
+// Macros for handling no-throw methods error check
+#define CHECK_CXERROR(CALL)  \
+  do {                       \
+    cx_err_t err = CALL;     \
+    if (err != CX_OK) {      \
+      return err;            \
+    }                        \
+  } while (0);
+
+
+#define CATCH_CXERROR(CALL)  \
+  do {                       \
+    cx_err_t err = CALL;     \
+    if (err != CX_OK) {      \
+      goto catch_cx_error;   \
+    }                        \
+  } while (0);
+
 #endif
