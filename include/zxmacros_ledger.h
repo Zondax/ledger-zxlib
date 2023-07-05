@@ -63,8 +63,8 @@ extern unsigned int app_stack_canary;
 // Macros for handling no-throw methods error check
 #define CHECK_CXERROR(CALL)  \
   do {                       \
-    cx_err_t err = CALL;     \
-    if (err != CX_OK) {      \
+    cx_err_t __cx_err = CALL;     \
+    if (__cx_err != CX_OK) {      \
       return err;            \
     }                        \
   } while (0);
@@ -72,8 +72,8 @@ extern unsigned int app_stack_canary;
 
 #define CATCH_CXERROR(CALL)  \
   do {                       \
-    cx_err_t err = CALL;     \
-    if (err != CX_OK) {      \
+    cx_err_t __cx_err = CALL;     \
+    if (__cx_err != CX_OK) {      \
       goto catch_cx_error;   \
     }                        \
   } while (0);
