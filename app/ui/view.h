@@ -28,12 +28,40 @@
 #endif
 #endif
 
+typedef struct {
+    uint8_t displayIdx;
+    char *outKey;
+    uint16_t outKeyLen;
+    char *outVal;
+    uint16_t outValLen;
+    uint8_t pageIdx;
+    uint8_t *pageCount;
+} ui_field_t;
+
+typedef struct {
+    uint8_t itemIdx;
+    uint8_t itemCount;
+    uint8_t pageIdx;
+    uint8_t pageCount;
+} paging_t;
+
+#define MAX_DEPTH   10
+typedef struct {
+    uint8_t level;
+    uint8_t trace[MAX_DEPTH];
+    paging_t paging;
+} inner_state_t;
+
 typedef zxerr_t (*viewfunc_getNumItems_t)(uint8_t *num_items);
 
 typedef zxerr_t (*viewfunc_getItem_t)(int8_t displayIdx,
                                       char *outKey, uint16_t outKeyLen,
                                       char *outVal, uint16_t outValLen,
                                       uint8_t pageIdx, uint8_t *pageCount);
+
+typedef zxerr_t (*viewfunc_getInnerItem_t)(uint8_t depth_level, uint8_t *trace, ui_field_t *ui_field);
+
+typedef bool (*viewfunc_canInspectItem_t)(uint8_t depth_level, uint8_t *trace, uint8_t innerItemIdx);
 
 typedef void (*viewfunc_accept_t)();
 
@@ -69,5 +97,9 @@ void view_custom_error_show(const char *upper, const char *lower);
 void view_review_init(viewfunc_getItem_t viewfuncGetItem,
                       viewfunc_getNumItems_t viewfuncGetNumItems,
                       viewfunc_accept_t viewfuncAccept);
+
+void view_inspect_init(viewfunc_getInnerItem_t view_funcGetInnerItem,
+                      viewfunc_getNumItems_t view_funcGetInnerNumItems,
+                      viewfunc_canInspectItem_t view_funcCanInspectItem);
 
 void view_review_show(review_type_e reviewKind);

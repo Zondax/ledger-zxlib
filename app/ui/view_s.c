@@ -28,6 +28,7 @@
 #include "view_templates.h"
 #include "zxutils_ledger.h"
 #include "view_nano.h"
+#include "view_nano_inspect.h"
 
 #define BAGL_WIDTH 128
 #define BAGL_HEIGHT 32
@@ -212,13 +213,13 @@ const bagl_element_t* idle_preprocessor(__Z_UNUSED const ux_menu_entry_t* entry,
 const bagl_element_t *view_prepro(const bagl_element_t *element) {
     switch (element->component.userid) {
         case UIID_ICONLEFT:
-            if (!h_paging_can_decrease()){
+            if (!h_paging_can_decrease() || h_paging_inspect_go_to_root_screen()){
                 return NULL;
             }
             UX_CALLBACK_SET_INTERVAL(2000)
             break;
         case UIID_ICONRIGHT:
-            if (!h_paging_can_increase()){
+            if (!h_paging_can_increase() || h_paging_inspect_back_screen()){
                 return NULL;
             }
             UX_CALLBACK_SET_INTERVAL(2000)
@@ -255,10 +256,10 @@ void h_review_update() {
             break;
         default:
             view_error_show();
-            UX_WAIT();
             break;
     }
 }
+
 
 void h_review_button_left() {
     zemu_log_stack("h_review_button_left");
@@ -286,11 +287,13 @@ static void h_review_action(unsigned int requireReply) {
     }
 
     zemu_log_stack("quick accept");
-    if (app_mode_expert() || app_mode_shortcut()) {
+    if (app_mode_shortcut()) {
         set_accept_item();
         h_review_update();
         return;
     }
+
+    inspect_init();
 }
 
 void h_review_button_both() {
