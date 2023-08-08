@@ -30,6 +30,7 @@
 #include "view_templates.h"
 #include "tx.h"
 #include "view_nano.h"
+#include "view_nano_inspect.h"
 
 #ifdef APP_SECRET_MODE_ENABLED
 #include "secret.h"
@@ -62,7 +63,6 @@ static void h_shortcut_toggle();
 static void h_shortcut_update();
 #endif
 
-#define MAX_REVIEW_UX_SCREENS 10
 static void h_shortcut(unsigned int);
 static void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t* const start_step);
 const ux_flow_step_t *ux_review_flow[MAX_REVIEW_UX_SCREENS];
@@ -164,7 +164,7 @@ UX_FLOW_DEF_NOCB(ux_review_flow_2_review_title, pbb, { &C_icon_app, REVIEW_SCREE
 UX_FLOW_DEF_NOCB(ux_review_flow_3_review_title, pbb, { &C_icon_app, "Review", "configuration",});
 
 UX_STEP_INIT(ux_review_flow_2_start_step, NULL, NULL, { h_review_loop_start(); });
-UX_STEP_NOCB_INIT(ux_review_flow_2_step, bnnn_paging, { h_review_loop_inside(); }, { .title = viewdata.key, .text = viewdata.value, });
+UX_STEP_CB_INIT(ux_review_flow_2_step, bnnn_paging, h_review_loop_inside(), inspect_init(), { .title = viewdata.key, .text = viewdata.value, });
 UX_STEP_INIT(ux_review_flow_2_end_step, NULL, NULL, { h_review_loop_end(); });
 UX_STEP_VALID(ux_review_flow_3_step, pb, h_approve(0), { &C_icon_validate_14, APPROVE_LABEL });
 UX_STEP_VALID(ux_review_flow_4_step, pb, h_reject(review_type), { &C_icon_crossmark, REJECT_LABEL });
@@ -383,6 +383,10 @@ void view_review_show_impl(unsigned int requireReply){
     }
 
     run_ux_review_flow((review_type_e)review_type, NULL);
+}
+
+void run_root_txn_flow() {
+    run_ux_review_flow(review_type, &ux_review_flow_2_start_step);
 }
 
 // Build review UX flow and run it

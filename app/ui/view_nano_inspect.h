@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   (c) 2018 - 2022 Zondax GmbH
+*   (c) 2018 - 2023 Zondax AG
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -14,7 +14,19 @@
 *  limitations under the License.
 ********************************************************************************/
 #pragma once
+#include <stdbool.h>
+#include "view.h"
 
-#define ZXLIB_MAJOR     19
-#define ZXLIB_MINOR     8
-#define ZXLIB_PATCH     0
+bool h_can_increase(paging_t *paging, uint8_t actionsCount);
+
+void h_increase(paging_t *paging, uint8_t actionsCount);
+
+bool h_can_decrease(paging_t *paging);
+
+void h_decrease(paging_t *paging);
+
+void inspect_init();
+
+bool h_paging_inspect_go_to_root_screen();
+
+bool h_paging_inspect_back_screen();
