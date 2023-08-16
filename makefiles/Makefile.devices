@@ -16,7 +16,11 @@
 #*******************************************************************************
 
 ifeq ($(TARGET_NAME),TARGET_NANOS)
+ifeq ($(HAVE_SWAP),1)
+APP_LOAD_PARAMS += --appFlags 0x800
+else
 APP_LOAD_PARAMS += --appFlags 0x000
+endif
 
 ifeq ($(NANOS_STACK_SIZE),)
 APP_STACK_SIZE:=3150
@@ -30,21 +34,33 @@ OUTPUT_INSTALLER := $(CURDIR)/pkg/installer_s.sh
 endif
 
 ifeq ($(TARGET_NAME),TARGET_NANOX)
+ifeq ($(HAVE_SWAP),1)
+APP_LOAD_PARAMS += --appFlags 0xA00
+else
 APP_LOAD_PARAMS += --appFlags 0x200
+endif
 ICONNAME:=$(CURDIR)/nanox_icon.gif
 OUTPUT_ELF ?= $(CURDIR)/output/app_x.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/installer_x.sh
 endif
 
 ifeq ($(TARGET_NAME),TARGET_NANOS2)
+ifeq ($(HAVE_SWAP),1)
+APP_LOAD_PARAMS += --appFlags 0x800
+else
 APP_LOAD_PARAMS += --appFlags 0x000
+endif
 ICONNAME:=$(CURDIR)/nanox_icon.gif
 OUTPUT_ELF ?= $(CURDIR)/output/app_s2.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/installer_s2.sh
 endif
 
 ifeq ($(TARGET_NAME),TARGET_STAX)
+ifeq ($(HAVE_SWAP),1)
+APP_LOAD_PARAMS += --appFlags 0xA00
+else
 APP_LOAD_PARAMS += --appFlags 0x200
+endif
 ICONNAME:=$(CURDIR)/stax_icon.gif
 OUTPUT_ELF ?= $(CURDIR)/output/app_stax.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/installer_stax.sh
