@@ -30,7 +30,7 @@
 #include "app_mode.h"
 #ifdef HAVE_SWAP
 #include "swap.h"
-#endif
+#endif // HAVE_SWAP
 
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
@@ -157,11 +157,6 @@ void app_init() {
 
 #ifdef HAVE_BLE
     // Enable Bluetooth
-#ifdef HAVE_SWAP
-    if (G_swap_state.called_from_swap) {
-        memset(&G_io_asynch_ux_callback, 0, sizeof(G_io_asynch_ux_callback));
-    }
-#endif // HAVE_SWAP
     BLE_power(0, NULL);
     BLE_power(1, NULL);
 #endif // HAVE_BLE
@@ -220,11 +215,6 @@ void app_main() {
             }
             FINALLY;
             {
-            #ifdef HAVE_SWAP
-                if (G_swap_state.called_from_swap && G_swap_state.should_exit) {
-                    os_sched_exit(0);
-                }
-            #endif
             }
         }
         END_TRY;
