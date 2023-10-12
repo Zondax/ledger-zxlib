@@ -31,6 +31,10 @@
 #define CX_ECCINFO_PARITY_ODD 1u
 #define CX_ECCINFO_xGTn 2u
 
+#ifndef UNUSED
+#define UNUSED(x) (void)x
+#endif
+
 #ifndef __APPLE__
 #define MEMZERO explicit_bzero
 #else
