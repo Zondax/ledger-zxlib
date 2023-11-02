@@ -700,7 +700,7 @@ utf8_int8_t *c = utf8_null;
 size_t bytes = 0;
 
 /* Find the end of the string or stop when n is reached */
-while ('\0' != src[bytes] && bytes < n) {
+while (bytes < n && '\0' != src[bytes]) {
 bytes++;
 }
 
@@ -722,7 +722,7 @@ return utf8_null;
 bytes = 0;
 
 /* copy src byte-by-byte into our new utf8 string */
-while ('\0' != src[bytes] && bytes < n) {
+while (bytes < n && '\0' != src[bytes]) {
 c[bytes] = src[bytes];
 bytes++;
 }
