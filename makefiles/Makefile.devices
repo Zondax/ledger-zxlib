@@ -22,10 +22,8 @@ else
 APP_LOAD_PARAMS += --appFlags 0x000
 endif
 
-ifeq ($(NANOS_STACK_SIZE),)
-APP_STACK_SIZE:=3150
-else
-APP_STACK_SIZE:= $(NANOS_STACK_SIZE)
+ifneq ($(NANOS_STACK_SIZE),)
+$(error NANOS_STACK_SIZE is deprecated. Remove NANOS_STACK_SIZE definition in app/Makefile)
 endif
 
 ICONNAME:=$(CURDIR)/nanos_icon.gif
