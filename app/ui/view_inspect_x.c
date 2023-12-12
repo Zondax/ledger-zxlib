@@ -20,6 +20,7 @@
 #include "view_nano_inspect.h"
 #include "view_templates.h"
 #include "view_nano.h"
+#include "zxmacros.h"
 
 extern const ux_flow_step_t *ux_review_flow[MAX_REVIEW_UX_SCREENS];
 

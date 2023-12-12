@@ -20,6 +20,7 @@
 #include "view_internal.h"
 #include "view_templates.h"
 #include "view_nano.h"
+#include "zxmacros.h"
 
 void h_inspect_init() {
     ZEMU_LOGF(50, "h_inspect_init\n")
