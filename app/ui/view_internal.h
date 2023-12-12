@@ -21,6 +21,7 @@
 #include "coin.h"
 #include "zxerror.h"
 #include "view.h"
+#include "zxmacros.h"
 
 #define CUR_FLOW G_ux.flow_stack[G_ux.stack_count-1]
 
