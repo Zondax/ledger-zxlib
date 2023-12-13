@@ -17,6 +17,7 @@
 
 #include "view_internal.h"
 #include "actions.h"
+#include "zxmacros.h"
 
 view_t viewdata;
 unsigned int review_type = 0;
