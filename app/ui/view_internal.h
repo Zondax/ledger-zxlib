@@ -66,6 +66,15 @@ static const char* review_addrvalue = REVIEW_SCREEN_ADDR_VALUE;
 static const char* review_keyconfig = "Review";
 static const char* review_configvalue = "configuration";
 
+// Review msg string can be customizable in each app
+#if !defined(REVIEW_MSG_TITLE) && !defined(REVIEW_MSG_VALUE)
+#define REVIEW_MSG_TITLE "Please"
+#define REVIEW_MSG_VALUE "review"
+#endif
+
+static const char *review_msgKey = REVIEW_MSG_TITLE;
+static const char *review_msgValue = REVIEW_MSG_VALUE;
+
 static const char* shortcut_key = SHORTCUT_TITLE;
 static const char* shortcut_value = SHORTCUT_VALUE;
 

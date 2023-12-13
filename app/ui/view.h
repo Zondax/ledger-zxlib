@@ -72,6 +72,7 @@ typedef enum {
   REVIEW_UI = 0,
   REVIEW_ADDRESS,
   REVIEW_TXN,
+  REVIEW_MSG,
 } review_type_e;
 
 #ifdef APP_SECRET_MODE_ENABLED
