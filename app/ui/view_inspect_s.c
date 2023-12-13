@@ -21,6 +21,7 @@
 #include "view_templates.h"
 #include "ux.h"
 #include "bagl.h"
+#include "zxmacros.h"
 
 static void h_inspect_button_left();
 static void h_inspect_button_right();
