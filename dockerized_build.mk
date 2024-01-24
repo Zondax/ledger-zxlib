@@ -95,7 +95,7 @@ all:
 	@$(MAKE) buildS
 	@$(MAKE) buildX
 	@$(MAKE) buildS2
-ifdef ZXLIB_COMPILE_STAX
+ifeq ($(ZXLIB_COMPILE_STAX),1)
 	@$(MAKE) buildST
 endif # ZXLIB_COMPILE_STAX
 

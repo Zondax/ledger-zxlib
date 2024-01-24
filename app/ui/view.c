@@ -88,7 +88,7 @@ void h_reject(unsigned int requireReply) {
     view_idle_show(0, NULL);
     UX_WAIT();
 
-    if (requireReply != REVIEW_UI) {
+    if (requireReply != REVIEW_UI && requireReply != REVIEW_MSG) {
         app_reject();
     }
 }
