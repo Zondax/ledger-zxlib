@@ -1,6 +1,6 @@
 #*******************************************************************************
 #  Ledger App
-#  (c) 2018 - 2023 Zondax AG
+#  (c) 2018 - 2024 Zondax AG
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,6 +15,11 @@
 #  limitations under the License.
 #*******************************************************************************
 
+INSTALLER_NAME ?= installer
+ICON_NAME ?= icon
+ELF_NAME ?= app
+
+#######################################
 ifeq ($(TARGET_NAME),TARGET_NANOS)
 ifeq ($(HAVE_SWAP),1)
 APP_LOAD_PARAMS += --appFlags 0x800
@@ -26,40 +31,41 @@ ifneq ($(NANOS_STACK_SIZE),)
 $(error NANOS_STACK_SIZE is deprecated. Remove NANOS_STACK_SIZE definition in app/Makefile)
 endif
 
-ICONNAME:=$(CURDIR)/nanos_icon.gif
-OUTPUT_ELF ?= $(CURDIR)/output/app_s.elf
-OUTPUT_INSTALLER := $(CURDIR)/pkg/installer_s.sh
+ICONNAME:=$(CURDIR)/nanos_$(ICON_NAME).gif
+OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_s.elf
+OUTPUT_INSTALLER := $(CURDIR)/pkg/$(INSTALLER_NAME)_s.sh
 endif
-
+#######################################
 ifeq ($(TARGET_NAME),TARGET_NANOX)
 ifeq ($(HAVE_SWAP),1)
 APP_LOAD_PARAMS += --appFlags 0xA00
 else
 APP_LOAD_PARAMS += --appFlags 0x200
 endif
-ICONNAME:=$(CURDIR)/nanox_icon.gif
-OUTPUT_ELF ?= $(CURDIR)/output/app_x.elf
-OUTPUT_INSTALLER:= $(CURDIR)/pkg/installer_x.sh
+ICONNAME:=$(CURDIR)/nanox_$(ICON_NAME).gif
+OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_x.elf
+OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_x.sh
 endif
-
+#######################################
 ifeq ($(TARGET_NAME),TARGET_NANOS2)
 ifeq ($(HAVE_SWAP),1)
 APP_LOAD_PARAMS += --appFlags 0x800
 else
 APP_LOAD_PARAMS += --appFlags 0x000
 endif
-ICONNAME:=$(CURDIR)/nanox_icon.gif
-OUTPUT_ELF ?= $(CURDIR)/output/app_s2.elf
-OUTPUT_INSTALLER:= $(CURDIR)/pkg/installer_s2.sh
+ICONNAME:=$(CURDIR)/nanox_$(ICON_NAME).gif
+OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_s2.elf
+OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_s2.sh
 endif
-
+#######################################
 ifeq ($(TARGET_NAME),TARGET_STAX)
 ifeq ($(HAVE_SWAP),1)
 APP_LOAD_PARAMS += --appFlags 0xA00
 else
 APP_LOAD_PARAMS += --appFlags 0x200
 endif
-ICONNAME:=$(CURDIR)/stax_icon.gif
-OUTPUT_ELF ?= $(CURDIR)/output/app_stax.elf
-OUTPUT_INSTALLER:= $(CURDIR)/pkg/installer_stax.sh
+ICONNAME:=$(CURDIR)/stax_$(ICON_NAME).gif
+OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_stax.elf
+OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_stax.sh
 endif
+#######################################
