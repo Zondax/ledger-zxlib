@@ -49,7 +49,7 @@ $(info EXAMPLE_VUE_DIR       : $(EXAMPLE_VUE_DIR))
 $(info TESTS_JS_DIR          : $(TESTS_JS_DIR))
 $(info TESTS_JS_PACKAGE      : $(TESTS_JS_PACKAGE))
 
-DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:ledger-e8ff8c4d6f7495a692a40768db0407e0f60b2bed
+DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:ledger-52f33c8e986fb516b0505641974111b4a3b8b83d
 DOCKER_IMAGE_LEDGER=ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
 
 ifdef INTERACTIVE
