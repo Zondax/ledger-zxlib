@@ -167,6 +167,7 @@ __Z_INLINE int64_t str_to_int64(const char *start, const char *end, char *error)
 }
 
 uint8_t intstr_to_fpstr_inplace(char *number, size_t number_max_size, uint8_t decimalPlaces);
+zxerr_t insertDecimalPoint(char *output, uint16_t outputLen, uint16_t decimalPlaces);
 
 __Z_INLINE uint8_t fpstr_to_str(char *out, uint16_t outLen, const char *number, uint8_t decimals) {
     MEMZERO(out, outLen);
