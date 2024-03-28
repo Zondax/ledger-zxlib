@@ -32,7 +32,6 @@
 #include "zxmacros.h"
 #include "view_templates.h"
 #include "tx.h"
-#include "addr.h"
 #include "app_mode.h"
 #include "zxerror.h"
 
