@@ -17,7 +17,6 @@
 .PHONY: all deps build clean load delete check_python show_info_recovery_mode
 
 TESTS_ZEMU_DIR?=$(CURDIR)/tests_zemu
-EXAMPLE_VUE_DIR?=$(CURDIR)/example_vue
 TESTS_JS_PACKAGE?=
 TESTS_JS_DIR?=
 
@@ -45,7 +44,6 @@ GROUPID:=$(shell id -g)
 $(info USERID                : $(USERID))
 $(info GROUPID               : $(GROUPID))
 $(info TESTS_ZEMU_DIR        : $(TESTS_ZEMU_DIR))
-$(info EXAMPLE_VUE_DIR       : $(EXAMPLE_VUE_DIR))
 $(info TESTS_JS_DIR          : $(TESTS_JS_DIR))
 $(info TESTS_JS_PACKAGE      : $(TESTS_JS_PACKAGE))
 
@@ -326,3 +324,6 @@ fuzz: fuzz_build
 fuzz_crash: FUZZ_LOGGING=1
 fuzz_crash: fuzz_build
 	./fuzz/run-fuzz-crashes.py
+
+format:
+	find . -iname '*.h' -o -iname '*.c' -o -iname '*.cpp' -o -iname '*.hpp' ! -path "./deps/*" | xargs clang-format -i
