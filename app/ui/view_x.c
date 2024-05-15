@@ -408,6 +408,10 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t* const st
             ux_review_flow[index++] = &ux_review_flow_2_review_title;
             break;
 
+        case REVIEW_KEYS:
+            ux_review_flow[index++] = &ux_review_flow_2_review_title;
+            break;
+
         case REVIEW_MSG:
             ux_review_flow[index++] = &ux_review_flow_4_review_title;
             break;

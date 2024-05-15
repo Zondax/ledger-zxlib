@@ -95,12 +95,16 @@ static const char* const INFO_VALUES[] = {APPVERSION, "Zondax AG", "https://zond
 static const char* txn_choice_message = "Reject transaction?";
 static const char* add_choice_message = "Reject address?";
 static const char* ui_choice_message = "Reject configuration?";
+static const char* keys_choice_message = "Reject keys?";
 
 static const char* txn_verified = "TRANSACTION\nSIGNED";
 static const char* txn_cancelled = "Transaction rejected";
 
 static const char* add_verified = "ADDRESS\nVERIFIED";
 static const char* add_cancelled = "Address verification\ncancelled";
+
+static const char* keys_verified = "KEYS\nSHARED";
+static const char* keys_cancelled = "Key sharing\ncancelled";
 
 static void h_expert_toggle() {
     app_mode_set_expert(!app_mode_expert());
@@ -115,6 +119,10 @@ static void confirm_callback(bool confirm) {
     switch (review_type) {
         case REVIEW_ADDRESS:
             message = confirm ? add_verified : add_cancelled;
+            break;
+
+        case REVIEW_KEYS:
+            message = confirm ? keys_verified : keys_cancelled;
             break;
 
         case REVIEW_TXN:
@@ -149,6 +157,10 @@ static void action_callback(bool confirm) {
 
         case REVIEW_ADDRESS:
             message = add_choice_message;
+            break;
+
+        case REVIEW_KEYS:
+            message = keys_choice_message;
             break;
 
         case REVIEW_TXN:
@@ -449,6 +461,40 @@ static void review_address() {
     nbgl_useCaseAddressConfirmationExt(viewdata.value, action_callback, extraPagesPtr);
 }
 
+static void review_keys() {
+    nbgl_layoutTagValueList_t* extraPagesPtr = NULL;
+
+    uint8_t numItems = 0;
+    if (viewdata.viewfuncGetNumItems == NULL ||
+        viewdata.viewfuncGetNumItems(&numItems) != zxerr_ok ||
+        numItems > NB_MAX_DISPLAYED_PAIRS_IN_REVIEW) {
+        ZEMU_LOGF(50, "Show keys error\n")
+        view_error_show();
+    }
+
+    for (uint8_t idx = 1; idx < numItems; idx++) {
+        pairs[idx - 1].item = viewdata.keys[idx];
+        pairs[idx - 1].value = viewdata.values[idx];
+
+        viewdata.itemIdx = idx;
+        viewdata.key = viewdata.keys[idx];
+        viewdata.value = viewdata.values[idx];
+        h_review_update_data();
+
+        pairList.nbMaxLinesForValue = 0;
+        pairList.nbPairs = idx;
+        pairList.pairs = pairs;
+        extraPagesPtr = &pairList;
+    }
+
+    viewdata.itemIdx = 0;
+    viewdata.key = viewdata.keys[0];
+    viewdata.value = viewdata.values[0];
+    h_review_update_data();
+
+    nbgl_useCaseAddressConfirmationExt(viewdata.value, action_callback, extraPagesPtr);
+}
+
 static nbgl_layoutTagValue_t* update_item_callback(uint8_t index) {
     uint8_t internalIndex = index % NB_MAX_DISPLAYED_PAIRS_IN_REVIEW;
 
@@ -519,6 +565,20 @@ void view_review_show_impl(unsigned int requireReply){
                                     NULL,
                                     CANCEL_LABEL,
                                     review_address,
+                                    cancel);
+            break;
+        }
+        case REVIEW_KEYS: {
+            #if defined(CUSTOM_KEYS_TEXT)
+                const char KEYS_TEXT[] = CUSTOM_KEYS_TEXT;
+            #else
+                const char KEYS_TEXT[] = "Share " MENU_MAIN_APP_LINE1 "\nkeys";
+            #endif
+            nbgl_useCaseReviewStart(&C_icon_stax_64,
+                                    KEYS_TEXT,
+                                    NULL,
+                                    CANCEL_LABEL,
+                                    review_keys,
                                     cancel);
             break;
         }
