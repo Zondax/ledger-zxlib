@@ -16,7 +16,7 @@
 ********************************************************************************/
 #include "bolos_target.h"
 
-#if defined(TARGET_NANOS)
+#if defined(TARGET_NANOSASD)
 
 #include "app_mode.h"
 #include "view.h"

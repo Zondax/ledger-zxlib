@@ -17,7 +17,7 @@
 
 #include "bolos_target.h"
 
-#if defined(TARGET_NANOX) || defined(TARGET_NANOS2)
+#if defined(TARGET_NANOX) || defined(TARGET_NANOS2) || defined(TARGET_NANOS)
 
 #include "app_mode.h"
 #include "view.h"
