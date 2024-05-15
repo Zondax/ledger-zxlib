@@ -222,6 +222,10 @@ zxerr_t h_review_update_data() {
                     intro_value = PIC(review_addrvalue);
                     break;
 
+                case REVIEW_KEYS:
+                    intro_value = PIC(review_addrvalue);
+                    break;
+
                 case REVIEW_TXN:
                 default:
                     intro_value = PIC(review_txvalue);
