@@ -29,6 +29,17 @@
 #endif
 #endif
 
+// By default our builds are not production ready
+// Unless we specificaly define PRODUCTION_BUILD to 1
+#if (PRODUCTION_BUILD == 0)
+#undef MENU_MAIN_APP_LINE1
+#undef MENU_MAIN_APP_LINE2
+
+#define MENU_MAIN_APP_LINE1 APPVERSION_LINE1 " DEMO"
+#define MENU_MAIN_APP_LINE2 "DO NOT USE"
+#endif
+
+
 typedef struct {
     uint8_t displayIdx;
     char *outKey;
