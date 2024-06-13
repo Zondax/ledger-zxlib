@@ -333,3 +333,15 @@ format:
 .PHONY: shell
 shell:
 	poetry install --no-root && poetry shell
+
+ts_upgrade:
+	cd js && bun run upgrade
+	cd tests_zemu && bun run upgrade
+
+ts_format:
+	cd js && bun run format
+	cd tests_zemu && bun run format
+
+ts_lint:
+	cd js && bun run lint
+	cd tests_zemu && bun run lint
