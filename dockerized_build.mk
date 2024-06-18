@@ -328,8 +328,20 @@ fuzz_crash: fuzz_build
 
 .PHONY: format
 format:
-	find . \( -iname '*.h' -o -iname '*.c' -o -iname '*.cpp' -o -iname '*.hpp' \) -a ! -path "*/deps/*" | xargs clang-format -i
+	find . \( -iname '*.h' -o -iname '*.c' -o -iname '*.cpp' -o -iname '*.hpp' \) -a ! -path "*/deps/*" -a ! -path "./tests_zemu/node_modules/*" ! -path "./build/*" | xargs clang-format -i
 
 .PHONY: shell
 shell:
 	poetry install --no-root && poetry shell
+
+ts_upgrade:
+	if [ -d js ]; then cd js && bun run upgrade; fi
+	if [ -d tests_zemu ]; then cd tests_zemu && bun run upgrade; fi
+
+ts_format:
+	if [ -d js ]; then cd js && bun run format; fi
+	if [ -d tests_zemu ]; then cd tests_zemu && bun run format; fi
+
+ts_lint:
+	if [ -d js ]; then cd js && bun run lint; fi
+	if [ -d tests_zemu ]; then cd tests_zemu && bun run lint; fi
