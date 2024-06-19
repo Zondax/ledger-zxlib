@@ -1,5 +1,5 @@
 #*******************************************************************************
-#*   (c) 2018 Zondax GmbH
+#*   (c) 2018 Zondax AG
 #*
 #*  Licensed under the Apache License, Version 2.0 (the "License");
 #*  you may not use this file except in compliance with the License.
@@ -13,18 +13,37 @@
 #*  See the License for the specific language governing permissions and
 #*  limitations under the License.
 #********************************************************************************
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.18)
+include("cmake/HunterGate.cmake")
+HunterGate(
+        URL "https://github.com/cpp-pm/hunter/archive/v0.25.5.tar.gz"
+        SHA1 "a20151e4c0740ee7d0f9994476856d813cdead29"
+        LOCAL
+)
+
+if(CMAKE_GENERATOR MATCHES "Ninja")
+    message(FATAL_ERROR "This project does not support the Ninja generator. "
+            "Please use Unix Makefiles or another supported generator. "
+            "This error is typical in CLion. In this case, switch to generator Unix Makefiles.")
+endif()
+
+########################################################
 project(ledger-zxlib)
 
 set(CMAKE_CXX_STANDARD 11)
+cmake_policy(SET CMP0025 NEW)
+cmake_policy(SET CMP0144 NEW)
 
-add_subdirectory(cmake/gtest)
+enable_testing()
+
+hunter_add_package(GTest)
+find_package(GTest CONFIG REQUIRED)
+
+###############
 
 include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
-
-###############
 
 file(GLOB_RECURSE ZXLIB_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
@@ -48,10 +67,10 @@ add_executable(zxlib_tests
 
 target_include_directories(zxlib_tests PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${gtest_SOURCE_DIR}/include
-        ${gmock_SOURCE_DIR}/include
         )
 
-target_link_libraries(zxlib_tests gtest_main zxlib)
+target_link_libraries(zxlib_tests PRIVATE
+        GTest::gtest_main
+        zxlib)
 
 add_test(ZXLIB_TESTS zxlib_tests)

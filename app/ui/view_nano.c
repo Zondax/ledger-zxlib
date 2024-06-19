@@ -32,7 +32,6 @@
 #include "zxmacros.h"
 #include "view_templates.h"
 #include "tx.h"
-#include "addr.h"
 #include "app_mode.h"
 #include "zxerror.h"
 
@@ -85,7 +84,11 @@ bool h_paging_can_increase() {
     }
 
     // passed page count, go to next index
-    if (viewdata.itemCount > 0 && viewdata.itemIdx < (viewdata.itemCount - 1 + INCLUDE_ACTIONS_COUNT)) {
+    uint8_t extraScreens = INCLUDE_ACTIONS_COUNT;
+    if (review_type == REVIEW_MSG && extraScreens > 0) {
+        extraScreens--;
+    };
+    if (viewdata.itemCount > 0 && viewdata.itemIdx < (viewdata.itemCount - 1 + extraScreens)) {
         zemu_log_stack("h_paging_can_increase");
         return true;
     }
@@ -104,7 +107,11 @@ void h_paging_increase() {
     }
 
     // passed page count, go to next index
-    if (viewdata.itemCount > 0 && viewdata.itemIdx < (viewdata.itemCount - 1 + INCLUDE_ACTIONS_COUNT)) {
+    uint8_t extraScreens = INCLUDE_ACTIONS_COUNT;
+    if (review_type == REVIEW_MSG && extraScreens > 0) {
+        extraScreens--;
+    };
+    if (viewdata.itemCount > 0 && viewdata.itemIdx < (viewdata.itemCount - 1 + extraScreens)) {
         viewdata.itemIdx++;
         viewdata.pageIdx = 0;
     }
@@ -167,26 +174,18 @@ zxerr_t h_review_update_data() {
         return zxerr_no_data;
     }
 
-    if (viewdata.viewfuncGetItem == NULL) {
-        zemu_log_stack("h_review_update_data - GetItem==NULL");
-        return zxerr_no_data;
-    }
-
-    if (viewdata.viewfuncGetItem == NULL) {
-        zemu_log_stack("h_review_update_data - GetItem==NULL");
-        return zxerr_no_data;
-    }
-
-    char buffer[20];
-    snprintf(buffer, sizeof(buffer), "update Idx %d/%d", viewdata.itemIdx, viewdata.pageIdx);
-    zemu_log_stack(buffer);
+    ZEMU_LOGF(50, "update Idx %d/%d\n", viewdata.itemIdx, viewdata.pageIdx);
 
 #ifdef INCLUDE_ACTIONS_AS_ITEMS
     viewdata.pageCount = 1;
 
     if( is_accept_item() ){
-        snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s","");
-        snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", APPROVE_LABEL);
+        snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", "");
+        if (review_type == REVIEW_MSG) {
+            snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Ok");
+        } else {
+            snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", APPROVE_LABEL);
+        }
         splitValueField();
         zemu_log_stack("show_accept_action - accept item");
         viewdata.pageIdx = 0;
@@ -210,8 +209,10 @@ zxerr_t h_review_update_data() {
         switch (viewdata.itemIdx) {
             case 0:
                 intro_key = PIC(review_key);
-                switch (review_type)
-                {
+                switch (review_type) {
+                case REVIEW_MSG:
+                    return zxerr_unknown;
+
                 case REVIEW_UI:
                     intro_key = PIC(review_keyconfig);
                     intro_value = PIC(review_configvalue);

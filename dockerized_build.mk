@@ -17,7 +17,6 @@
 .PHONY: all deps build clean load delete check_python show_info_recovery_mode
 
 TESTS_ZEMU_DIR?=$(CURDIR)/tests_zemu
-EXAMPLE_VUE_DIR?=$(CURDIR)/example_vue
 TESTS_JS_PACKAGE?=
 TESTS_JS_DIR?=
 
@@ -45,11 +44,10 @@ GROUPID:=$(shell id -g)
 $(info USERID                : $(USERID))
 $(info GROUPID               : $(GROUPID))
 $(info TESTS_ZEMU_DIR        : $(TESTS_ZEMU_DIR))
-$(info EXAMPLE_VUE_DIR       : $(EXAMPLE_VUE_DIR))
 $(info TESTS_JS_DIR          : $(TESTS_JS_DIR))
 $(info TESTS_JS_PACKAGE      : $(TESTS_JS_PACKAGE))
 
-DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:ledger-97c3eb23dbabec13191fa1a18f851cb0f58edfb5
+DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:ledger-b72eadb7412689490aad1433cb0e913533d00e34
 DOCKER_IMAGE_LEDGER=ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
 
 ifdef INTERACTIVE
@@ -81,6 +79,7 @@ define run_docker
 	-e DISABLE_CURRENT=$(DISABLE_CURRENT) \
 	-e COIN=$(COIN) \
 	-e APP_TESTING=$(APP_TESTING) \
+	-e PRODUCTION_BUILD=$(PRODUCTION_BUILD) \
 	$(DOCKER_IMAGE_ZONDAX) "$(3)"
 endef
 
@@ -95,7 +94,7 @@ all:
 	@$(MAKE) buildS
 	@$(MAKE) buildX
 	@$(MAKE) buildS2
-ifdef ZXLIB_COMPILE_STAX
+ifeq ($(ZXLIB_COMPILE_STAX),1)
 	@$(MAKE) buildST
 endif # ZXLIB_COMPILE_STAX
 
@@ -315,7 +314,7 @@ cpp_test:
 
 .PHONY: fuzz_build
 fuzz_build:
-	cmake -B build -DCMAKE_C_COMPILER=clang-11 -DCMAKE_CXX_COMPILER=clang++-11 -DCMAKE_BUILD_TYPE=Debug -DENABLE_FUZZING=1 -DENABLE_SANITIZERS=1 .
+	cmake -B build -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -DENABLE_FUZZING=1 -DENABLE_SANITIZERS=1 .
 	make -C build
 
 .PHONY: fuzz
@@ -326,3 +325,23 @@ fuzz: fuzz_build
 fuzz_crash: FUZZ_LOGGING=1
 fuzz_crash: fuzz_build
 	./fuzz/run-fuzz-crashes.py
+
+.PHONY: format
+format:
+	find . \( -iname '*.h' -o -iname '*.c' -o -iname '*.cpp' -o -iname '*.hpp' \) -a ! -path "*/deps/*" -a ! -path "./tests_zemu/node_modules/*" ! -path "./build/*" | xargs clang-format -i
+
+.PHONY: shell
+shell:
+	poetry install --no-root && poetry shell
+
+ts_upgrade:
+	if [ -d js ]; then cd js && bun run upgrade; fi
+	if [ -d tests_zemu ]; then cd tests_zemu && bun run upgrade; fi
+
+ts_format:
+	if [ -d js ]; then cd js && bun run format; fi
+	if [ -d tests_zemu ]; then cd tests_zemu && bun run format; fi
+
+ts_lint:
+	if [ -d js ]; then cd js && bun run lint; fi
+	if [ -d tests_zemu ]; then cd tests_zemu && bun run lint; fi

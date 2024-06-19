@@ -66,6 +66,15 @@ static const char* review_addrvalue = REVIEW_SCREEN_ADDR_VALUE;
 static const char* review_keyconfig = "Review";
 static const char* review_configvalue = "configuration";
 
+// Review msg string can be customizable in each app
+#if !defined(REVIEW_MSG_TITLE) && !defined(REVIEW_MSG_VALUE)
+#define REVIEW_MSG_TITLE "Please"
+#define REVIEW_MSG_VALUE "review"
+#endif
+
+static const char *review_msgKey = REVIEW_MSG_TITLE;
+static const char *review_msgValue = REVIEW_MSG_VALUE;
+
 static const char* shortcut_key = SHORTCUT_TITLE;
 static const char* shortcut_value = SHORTCUT_VALUE;
 
@@ -101,6 +110,10 @@ typedef struct {
     viewfunc_accept_t viewfuncAccept;
     viewfunc_initialize_t viewfuncInitialize;
 
+    viewfunc_getInnerItem_t viewfuncGetInnerItem;
+    viewfunc_getNumItems_t viewfuncGetInnerNumItems;
+    viewfunc_canInspectItem_t viewfuncCanInspectItem;
+
 #ifdef APP_SECRET_MODE_ENABLED
     uint8_t secret_click_count;
 #endif
@@ -108,6 +121,8 @@ typedef struct {
     uint8_t itemCount;
     uint8_t pageIdx;
     uint8_t pageCount;
+
+    inner_state_t innerField;
 } view_t;
 
 typedef enum {
@@ -145,7 +160,11 @@ void view_custom_error_show_impl();
 
 void h_paging_init();
 
+void h_inspect_init();
+
 void view_review_show_impl(unsigned int requireReply);
+
+void view_inspect_show_impl();
 
 void view_initialize_show_impl(uint8_t item_idx, const char *statusString);
 
@@ -158,3 +177,5 @@ void h_review_update();
 void h_error_accept(unsigned int _);
 
 zxerr_t h_review_update_data();
+
+zxerr_t h_inspect_update_data();

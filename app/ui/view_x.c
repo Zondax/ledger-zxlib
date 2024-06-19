@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   (c) 2018 - 2022 Zondax AG
+*   (c) 2018 - 2023 Zondax AG
 *   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +30,7 @@
 #include "view_templates.h"
 #include "tx.h"
 #include "view_nano.h"
+#include "view_nano_inspect.h"
 
 #ifdef APP_SECRET_MODE_ENABLED
 #include "secret.h"
@@ -62,7 +63,6 @@ static void h_shortcut_toggle();
 static void h_shortcut_update();
 #endif
 
-#define MAX_REVIEW_UX_SCREENS 10
 static void h_shortcut(unsigned int);
 static void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t* const start_step);
 const ux_flow_step_t *ux_review_flow[MAX_REVIEW_UX_SCREENS];
@@ -162,12 +162,18 @@ UX_FLOW(
 UX_FLOW_DEF_NOCB(ux_review_flow_1_review_title, pbb, { &C_icon_app, REVIEW_SCREEN_TITLE, REVIEW_SCREEN_TXN_VALUE,});
 UX_FLOW_DEF_NOCB(ux_review_flow_2_review_title, pbb, { &C_icon_app, REVIEW_SCREEN_TITLE, REVIEW_SCREEN_ADDR_VALUE,});
 UX_FLOW_DEF_NOCB(ux_review_flow_3_review_title, pbb, { &C_icon_app, "Review", "configuration",});
+UX_FLOW_DEF_NOCB(ux_review_flow_4_review_title, pbb, { &C_icon_app, REVIEW_MSG_TITLE, REVIEW_MSG_VALUE, });
 
 UX_STEP_INIT(ux_review_flow_2_start_step, NULL, NULL, { h_review_loop_start(); });
+#ifdef HAVE_INSPECT
+UX_STEP_CB_INIT(ux_review_flow_2_step, bnnn_paging, h_review_loop_inside(), inspect_init(), { .title = viewdata.key, .text = viewdata.value, });
+#else
 UX_STEP_NOCB_INIT(ux_review_flow_2_step, bnnn_paging, { h_review_loop_inside(); }, { .title = viewdata.key, .text = viewdata.value, });
+#endif
 UX_STEP_INIT(ux_review_flow_2_end_step, NULL, NULL, { h_review_loop_end(); });
 UX_STEP_VALID(ux_review_flow_3_step, pb, h_approve(0), { &C_icon_validate_14, APPROVE_LABEL });
 UX_STEP_VALID(ux_review_flow_4_step, pb, h_reject(review_type), { &C_icon_crossmark, REJECT_LABEL });
+UX_STEP_VALID(ux_review_flow_6_step, pb, h_approve(0), {&C_icon_validate_14, "Ok"});
 
 UX_STEP_CB_INIT(ux_review_flow_5_step, pb,  NULL, h_shortcut(0), { &C_icon_eye, SHORTCUT_STR });
 
@@ -385,34 +391,45 @@ void view_review_show_impl(unsigned int requireReply){
     run_ux_review_flow((review_type_e)review_type, NULL);
 }
 
+void run_root_txn_flow() {
+    run_ux_review_flow(review_type, &ux_review_flow_2_start_step);
+}
+
 // Build review UX flow and run it
 void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t* const start_step) {
     uint8_t index = 0;
 
-    switch (reviewType)
-    {
-    case REVIEW_UI:
-        ux_review_flow[index++] = &ux_review_flow_3_review_title;
-        break;
+    switch (reviewType) {
+        case REVIEW_UI:
+            ux_review_flow[index++] = &ux_review_flow_3_review_title;
+            break;
 
-    case REVIEW_ADDRESS:
-        ux_review_flow[index++] = &ux_review_flow_2_review_title;
-        break;
+        case REVIEW_ADDRESS:
+            ux_review_flow[index++] = &ux_review_flow_2_review_title;
+            break;
 
-    case REVIEW_TXN:
-    default:
-        ux_review_flow[index++] = &ux_review_flow_1_review_title;
-        if(app_mode_shortcut()) {
-            ux_review_flow[index++] = &ux_review_flow_5_step;
-        }
-        break;
+        case REVIEW_MSG:
+            ux_review_flow[index++] = &ux_review_flow_4_review_title;
+            break;
+
+        case REVIEW_TXN:
+        default:
+            ux_review_flow[index++] = &ux_review_flow_1_review_title;
+            if(app_mode_shortcut()) {
+                ux_review_flow[index++] = &ux_review_flow_5_step;
+            }
+            break;
     }
 
     ux_review_flow[index++] = &ux_review_flow_2_start_step;
     ux_review_flow[index++] = &ux_review_flow_2_step;
     ux_review_flow[index++] = &ux_review_flow_2_end_step;
-    ux_review_flow[index++] = &ux_review_flow_3_step;
-    ux_review_flow[index++] = &ux_review_flow_4_step;
+    if (reviewType == REVIEW_MSG) {
+        ux_review_flow[index++] = &ux_review_flow_6_step;
+    } else {
+        ux_review_flow[index++] = &ux_review_flow_3_step;
+        ux_review_flow[index++] = &ux_review_flow_4_step;
+    }
     ux_review_flow[index++] = FLOW_END_STEP;
 
     ux_flow_init(0, ux_review_flow, start_step);

@@ -93,10 +93,10 @@ uint8_t intstr_to_fpstr_inplace(char *number, size_t number_max_size, uint8_t de
 //                 abcd     < shift
 //        000000000abcd     < fill
 //        0.00000000abcd    < add decimal point
-
-    if (numChars < decimalPlaces + 1) {
+    const uint16_t tmpDecimalPlaces = decimalPlaces;
+    if (numChars < tmpDecimalPlaces + 1) {
         // Move to end
-        const uint16_t padSize = decimalPlaces - numChars + 1;
+        const uint16_t padSize = tmpDecimalPlaces - numChars + 1;
         MEMMOVE(number + padSize, number, numChars);
         MEMSET(number, '0', padSize);
         numChars = strnlen(number, number_max_size);
@@ -112,11 +112,81 @@ uint8_t intstr_to_fpstr_inplace(char *number, size_t number_max_size, uint8_t de
 
     numChars = strnlen(number, number_max_size);
 
-    if (numChars > UINT8_MAX) {
-        // Overflow
-        return 0;
-    }
+   if (numChars > UINT8_MAX) {
+       // Overflow
+       return 0;
+   }
     return (uint8_t) numChars;
+}
+
+zxerr_t insertDecimalPoint(char *output, uint16_t outputLen, uint16_t decimalPlaces) {
+    if (output == NULL || outputLen == 0 || decimalPlaces > outputLen || decimalPlaces == UINT16_MAX) {
+        return zxerr_buffer_too_small;
+    }
+
+    uint16_t numChars = strnlen(output, outputLen);
+    MEMZERO(output + numChars, outputLen - numChars);
+
+    if (outputLen <= numChars) {
+        // No space to do anything
+        return zxerr_buffer_too_small;
+    }
+
+    if (numChars == 0) {
+        // Empty number, make a zero
+        snprintf(output, outputLen, "0");
+        numChars = 1;
+    }
+
+    // Check all are numbers
+    uint16_t firstDigit = numChars;
+    for (size_t i = 0; i < numChars; i++) {
+        if (output[i] < '0' || output[i] > '9') {
+            snprintf(output, outputLen, "ERR");
+            return zxerr_encoding_failed;
+        }
+        if (output[i] != '0' && firstDigit > i) {
+            firstDigit = i;
+        }
+    }
+
+    // Trim any incorrect leading zeros
+    if (firstDigit == numChars) {
+        snprintf(output, outputLen, "0");
+        numChars = 1;
+    } else {
+        // Trim leading zeros
+        MEMMOVE(output, output + firstDigit, numChars - firstDigit);
+        MEMZERO(output + numChars - firstDigit, firstDigit);
+    }
+
+    // If there are no decimal places return
+    if (decimalPlaces == 0) {
+        return zxerr_ok;
+    }
+
+    // Now insert decimal point
+    // 0123456789012     <-decimal places
+    //          abcd     < numChars = 4
+    //          abcd     < shift
+    // 000000000abcd     < fill
+    // 0.00000000abcd    < add decimal point
+    if (numChars < decimalPlaces + 1) {
+        // Move to end
+        const uint16_t padSize = decimalPlaces - numChars + 1;
+        MEMMOVE(output + padSize, output, numChars);
+        MEMSET(output, '0', padSize);
+        numChars = strnlen(output, outputLen);
+    }
+
+    if (numChars < decimalPlaces) {
+        return zxerr_encoding_failed;
+    }
+    // add decimal point
+    const uint16_t pointPosition = numChars - decimalPlaces;
+    MEMMOVE(output + pointPosition + 1, output + pointPosition, decimalPlaces);  // shift content
+    output[pointPosition] = '.';
+    return zxerr_ok;
 }
 
 size_t z_strlen(const char *buffer, size_t maxSize) {

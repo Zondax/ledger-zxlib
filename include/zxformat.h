@@ -167,6 +167,7 @@ __Z_INLINE int64_t str_to_int64(const char *start, const char *end, char *error)
 }
 
 uint8_t intstr_to_fpstr_inplace(char *number, size_t number_max_size, uint8_t decimalPlaces);
+zxerr_t insertDecimalPoint(char *output, uint16_t outputLen, uint16_t decimalPlaces);
 
 __Z_INLINE uint8_t fpstr_to_str(char *out, uint16_t outLen, const char *number, uint8_t decimals) {
     MEMZERO(out, outLen);
@@ -413,10 +414,10 @@ __Z_INLINE void pageStringHex(char *outValue, uint16_t outValueLen,
     if (inValueLen == 0) {
         return;
     }
-    const uint16_t msgHexLen = inValueLen * 2;
-    // Last char from OutVal will be filled with a null terminator in array_to_hexstr function
-    *pageCount = (uint8_t) (msgHexLen / (outValueLen - 1) );
-    const uint16_t lastChunkLen = (msgHexLen % (outValueLen - 1));
+    // leaving space for null terminator
+    const uint16_t bytesPerPage = (outValueLen - 1) / 2;
+    *pageCount = (uint8_t) (inValueLen / bytesPerPage);
+    const uint16_t lastChunkLen = inValueLen % bytesPerPage;
 
     if (lastChunkLen > 0) {
         (*pageCount)++;
@@ -424,9 +425,13 @@ __Z_INLINE void pageStringHex(char *outValue, uint16_t outValueLen,
 
     if (pageIdx < *pageCount) {
         if (lastChunkLen > 0 && pageIdx == *pageCount - 1) {
-            array_to_hexstr(outValue, outValueLen, (const uint8_t*)inValue+(pageIdx * (outValueLen/2)), lastChunkLen/2);
+            array_to_hexstr(outValue, outValueLen,
+                            (const uint8_t *)inValue + pageIdx * bytesPerPage,
+                            lastChunkLen);
         } else {
-            array_to_hexstr(outValue, outValueLen, (const uint8_t*)inValue+(pageIdx * (outValueLen/2)), outValueLen/2);
+            array_to_hexstr(outValue, outValueLen,
+                            (const uint8_t *)inValue + pageIdx * bytesPerPage,
+                            bytesPerPage);
         }
     }
 }

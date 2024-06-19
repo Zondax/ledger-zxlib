@@ -21,6 +21,7 @@
 #include "cx.h"
 #include "os_io_seproxyhal.h"
 #include "ux.h"
+#include "zxerror.h"
 
 #define MEMCPY_NV nvm_write
 
@@ -59,5 +60,31 @@ extern unsigned int app_stack_canary;
 #else
 #define UX_WAIT(){}
 #endif
+
+// Macros for handling no-throw methods error check
+#define CHECK_CXERROR(CALL)    \
+  do {                         \
+    cx_err_t __cx_err = CALL;  \
+    if (__cx_err != CX_OK) {   \
+      return __cx_err;         \
+    }                          \
+  } while (0)
+
+
+#define CATCH_CXERROR(CALL)    \
+  do {                         \
+    cx_err_t __cx_err = CALL;  \
+    if (__cx_err != CX_OK) {   \
+      goto catch_cx_error;     \
+    }                          \
+  } while (0)
+
+#define CHECK_CX_OK(CALL)      \
+  do {                         \
+    cx_err_t __cx_err = CALL;  \
+    if (__cx_err != CX_OK) {   \
+      return zxerr_unknown;    \
+    }                          \
+  } while (0)
 
 #endif
