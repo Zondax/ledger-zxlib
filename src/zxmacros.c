@@ -46,10 +46,17 @@ void zemu_log_stack(const char *ctx) {
     #define STACK_SHIFT 20
     void* p = NULL;
     char buf[70];
+#if defined(HAVE_ZONDAX_CANARY)
+    // When Zondax canary is enabled, we add a random canary just above `APP_STACK_CANARY_MAGIC 0xDEAD0031`
+    const uint32_t availableStack = ((uint32_t)((void*)&p)+STACK_SHIFT - (uint32_t)&app_stack_canary) - sizeof(uint32_t);
+#else
+    const uint32_t availableStack = (uint32_t)((void*)&p)+STACK_SHIFT - (uint32_t)&app_stack_canary;
+#endif
+
     snprintf(buf, sizeof(buf), "|SP| %p %p (%d) : %s\n",
             &app_stack_canary,
             ((void*)&p)+STACK_SHIFT,
-            (uint32_t)((void*)&p)+STACK_SHIFT - (uint32_t)&app_stack_canary,
+            availableStack,
             ctx);
     zemu_log(buf);
     (void) ctx;
