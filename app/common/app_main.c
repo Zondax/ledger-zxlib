@@ -27,6 +27,7 @@
 #include "tx.h"
 #include "coin.h"
 #include "zxmacros.h"
+#include "zxcanary.h"
 #include "app_mode.h"
 #ifdef HAVE_SWAP
 #include "swap.h"
@@ -132,6 +133,7 @@ void handle_generic_apdu(__Z_UNUSED volatile uint32_t *flags, volatile uint32_t 
 
 void app_init() {
     io_seproxyhal_init();
+    init_zondax_canary();
 
 #ifdef HAVE_BLE
     // grab the current plane mode setting
