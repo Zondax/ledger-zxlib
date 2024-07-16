@@ -47,7 +47,7 @@ $(info TESTS_ZEMU_DIR        : $(TESTS_ZEMU_DIR))
 $(info TESTS_JS_DIR          : $(TESTS_JS_DIR))
 $(info TESTS_JS_PACKAGE      : $(TESTS_JS_PACKAGE))
 
-DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:ledger-b72eadb7412689490aad1433cb0e913533d00e34
+DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:ledger-ec93499de7f17076ee90caaca5953fdb9d3daf6c
 DOCKER_IMAGE_LEDGER=ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
 
 ifdef INTERACTIVE
@@ -258,6 +258,26 @@ dev_caS2: check_python
 .PHONY: dev_ca_deleteS2
 dev_ca_deleteS2: check_python
 	@python -m ledgerblue.resetCustomCA --targetId 0x33100004
+
+# TODO: verify that targetId is correct and if it works on a real device
+# This target will setup a custom developer certificate
+.PHONY: dev_caST
+dev_caST: check_python
+	@python -m ledgerblue.setupCustomCA --targetId 0x33200004 --public $(SCP_PUBKEY) --name zondax
+
+.PHONY: dev_ca_deleteST
+dev_ca_deleteST: check_python
+	@python -m ledgerblue.resetCustomCA --targetId 0x33200004
+
+# TODO: complete with Flex targetId
+# This target will setup a custom developer certificate
+.PHONY: dev_caFL
+dev_caFL: check_python
+	@python -m ledgerblue.setupCustomCA --targetId 0x33200004 --public $(SCP_PUBKEY) --name zondax
+
+.PHONY: dev_ca_deleteFL
+dev_ca_deleteFL: check_python
+	@python -m ledgerblue.resetCustomCA --targetId 0x33200004
 
 .PHONY: zemu_install_js_link
 ifeq ($(TESTS_JS_DIR),)
