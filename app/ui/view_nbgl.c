@@ -1,30 +1,29 @@
 /*******************************************************************************
-*   (c) 2018 - 2022 Zondax AG
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   (c) 2018 - 2024 Zondax AG
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 
 #include "bolos_target.h"
 
-#if defined(TARGET_STAX)
+#if defined(TARGET_STAX) || defined(TARGET_FLEX)
 
-#include "view_internal.h"
-#include "ux.h"
-#include "app_mode.h"
-#include "nbgl_use_case.h"
 #include "actions.h"
-
+#include "app_mode.h"
 #include "nbgl_page.h"
+#include "nbgl_use_case.h"
+#include "ux.h"
+#include "view_internal.h"
 
 #ifdef APP_SECRET_MODE_ENABLED
 zxerr_t secret_enabled();
@@ -34,12 +33,13 @@ zxerr_t secret_enabled();
 zxerr_t account_enabled();
 #endif
 
-#define APPROVE_LABEL_STAX "Sign transaction?"
-#define REJECT_LABEL_STAX "Reject transaction"
+#define APPROVE_LABEL_NBGL "Sign transaction?"
+#define REJECT_LABEL_NBGL "Reject transaction"
 #define CANCEL_LABEL "Cancel"
 #define HOLD_TO_APPROVE_MSG "Hold to sign"
 
-static const char HOME_TEXT[] = "This application enables\nsigning transactions on the\n" MENU_MAIN_APP_LINE1 " network";
+static const char HOME_TEXT[] =
+    "This application enables\nsigning transactions on the\n" MENU_MAIN_APP_LINE1 " network";
 
 ux_state_t G_ux;
 bolos_ux_params_t G_ux_params;
@@ -65,11 +65,10 @@ typedef enum {
 #endif
 } settings_list_e;
 
-
 typedef enum {
-  EXPERT_MODE_TOKEN = FIRST_USER_TOKEN,
-  ACCOUNT_MODE_TOKEN,
-  SECRET_MODE_TOKEN,
+    EXPERT_MODE_TOKEN = FIRST_USER_TOKEN,
+    ACCOUNT_MODE_TOKEN,
+    SECRET_MODE_TOKEN,
 } config_token_e;
 
 void app_quit(void) {
@@ -77,41 +76,37 @@ void app_quit(void) {
     os_sched_exit(-1);
 }
 
-static void h_reject_internal(void) {
-    h_reject(review_type);
-}
+static void h_reject_internal(void) { h_reject(review_type); }
 
-static void h_approve_internal(void) {
-    h_approve(review_type);
-}
+static void h_approve_internal(void) { h_approve(review_type); }
 
-static void view_idle_show_impl_callback() {
-    view_idle_show_impl(0, NULL);
-}
+static void view_idle_show_impl_callback() { view_idle_show_impl(0, NULL); }
 
-static const char* const INFO_KEYS[] = {"Version", "Developed by", "Website", "License"};
-static const char* const INFO_VALUES[] = {APPVERSION, "Zondax AG", "https://zondax.ch", "Apache 2.0"};
+#ifdef TARGET_STAX
+#define MAX_INFO_LIST_ITEM_PER_PAGE 3
+#else  // TARGET_FLEX
+#define MAX_INFO_LIST_ITEM_PER_PAGE 2
+#endif
 
-static const char* txn_choice_message = "Reject transaction?";
-static const char* add_choice_message = "Reject address?";
-static const char* ui_choice_message = "Reject configuration?";
+static const char *const INFO_KEYS_PAGE[] = {"Version", "Developed by", "Website", "License"};
+static const char *const INFO_VALUES_PAGE[] = {APPVERSION, "Zondax AG", "https://zondax.ch", "Apache 2.0"};
 
-static const char* txn_verified = "TRANSACTION\nSIGNED";
-static const char* txn_cancelled = "Transaction rejected";
+static const char *txn_choice_message = "Reject transaction?";
+static const char *add_choice_message = "Reject address?";
+static const char *ui_choice_message = "Reject configuration?";
 
-static const char* add_verified = "ADDRESS\nVERIFIED";
-static const char* add_cancelled = "Address verification\ncancelled";
+static const char *txn_verified = "TRANSACTION\nSIGNED";
+static const char *txn_cancelled = "Transaction rejected";
 
-static void h_expert_toggle() {
-    app_mode_set_expert(!app_mode_expert());
-}
+static const char *add_verified = "ADDRESS\nVERIFIED";
+static const char *add_cancelled = "Address verification\ncancelled";
 
-static void confirm_error(__Z_UNUSED bool confirm) {
-    h_error_accept(0);
-}
+static void h_expert_toggle() { app_mode_set_expert(!app_mode_expert()); }
+
+static void confirm_error(__Z_UNUSED bool confirm) { h_error_accept(0); }
 
 static void confirm_callback(bool confirm) {
-    const char* message = NULL;
+    const char *message = NULL;
     switch (review_type) {
         case REVIEW_ADDRESS:
             message = confirm ? add_verified : add_cancelled;
@@ -141,7 +136,7 @@ static void action_callback(bool confirm) {
         return;
     }
 
-    const char* message = NULL;
+    const char *message = NULL;
     switch (review_type) {
         case REVIEW_UI:
             message = ui_choice_message;
@@ -161,16 +156,10 @@ static void action_callback(bool confirm) {
             return;
     }
 
-    nbgl_useCaseConfirm(message,
-                        NULL,
-                        "Yes, reject",
-                        "Go back",
-                        cancel);
+    nbgl_useCaseConfirm(message, NULL, "Yes, reject", "Go back", cancel);
 }
 
-static void check_cancel(void) {
-    action_callback(false);
-}
+static void check_cancel(void) { action_callback(false); }
 
 static void confirm_setting(bool confirm) {
     if (confirm && viewdata.viewfuncAccept != NULL) {
@@ -198,11 +187,11 @@ void view_custom_error_show(const char *upper, const char *lower) {
     snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", upper);
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", lower);
 
-    nbgl_useCaseChoice(&C_round_warning_64px, viewdata.key, viewdata.value, "Ok", "", confirm_error);
+    nbgl_useCaseChoice(&C_Important_Circle_64px, viewdata.key, viewdata.value, "Ok", "", confirm_error);
 }
 
 void view_error_show_impl() {
-    nbgl_useCaseChoice(&C_round_warning_64px, viewdata.key, viewdata.value, "Ok", NULL, confirm_setting);
+    nbgl_useCaseChoice(&C_Important_Circle_64px, viewdata.key, viewdata.value, "Ok", NULL, confirm_setting);
 }
 
 static uint8_t get_pair_number() {
@@ -210,11 +199,8 @@ static uint8_t get_pair_number() {
     uint8_t numPairs = 0;
     viewdata.viewfuncGetNumItems(&numItems);
     for (uint8_t i = 0; i < numItems; i++) {
-        viewdata.viewfuncGetItem(
-            i,
-            viewdata.key, MAX_CHARS_PER_KEY_LINE,
-            viewdata.value, MAX_CHARS_PER_VALUE1_LINE,
-            0, &viewdata.pageCount);
+        viewdata.viewfuncGetItem(i, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value, MAX_CHARS_PER_VALUE1_LINE, 0,
+                                 &viewdata.pageCount);
         numPairs += viewdata.pageCount;
     }
     return numPairs;
@@ -243,11 +229,8 @@ zxerr_t h_review_update_data() {
 
     uint8_t accPages = 0;
     for (uint8_t i = 0; i < viewdata.itemCount; i++) {
-        CHECK_ZXERR(viewdata.viewfuncGetItem(
-                i,
-                viewdata.key, MAX_CHARS_PER_KEY_LINE,
-                viewdata.value, MAX_CHARS_PER_VALUE1_LINE,
-                0, &viewdata.pageCount))
+        CHECK_ZXERR(viewdata.viewfuncGetItem(i, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
+                                             MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount))
         if (viewdata.pageCount == 0) {
             ZEMU_LOGF(50, "pageCount is 0!")
             return zxerr_no_data;
@@ -255,14 +238,12 @@ zxerr_t h_review_update_data() {
 
         if (accPages + viewdata.pageCount > viewdata.itemIdx) {
             const uint8_t innerIdx = viewdata.itemIdx - accPages;
-            CHECK_ZXERR(viewdata.viewfuncGetItem(
-                    i,
-                    viewdata.key, MAX_CHARS_PER_KEY_LINE,
-                    viewdata.value, MAX_CHARS_PER_VALUE1_LINE,
-                    innerIdx, &viewdata.pageCount))
+            CHECK_ZXERR(viewdata.viewfuncGetItem(i, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
+                                                 MAX_CHARS_PER_VALUE1_LINE, innerIdx, &viewdata.pageCount))
             if (viewdata.pageCount > 1) {
                 const uint8_t titleLen = strnlen(viewdata.key, MAX_CHARS_PER_KEY_LINE);
-                snprintf(viewdata.key + titleLen, MAX_CHARS_PER_KEY_LINE - titleLen, " (%d/%d)", innerIdx + 1, viewdata.pageCount);
+                snprintf(viewdata.key + titleLen, MAX_CHARS_PER_KEY_LINE - titleLen, " (%d/%d)", innerIdx + 1,
+                         viewdata.pageCount);
             }
             return zxerr_ok;
         }
@@ -274,7 +255,7 @@ zxerr_t h_review_update_data() {
 
 void h_review_update() {
     zxerr_t err = h_review_update_data();
-    switch(err) {
+    switch (err) {
         case zxerr_ok:
         case zxerr_no_data:
             break;
@@ -285,18 +266,28 @@ void h_review_update() {
     }
 }
 
-static bool settings_screen_callback(uint8_t page, nbgl_pageContent_t* content) {
-    switch (page)
-    {
+static bool settings_screen_callback(uint8_t page, nbgl_pageContent_t *content) {
+    const uint16_t infoElements = sizeof(INFO_KEYS_PAGE) / sizeof(INFO_KEYS_PAGE[0]);
+    switch (page) {
+        // Info page 0
         case 0: {
             content->type = INFOS_LIST;
-            content->infosList.nbInfos = sizeof(INFO_KEYS)/sizeof(INFO_KEYS[0]);
-            content->infosList.infoContents = INFO_VALUES;
-            content->infosList.infoTypes = INFO_KEYS;
+            content->infosList.nbInfos = MAX_INFO_LIST_ITEM_PER_PAGE;
+            content->infosList.infoContents = INFO_VALUES_PAGE;
+            content->infosList.infoTypes = INFO_KEYS_PAGE;
             break;
         }
 
+        // Info page 1
         case 1: {
+            content->type = INFOS_LIST;
+            content->infosList.nbInfos = infoElements - MAX_INFO_LIST_ITEM_PER_PAGE;
+            content->infosList.infoContents = &INFO_VALUES_PAGE[MAX_INFO_LIST_ITEM_PER_PAGE];
+            content->infosList.infoTypes = &INFO_KEYS_PAGE[MAX_INFO_LIST_ITEM_PER_PAGE];
+            break;
+        }
+
+        case 2: {
             // Config
             content->type = SWITCHES_LIST;
             content->switchesList.nbSwitches = 1;
@@ -362,18 +353,18 @@ static void settings_toggle_callback(int token, __Z_UNUSED uint8_t index) {
 }
 
 void setting_screen() {
-    //Set return button top-left (true) botton-left (false)
+    // Set return button top-left (true) botton-left (false)
     const bool return_button_top_left = false;
     const uint8_t init_page = 0;
-    const uint8_t settings_pages = 2;
+    const uint8_t settings_pages = 3;
     nbgl_useCaseSettings(MENU_MAIN_APP_LINE1, init_page, settings_pages, return_button_top_left,
-                        view_idle_show_impl_callback, settings_screen_callback, settings_toggle_callback);
+                         view_idle_show_impl_callback, settings_screen_callback, settings_toggle_callback);
 }
 
 void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, const char *statusString) {
     viewdata.key = viewdata.keys[0];
     const char *home_text = HOME_TEXT;
-    if (statusString == NULL ) {
+    if (statusString == NULL) {
 #ifdef APP_SECRET_MODE_ENABLED
         if (app_mode_secret()) {
             snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", MENU_MAIN_APP_LINE2_SECRET);
@@ -412,15 +403,14 @@ static void review_configuration() {
         view_error_show();
     }
 
-    nbgl_useCaseChoice(&C_round_warning_64px, viewdata.key, viewdata.value, "Accept", "Reject", confirm_setting);
+    nbgl_useCaseChoice(&C_Important_Circle_64px, viewdata.key, viewdata.value, "Accept", "Reject", confirm_setting);
 }
 
 static void review_address() {
-    nbgl_layoutTagValueList_t* extraPagesPtr = NULL;
+    nbgl_layoutTagValueList_t *extraPagesPtr = NULL;
 
     uint8_t numItems = 0;
-    if (viewdata.viewfuncGetNumItems == NULL ||
-        viewdata.viewfuncGetNumItems(&numItems) != zxerr_ok ||
+    if (viewdata.viewfuncGetNumItems == NULL || viewdata.viewfuncGetNumItems(&numItems) != zxerr_ok ||
         numItems > NB_MAX_DISPLAYED_PAIRS_IN_REVIEW) {
         ZEMU_LOGF(50, "Show address error\n")
         view_error_show();
@@ -449,7 +439,7 @@ static void review_address() {
     nbgl_useCaseAddressConfirmationExt(viewdata.value, action_callback, extraPagesPtr);
 }
 
-static nbgl_layoutTagValue_t* update_item_callback(uint8_t index) {
+static nbgl_layoutTagValue_t *update_item_callback(uint8_t index) {
     uint8_t internalIndex = index % NB_MAX_DISPLAYED_PAIRS_IN_REVIEW;
 
     viewdata.itemIdx = index;
@@ -470,29 +460,28 @@ static void review_transaction_static() {
     }
 
     infoLongPress.icon = &C_icon_stax_64;
-    infoLongPress.text = APPROVE_LABEL_STAX;
+    infoLongPress.text = APPROVE_LABEL_NBGL;
     infoLongPress.longPressText = HOLD_TO_APPROVE_MSG;
 
     pairList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;
     pairList.nbPairs = get_pair_number();
-    pairList.pairs = NULL; // to indicate that callback should be used
+    pairList.pairs = NULL;  // to indicate that callback should be used
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
 
-    nbgl_useCaseStaticReview(&pairList, &infoLongPress, REJECT_LABEL_STAX, action_callback);
+    nbgl_useCaseStaticReview(&pairList, &infoLongPress, REJECT_LABEL_NBGL, action_callback);
 }
 
-void view_review_show_impl(unsigned int requireReply){
-    review_type = (review_type_e) requireReply;
+void view_review_show_impl(unsigned int requireReply) {
+    review_type = (review_type_e)requireReply;
 
     // Retrieve intro text for transaction
     txn_intro_message = NULL;
     viewdata.key = viewdata.keys[0];
     viewdata.value = viewdata.values[0];
     if (viewdata.viewfuncGetItem != NULL) {
-        const zxerr_t err = viewdata.viewfuncGetItem(0xFF, viewdata.key, MAX_CHARS_PER_KEY_LINE,
-                                                    viewdata.value, MAX_CHARS_PER_VALUE1_LINE,
-                                                    0, &viewdata.pageCount);
+        const zxerr_t err = viewdata.viewfuncGetItem(0xFF, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
+                                                     MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount);
         if (err == zxerr_ok) {
             txn_intro_message = viewdata.value;
         }
@@ -501,35 +490,23 @@ void view_review_show_impl(unsigned int requireReply){
 
     switch (review_type) {
         case REVIEW_UI:
-            nbgl_useCaseReviewStart(&C_icon_stax_64,
-                                    "Review configuration",
-                                    NULL,
-                                    CANCEL_LABEL,
-                                    review_configuration,
+            nbgl_useCaseReviewStart(&C_icon_stax_64, "Review configuration", NULL, CANCEL_LABEL, review_configuration,
                                     cancel);
             break;
         case REVIEW_ADDRESS: {
-            #if defined(CUSTOM_ADDRESS_TEXT)
-                const char ADDRESS_TEXT[] = CUSTOM_ADDRESS_TEXT;
-            #else
-                const char ADDRESS_TEXT[] = "Verify " MENU_MAIN_APP_LINE1 "\naddress";
-            #endif
-            nbgl_useCaseReviewStart(&C_icon_stax_64,
-                                    ADDRESS_TEXT,
-                                    NULL,
-                                    CANCEL_LABEL,
-                                    review_address,
-                                    cancel);
+#if defined(CUSTOM_ADDRESS_TEXT)
+            const char ADDRESS_TEXT[] = CUSTOM_ADDRESS_TEXT;
+#else
+            const char ADDRESS_TEXT[] = "Verify " MENU_MAIN_APP_LINE1 "\naddress";
+#endif
+            nbgl_useCaseReviewStart(&C_icon_stax_64, ADDRESS_TEXT, NULL, CANCEL_LABEL, review_address, cancel);
             break;
         }
         case REVIEW_TXN:
         default:
             nbgl_useCaseReviewStart(&C_icon_stax_64,
-                                    (txn_intro_message == NULL ? "Review transaction" : txn_intro_message),
-                                    NULL,
-                                    REJECT_LABEL_STAX,
-                                    review_transaction_static,
-                                    check_cancel);
+                                    (txn_intro_message == NULL ? "Review transaction" : txn_intro_message), NULL,
+                                    REJECT_LABEL_NBGL, review_transaction_static, check_cancel);
     }
 }
 

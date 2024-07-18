@@ -28,11 +28,13 @@ DOCKER_BOLOS_SDKS = NANOS_SDK
 DOCKER_BOLOS_SDKX = NANOX_SDK
 DOCKER_BOLOS_SDKS2 = NANOSP_SDK
 DOCKER_BOLOS_SDKST = STAX_SDK
+DOCKER_BOLOS_SDKFL = FLEX_SDK
 
 TARGET_S = nanos
 TARGET_X = nanox
 TARGET_S2 = nanos2
 TARGET_ST = stax
+TARGET_FL = flex
 
 # Note: This is not an SSH key, and being public represents no risk
 SCP_PUBKEY=049bc79d139c70c83a4b19e8922e5ee3e0080bb14a2e8b0752aa42cda90a1463f689b0fa68c1c0246845c2074787b649d0d8a6c0b97d4607065eee3057bdf16b83
@@ -94,9 +96,8 @@ all:
 	@$(MAKE) buildS
 	@$(MAKE) buildX
 	@$(MAKE) buildS2
-ifeq ($(ZXLIB_COMPILE_STAX),1)
 	@$(MAKE) buildST
-endif # ZXLIB_COMPILE_STAX
+	@$(MAKE) buildFL
 
 .PHONY: check_python
 check_python:
@@ -132,6 +133,10 @@ build_rustS2:
 build_rustST:
 	$(call run_docker,$(DOCKER_BOLOS_SDKST),$(TARGET_ST),make -j $(NPROC) rust)
 
+.PHONY: build_rustFL
+build_rustFL:
+	$(call run_docker,$(DOCKER_BOLOS_SDKFL),$(TARGET_FL),make -j $(NPROC) rust)
+
 .PHONY: convert_icon
 convert_icon:
 	@convert $(LEDGER_SRC)/tmp.gif -monochrome -size 16x16 -depth 1 $(LEDGER_SRC)/nanos_icon.gif
@@ -152,6 +157,10 @@ buildS2:
 .PHONY: buildST
 buildST:
 	$(call run_docker,$(DOCKER_BOLOS_SDKST),$(TARGET_ST),make -j $(NPROC))
+
+.PHONY: buildFL
+buildFL:
+	$(call run_docker,$(DOCKER_BOLOS_SDKFL),$(TARGET_FL),make -j $(NPROC))
 
 .PHONY: clean_output
 clean_output:
@@ -181,6 +190,14 @@ shellX:
 shellS2:
 	$(call run_docker,$(DOCKER_BOLOS_SDKS2) -t,$(TARGET_S2),bash)
 
+.PHONY: shellST
+shellST:
+	$(call run_docker,$(DOCKER_BOLOS_SDKST) -t,$(TARGET_ST),bash)
+
+.PHONY: shellFL
+shellFL:
+	$(call run_docker,$(DOCKER_BOLOS_SDKFL) -t,$(TARGET_FL),bash)
+
 .PHONY: loadS
 loadS:
 	${LEDGER_SRC}/pkg/installer_s.sh load
@@ -205,6 +222,14 @@ loadST:
 deleteST:
 	${LEDGER_SRC}/pkg/installer_stax.sh delete
 
+.PHONY: loadFL
+loadFL:
+	${LEDGER_SRC}/pkg/installer_flex.sh load
+
+.PHONY: deleteFL
+deleteFL:
+	${LEDGER_SRC}/pkg/installer_flex.sh delete
+
 .PHONY: sizeS
 sizeS:
 	$(CURDIR)/deps/ledger-zxlib/scripts/getSize.py nanos
@@ -220,6 +245,10 @@ sizeX:
 .PHONY: sizeST
 sizeST:
 	$(CURDIR)/deps/ledger-zxlib/scripts/getSize.py stax
+
+.PHONY: sizeFL
+sizeFL:
+	$(CURDIR)/deps/ledger-zxlib/scripts/getSize.py flex
 
 .PHONY: show_info_recovery_mode
 show_info_recovery_mode:
