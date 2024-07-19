@@ -69,3 +69,14 @@ OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_stax.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_stax.sh
 endif
 #######################################
+ifeq ($(TARGET_NAME),TARGET_FLEX)
+ifeq ($(HAVE_SWAP),1)
+APP_LOAD_PARAMS += --appFlags 0xA00
+else
+APP_LOAD_PARAMS += --appFlags 0x200
+endif
+ICONNAME:=$(CURDIR)/flex_$(ICON_NAME).gif
+OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_flex.elf
+OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_flex.sh
+endif
+#######################################

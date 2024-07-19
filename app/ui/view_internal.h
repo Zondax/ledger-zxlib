@@ -1,47 +1,48 @@
 /*******************************************************************************
-*   (c) 2018 - 2022 Zondax AG
-*   (c) 2016 Ledger
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   (c) 2018 - 2024 Zondax AG
+ *   (c) 2016 Ledger
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 #pragma once
 
-#include <stdint.h>
 #include <stdbool.h>
-#include "coin.h"
-#include "zxerror.h"
-#include "view.h"
+#include <stdint.h>
 
-#define CUR_FLOW G_ux.flow_stack[G_ux.stack_count-1]
+#include "coin.h"
+#include "view.h"
+#include "zxerror.h"
+
+#define CUR_FLOW G_ux.flow_stack[G_ux.stack_count - 1]
 
 #if defined(TARGET_NANOX) || defined(TARGET_NANOS2)
-#define MAX_CHARS_PER_KEY_LINE      64
-#define MAX_CHARS_PER_VALUE1_LINE   4096
-#define MAX_CHARS_HEXMESSAGE        160
-#elif defined(TARGET_STAX)
+#define MAX_CHARS_PER_KEY_LINE 64
+#define MAX_CHARS_PER_VALUE1_LINE 4096
+#define MAX_CHARS_HEXMESSAGE 160
+#elif defined(TARGET_STAX) || defined(TARGET_FLEX)
 #include "nbgl_use_case.h"
-#define MAX_LINES_PER_PAGE_REVIEW   NB_MAX_LINES_IN_REVIEW
-#define MAX_CHARS_PER_KEY_LINE      64
-#define MAX_CHARS_PER_VALUE1_LINE   180
-#define MAX_CHARS_HEXMESSAGE        160
+#define MAX_LINES_PER_PAGE_REVIEW NB_MAX_LINES_IN_REVIEW
+#define MAX_CHARS_PER_KEY_LINE 64
+#define MAX_CHARS_PER_VALUE1_LINE 180
+#define MAX_CHARS_HEXMESSAGE 160
 #else
 #ifndef MAX_CHARS_PER_VALUE_LINE
-#define MAX_CHARS_PER_VALUE_LINE    (17)
+#define MAX_CHARS_PER_VALUE_LINE (17)
 #endif
-#define MAX_CHARS_PER_KEY_LINE      (MAX_CHARS_PER_VALUE_LINE+1)
-#define MAX_CHARS_PER_VALUE1_LINE   (2*MAX_CHARS_PER_VALUE_LINE+1)
-#define MAX_CHARS_PER_VALUE2_LINE   (MAX_CHARS_PER_VALUE_LINE+1)
-#define MAX_CHARS_HEXMESSAGE        40
+#define MAX_CHARS_PER_KEY_LINE (MAX_CHARS_PER_VALUE_LINE + 1)
+#define MAX_CHARS_PER_VALUE1_LINE (2 * MAX_CHARS_PER_VALUE_LINE + 1)
+#define MAX_CHARS_PER_VALUE2_LINE (MAX_CHARS_PER_VALUE_LINE + 1)
+#define MAX_CHARS_HEXMESSAGE 40
 #endif
 
 // This takes data from G_io_apdu_buffer that is prefilled with the address
@@ -53,18 +54,18 @@
 #define SHORTCUT_VALUE "fields"
 #define SHORTCUT_STR "Skip fields"
 
-//Review string can be customizable in each app
+// Review string can be customizable in each app
 #if !defined(REVIEW_SCREEN_TITLE) && !defined(REVIEW_SCREEN_TX_VALUE) && !defined(REVIEW_SCREEN_ADDR_VALUE)
-    #define REVIEW_SCREEN_TITLE "Please"
-    #define REVIEW_SCREEN_TXN_VALUE "review"
-    #define REVIEW_SCREEN_ADDR_VALUE "review"
+#define REVIEW_SCREEN_TITLE "Please"
+#define REVIEW_SCREEN_TXN_VALUE "review"
+#define REVIEW_SCREEN_ADDR_VALUE "review"
 #endif
 
-static const char* review_key = REVIEW_SCREEN_TITLE;
-static const char* review_txvalue = REVIEW_SCREEN_TXN_VALUE;
-static const char* review_addrvalue = REVIEW_SCREEN_ADDR_VALUE;
-static const char* review_keyconfig = "Review";
-static const char* review_configvalue = "configuration";
+static const char *review_key = REVIEW_SCREEN_TITLE;
+static const char *review_txvalue = REVIEW_SCREEN_TXN_VALUE;
+static const char *review_addrvalue = REVIEW_SCREEN_ADDR_VALUE;
+static const char *review_keyconfig = "Review";
+static const char *review_configvalue = "configuration";
 
 // Review msg string can be customizable in each app
 #if !defined(REVIEW_MSG_TITLE) && !defined(REVIEW_MSG_VALUE)
@@ -75,26 +76,26 @@ static const char* review_configvalue = "configuration";
 static const char *review_msgKey = REVIEW_MSG_TITLE;
 static const char *review_msgValue = REVIEW_MSG_VALUE;
 
-static const char* shortcut_key = SHORTCUT_TITLE;
-static const char* shortcut_value = SHORTCUT_VALUE;
+static const char *shortcut_key = SHORTCUT_TITLE;
+static const char *shortcut_value = SHORTCUT_VALUE;
 
 #if defined(TARGET_NANOS)
-    #if defined(REVIEW_SCREEN_ENABLED) && defined(SHORTCUT_MODE_ENABLED)
-        #define INTRO_PAGES 2
-    #elif defined(REVIEW_SCREEN_ENABLED) || defined(SHORTCUT_MODE_ENABLED)
-        #define INTRO_PAGES 1
-    #else
-        #define INTRO_PAGES 0
-    #endif
+#if defined(REVIEW_SCREEN_ENABLED) && defined(SHORTCUT_MODE_ENABLED)
+#define INTRO_PAGES 2
+#elif defined(REVIEW_SCREEN_ENABLED) || defined(SHORTCUT_MODE_ENABLED)
+#define INTRO_PAGES 1
 #else
-    #define INTRO_PAGES 0
+#define INTRO_PAGES 0
+#endif
+#else
+#define INTRO_PAGES 0
 #endif
 
 typedef struct {
     struct {
-#if defined(TARGET_STAX)
-        char* key;
-        char* value;
+#if defined(TARGET_STAX) || defined(TARGET_FLEX)
+        char *key;
+        char *value;
         char keys[NB_MAX_DISPLAYED_PAIRS_IN_REVIEW][MAX_CHARS_PER_KEY_LINE];
         char values[NB_MAX_DISPLAYED_PAIRS_IN_REVIEW][MAX_CHARS_PER_VALUE1_LINE];
 #else

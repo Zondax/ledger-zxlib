@@ -1,6 +1,6 @@
 #*******************************************************************************
 #  Ledger App
-#  (c) 2018 - 2023 Zondax AG
+#  (c) 2018 - 2024 Zondax AG
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ ifeq ($(TARGET_NAME),TARGET_NANOS)
 # Nano S
 	DEFINES += IO_SEPROXYHAL_BUFFER_SIZE_B=128
 	DEFINES += HAVE_BAGL
-else ifeq ($(TARGET_NAME),TARGET_STAX)
-# Stax
+else ifeq ($(TARGET_NAME),$(filter $(TARGET_NAME),TARGET_STAX TARGET_FLEX))
+# Stax and Flex
 	DEFINES += IO_SEPROXYHAL_BUFFER_SIZE_B=300
 	DEFINES += NBGL_QRCODE
 	SDK_SOURCE_PATH += qrcode
@@ -60,7 +60,7 @@ DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_LIGHT_16PX
 DEFINES       += HAVE_UX_FLOW
 endif
 
-BLE_TARGETS := TARGET_STAX TARGET_NANOX
+BLE_TARGETS := TARGET_STAX TARGET_NANOX TARGET_FLEX
 ifeq ($(TARGET_NAME),$(filter $(TARGET_NAME), $(BLE_TARGETS)))
 # X/Stax specific
 DEFINES       += HAVE_BLE
@@ -113,6 +113,6 @@ APP_SOURCE_PATH += $(ZXLIB_DIR)/app/ui
 
 SDK_SOURCE_PATH += lib_stusb lib_stusb_impl
 
-ifneq ($(TARGET_NAME),TARGET_STAX)
+ifneq ($(TARGET_NAME),$(filter $(TARGET_NAME),TARGET_STAX TARGET_FLEX))
 	SDK_SOURCE_PATH += lib_ux
 endif
