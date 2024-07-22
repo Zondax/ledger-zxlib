@@ -34,7 +34,6 @@ zxerr_t account_enabled();
 #endif
 
 #define APPROVE_LABEL_NBGL "Sign transaction?"
-#define REJECT_LABEL_NBGL "Reject transaction"
 #define CANCEL_LABEL "Cancel"
 #define HOLD_TO_APPROVE_MSG "Hold to sign"
 
@@ -51,7 +50,6 @@ static nbgl_layoutTagValue_t pairs[NB_MAX_DISPLAYED_PAIRS_IN_REVIEW];
 
 static nbgl_layoutTagValue_t pair;
 static nbgl_layoutTagValueList_t pairList;
-static nbgl_pageInfoLongPress_t infoLongPress;
 
 static nbgl_layoutSwitch_t settings[4];
 
@@ -91,13 +89,6 @@ static void view_idle_show_impl_callback() { view_idle_show_impl(0, NULL); }
 static const char *const INFO_KEYS_PAGE[] = {"Version", "Developed by", "Website", "License"};
 static const char *const INFO_VALUES_PAGE[] = {APPVERSION, "Zondax AG", "https://zondax.ch", "Apache 2.0"};
 
-static const char *txn_choice_message = "Reject transaction?";
-static const char *add_choice_message = "Reject address?";
-static const char *ui_choice_message = "Reject configuration?";
-
-static const char *txn_verified = "Transaction\nsigned";
-static const char *txn_cancelled = "Transaction rejected";
-
 static void h_expert_toggle() { app_mode_set_expert(!app_mode_expert()); }
 
 static void confirm_error(__Z_UNUSED bool confirm) { h_error_accept(0); }
@@ -110,54 +101,12 @@ static void reviewAddressChoice(bool confirm) {
     }
 }
 
-static void confirm_callback(bool confirm) {
-    const char *message = NULL;
-    switch (review_type) {
-        case REVIEW_TXN:
-            message = confirm ? txn_verified : txn_cancelled;
-            break;
-
-        case REVIEW_UI:
-        default:
-            confirm ? h_approve(review_type) : h_reject(review_type);
-            return;
-    }
-    nbgl_useCaseStatus(message, confirm, (confirm ? h_approve_internal : h_reject_internal));
-}
-
-static void cancel(void) {
-    ZEMU_LOGF(50, "Cancelling...\n")
-    confirm_callback(false);
-}
-
-static void action_callback(bool confirm) {
-    ZEMU_LOGF(50, "Check action callback: %d\n", confirm)
+static void reviewTransactionChoice(bool confirm) {
     if (confirm) {
-        confirm_callback(confirm);
-        return;
+        nbgl_useCaseReviewStatus(STATUS_TYPE_TRANSACTION_SIGNED, h_approve_internal);
+    } else {
+        nbgl_useCaseReviewStatus(STATUS_TYPE_TRANSACTION_REJECTED, h_reject_internal);
     }
-
-    const char *message = NULL;
-    switch (review_type) {
-        case REVIEW_UI:
-            message = ui_choice_message;
-            break;
-
-        case REVIEW_ADDRESS:
-            message = add_choice_message;
-            break;
-
-        case REVIEW_TXN:
-            message = txn_choice_message;
-            break;
-
-        default:
-            ZEMU_LOGF(50, "Error unrecognize review option\n")
-            view_error_show();
-            return;
-    }
-
-    nbgl_useCaseConfirm(message, NULL, "Yes, reject", "Go back to transaction", cancel);
 }
 
 static void confirm_setting(bool confirm) {
@@ -165,7 +114,8 @@ static void confirm_setting(bool confirm) {
         viewdata.viewfuncAccept();
         return;
     }
-    confirm_callback(confirm);
+
+    h_reject_internal();
 }
 
 void view_error_show() {
@@ -463,10 +413,6 @@ static void config_useCaseReview(nbgl_operationType_t type) {
         return;
     }
 
-    infoLongPress.icon = &C_icon_stax_64;
-    infoLongPress.text = APPROVE_LABEL_NBGL;
-    infoLongPress.longPressText = HOLD_TO_APPROVE_MSG;
-
     pairList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;
     pairList.nbPairs = get_pair_number();
     pairList.pairs = NULL;  // to indicate that callback should be used
@@ -475,7 +421,7 @@ static void config_useCaseReview(nbgl_operationType_t type) {
 
     nbgl_useCaseReview(type, &pairList, &C_icon_stax_64,
                        (txn_intro_message == NULL ? "Review transaction" : txn_intro_message), NULL, APPROVE_LABEL_NBGL,
-                       action_callback);
+                       reviewTransactionChoice);
 }
 
 void view_review_show_impl(unsigned int requireReply) {
@@ -497,7 +443,7 @@ void view_review_show_impl(unsigned int requireReply) {
     switch (review_type) {
         case REVIEW_UI:
             nbgl_useCaseReviewStart(&C_icon_stax_64, "Review configuration", NULL, CANCEL_LABEL, review_configuration,
-                                    cancel);
+                                    h_reject_internal);
             break;
         case REVIEW_ADDRESS: {
             config_useCaseAddressReview();
