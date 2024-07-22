@@ -251,7 +251,7 @@ static bool settings_screen_callback(uint8_t page, nbgl_pageContent_t *content) 
             break;
         }
 
-        // Info page 0
+        // Info page 1
         case 1: {
             content->type = INFOS_LIST;
             content->infosList.nbInfos = MAX_INFO_LIST_ITEM_PER_PAGE;
@@ -260,7 +260,7 @@ static bool settings_screen_callback(uint8_t page, nbgl_pageContent_t *content) 
             break;
         }
 
-        // Info page 1
+        // Info page 2
         case 2: {
             content->type = INFOS_LIST;
             content->infosList.nbInfos = infoElements - MAX_INFO_LIST_ITEM_PER_PAGE;
