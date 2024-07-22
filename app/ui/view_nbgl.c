@@ -95,10 +95,10 @@ static const char *txn_choice_message = "Reject transaction?";
 static const char *add_choice_message = "Reject address?";
 static const char *ui_choice_message = "Reject configuration?";
 
-static const char *txn_verified = "TRANSACTION\nSIGNED";
+static const char *txn_verified = "Transaction\nsigned";
 static const char *txn_cancelled = "Transaction rejected";
 
-static const char *add_verified = "ADDRESS\nVERIFIED";
+static const char *add_verified = "Address\nverified";
 static const char *add_cancelled = "Address verification\ncancelled";
 
 static void h_expert_toggle() { app_mode_set_expert(!app_mode_expert()); }
@@ -269,25 +269,7 @@ void h_review_update() {
 static bool settings_screen_callback(uint8_t page, nbgl_pageContent_t *content) {
     const uint16_t infoElements = sizeof(INFO_KEYS_PAGE) / sizeof(INFO_KEYS_PAGE[0]);
     switch (page) {
-        // Info page 0
         case 0: {
-            content->type = INFOS_LIST;
-            content->infosList.nbInfos = MAX_INFO_LIST_ITEM_PER_PAGE;
-            content->infosList.infoContents = INFO_VALUES_PAGE;
-            content->infosList.infoTypes = INFO_KEYS_PAGE;
-            break;
-        }
-
-        // Info page 1
-        case 1: {
-            content->type = INFOS_LIST;
-            content->infosList.nbInfos = infoElements - MAX_INFO_LIST_ITEM_PER_PAGE;
-            content->infosList.infoContents = &INFO_VALUES_PAGE[MAX_INFO_LIST_ITEM_PER_PAGE];
-            content->infosList.infoTypes = &INFO_KEYS_PAGE[MAX_INFO_LIST_ITEM_PER_PAGE];
-            break;
-        }
-
-        case 2: {
             // Config
             content->type = SWITCHES_LIST;
             content->switchesList.nbSwitches = 1;
@@ -317,6 +299,24 @@ static bool settings_screen_callback(uint8_t page, nbgl_pageContent_t *content) 
                 content->switchesList.nbSwitches++;
             }
 #endif
+            break;
+        }
+
+        // Info page 0
+        case 1: {
+            content->type = INFOS_LIST;
+            content->infosList.nbInfos = MAX_INFO_LIST_ITEM_PER_PAGE;
+            content->infosList.infoContents = INFO_VALUES_PAGE;
+            content->infosList.infoTypes = INFO_KEYS_PAGE;
+            break;
+        }
+
+        // Info page 1
+        case 2: {
+            content->type = INFOS_LIST;
+            content->infosList.nbInfos = infoElements - MAX_INFO_LIST_ITEM_PER_PAGE;
+            content->infosList.infoContents = &INFO_VALUES_PAGE[MAX_INFO_LIST_ITEM_PER_PAGE];
+            content->infosList.infoTypes = &INFO_KEYS_PAGE[MAX_INFO_LIST_ITEM_PER_PAGE];
             break;
         }
 
