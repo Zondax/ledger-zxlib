@@ -98,20 +98,21 @@ static const char *ui_choice_message = "Reject configuration?";
 static const char *txn_verified = "Transaction\nsigned";
 static const char *txn_cancelled = "Transaction rejected";
 
-static const char *add_verified = "Address\nverified";
-static const char *add_cancelled = "Address verification\ncancelled";
-
 static void h_expert_toggle() { app_mode_set_expert(!app_mode_expert()); }
 
 static void confirm_error(__Z_UNUSED bool confirm) { h_error_accept(0); }
 
+static void reviewAddressChoice(bool confirm) {
+    if (confirm) {
+        nbgl_useCaseReviewStatus(STATUS_TYPE_ADDRESS_VERIFIED, h_approve_internal);
+    } else {
+        nbgl_useCaseReviewStatus(STATUS_TYPE_ADDRESS_REJECTED, h_reject_internal);
+    }
+}
+
 static void confirm_callback(bool confirm) {
     const char *message = NULL;
     switch (review_type) {
-        case REVIEW_ADDRESS:
-            message = confirm ? add_verified : add_cancelled;
-            break;
-
         case REVIEW_TXN:
             message = confirm ? txn_verified : txn_cancelled;
             break;
@@ -156,7 +157,7 @@ static void action_callback(bool confirm) {
             return;
     }
 
-    nbgl_useCaseConfirm(message, NULL, "Yes, reject", "Go back", cancel);
+    nbgl_useCaseConfirm(message, NULL, "Yes, reject", "Go back to transaction", cancel);
 }
 
 static void confirm_setting(bool confirm) {
@@ -439,7 +440,7 @@ static void config_useCaseAddressReview() {
 #else
     const char ADDRESS_TEXT[] = "Verify " MENU_MAIN_APP_LINE1 "\naddress";
 #endif
-    nbgl_useCaseAddressReview(viewdata.value, &pairList, &C_icon_stax_64, ADDRESS_TEXT, NULL, action_callback);
+    nbgl_useCaseAddressReview(viewdata.value, &pairList, &C_icon_stax_64, ADDRESS_TEXT, NULL, reviewAddressChoice);
 }
 
 static nbgl_layoutTagValue_t *update_item_callback(uint8_t index) {
