@@ -356,8 +356,6 @@ static void review_configuration() {
 }
 
 static void config_useCaseAddressReview() {
-    nbgl_layoutTagValueList_t *extraPagesPtr = NULL;
-
     uint8_t numItems = 0;
     if (viewdata.viewfuncGetNumItems == NULL || viewdata.viewfuncGetNumItems(&numItems) != zxerr_ok ||
         numItems > NB_MAX_DISPLAYED_PAIRS_IN_REVIEW) {
@@ -377,7 +375,6 @@ static void config_useCaseAddressReview() {
         pairList.nbMaxLinesForValue = 0;
         pairList.nbPairs = idx;
         pairList.pairs = pairs;
-        extraPagesPtr = &pairList;
     }
 
     viewdata.itemIdx = 0;
