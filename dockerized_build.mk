@@ -377,7 +377,7 @@ fuzz_crash: fuzz_build
 
 .PHONY: format
 format:
-	find . \( -iname '*.h' -o -iname '*.c' -o -iname '*.cpp' -o -iname '*.hpp' \) -a ! -path "*/deps/*" -a ! -path "./tests_zemu/node_modules/*" ! -path "./build/*" | xargs clang-format -i
+	find . \( -iname '*.h' -o -iname '*.c' -o -iname '*.cpp' -o -iname '*.hpp' \) -a ! -path "*/deps/*" -a ! -path "./tests_zemu/node_modules/*" -a ! -path "./cmake/*" ! -path "./build/*" | xargs clang-format -i
 
 .PHONY: shell
 shell:

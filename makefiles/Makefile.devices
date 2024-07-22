@@ -19,16 +19,21 @@ INSTALLER_NAME ?= installer
 ICON_NAME ?= icon
 ELF_NAME ?= app
 
+ifndef APP_STACK_MIN_SIZE
+ifeq ($(TARGET_NAME),TARGET_NANOS)
+	APP_STACK_MIN_SIZE := 1600
+else
+	APP_STACK_MIN_SIZE := 1752
+endif
+$(info APP_STACK_MIN_SIZE set to default($(APP_STACK_MIN_SIZE)))
+endif
+
 #######################################
 ifeq ($(TARGET_NAME),TARGET_NANOS)
 ifeq ($(HAVE_SWAP),1)
 APP_LOAD_PARAMS += --appFlags 0x800
 else
 APP_LOAD_PARAMS += --appFlags 0x000
-endif
-
-ifneq ($(NANOS_STACK_SIZE),)
-$(error NANOS_STACK_SIZE is deprecated. Remove NANOS_STACK_SIZE definition in app/Makefile)
 endif
 
 ICONNAME:=$(CURDIR)/nanos_$(ICON_NAME).gif
