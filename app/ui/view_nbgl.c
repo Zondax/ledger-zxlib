@@ -159,8 +159,6 @@ static void action_callback(bool confirm) {
     nbgl_useCaseConfirm(message, NULL, "Yes, reject", "Go back", cancel);
 }
 
-static void check_cancel(void) { action_callback(false); }
-
 static void confirm_setting(bool confirm) {
     if (confirm && viewdata.viewfuncAccept != NULL) {
         viewdata.viewfuncAccept();
@@ -457,7 +455,7 @@ static nbgl_layoutTagValue_t *update_item_callback(uint8_t index) {
     return &pair;
 }
 
-static void review_transaction_static() {
+static void config_useCaseReview(nbgl_operationType_t type) {
     if (viewdata.viewfuncGetNumItems == NULL) {
         ZEMU_LOGF(50, "GetNumItems==NULL\n")
         view_error_show();
@@ -474,7 +472,9 @@ static void review_transaction_static() {
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
 
-    nbgl_useCaseStaticReview(&pairList, &infoLongPress, REJECT_LABEL_NBGL, action_callback);
+    nbgl_useCaseReview(type, &pairList, &C_icon_stax_64,
+                       (txn_intro_message == NULL ? "Review transaction" : txn_intro_message), NULL, APPROVE_LABEL_NBGL,
+                       action_callback);
 }
 
 void view_review_show_impl(unsigned int requireReply) {
@@ -504,9 +504,8 @@ void view_review_show_impl(unsigned int requireReply) {
         }
         case REVIEW_TXN:
         default:
-            nbgl_useCaseReviewStart(&C_icon_stax_64,
-                                    (txn_intro_message == NULL ? "Review transaction" : txn_intro_message), NULL,
-                                    REJECT_LABEL_NBGL, review_transaction_static, check_cancel);
+            config_useCaseReview(TYPE_TRANSACTION);
+            break;
     }
 }
 
