@@ -406,7 +406,7 @@ static void review_configuration() {
     nbgl_useCaseChoice(&C_Important_Circle_64px, viewdata.key, viewdata.value, "Accept", "Reject", confirm_setting);
 }
 
-static void review_address() {
+static void config_useCaseAddressReview() {
     nbgl_layoutTagValueList_t *extraPagesPtr = NULL;
 
     uint8_t numItems = 0;
@@ -436,7 +436,12 @@ static void review_address() {
     viewdata.value = viewdata.values[0];
     h_review_update_data();
 
-    nbgl_useCaseAddressConfirmationExt(viewdata.value, action_callback, extraPagesPtr);
+#if defined(CUSTOM_ADDRESS_TEXT)
+    const char ADDRESS_TEXT[] = CUSTOM_ADDRESS_TEXT;
+#else
+    const char ADDRESS_TEXT[] = "Verify " MENU_MAIN_APP_LINE1 "\naddress";
+#endif
+    nbgl_useCaseAddressReview(viewdata.value, &pairList, &C_icon_stax_64, ADDRESS_TEXT, NULL, action_callback);
 }
 
 static nbgl_layoutTagValue_t *update_item_callback(uint8_t index) {
@@ -494,12 +499,7 @@ void view_review_show_impl(unsigned int requireReply) {
                                     cancel);
             break;
         case REVIEW_ADDRESS: {
-#if defined(CUSTOM_ADDRESS_TEXT)
-            const char ADDRESS_TEXT[] = CUSTOM_ADDRESS_TEXT;
-#else
-            const char ADDRESS_TEXT[] = "Verify " MENU_MAIN_APP_LINE1 "\naddress";
-#endif
-            nbgl_useCaseReviewStart(&C_icon_stax_64, ADDRESS_TEXT, NULL, CANCEL_LABEL, review_address, cancel);
+            config_useCaseAddressReview();
             break;
         }
         case REVIEW_TXN:
