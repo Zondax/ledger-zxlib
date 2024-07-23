@@ -35,16 +35,17 @@ zxerr_t account_enabled();
 
 #define APPROVE_LABEL_NBGL "Sign transaction?"
 #define CANCEL_LABEL "Cancel"
-#define HOLD_TO_APPROVE_MSG "Hold to sign"
 
 static const char HOME_TEXT[] =
     "This application enables\nsigning transactions on the\n" MENU_MAIN_APP_LINE1 " network";
+
+static const char ADDRESS_TEXT[] = "Verify " MENU_MAIN_APP_LINE1 "\naddress";
 
 ux_state_t G_ux;
 bolos_ux_params_t G_ux_params;
 extern unsigned int review_type;
 
-const char *txn_intro_message = NULL;
+const char *intro_message = NULL;
 
 static nbgl_layoutTagValue_t pairs[NB_MAX_DISPLAYED_PAIRS_IN_REVIEW];
 
@@ -52,6 +53,8 @@ static nbgl_layoutTagValue_t pair;
 static nbgl_layoutTagValueList_t pairList;
 
 static nbgl_layoutSwitch_t settings[4];
+
+static nbgl_layoutTagValueList_t *extraPagesPtr = NULL;
 
 typedef enum {
     EXPERT_MODE = 0,
@@ -356,6 +359,7 @@ static void review_configuration() {
 }
 
 static void config_useCaseAddressReview() {
+    extraPagesPtr = NULL;
     uint8_t numItems = 0;
     if (viewdata.viewfuncGetNumItems == NULL || viewdata.viewfuncGetNumItems(&numItems) != zxerr_ok ||
         numItems > NB_MAX_DISPLAYED_PAIRS_IN_REVIEW) {
@@ -375,6 +379,7 @@ static void config_useCaseAddressReview() {
         pairList.nbMaxLinesForValue = 0;
         pairList.nbPairs = idx;
         pairList.pairs = pairs;
+        extraPagesPtr = &pairList;
     }
 
     viewdata.itemIdx = 0;
@@ -383,11 +388,11 @@ static void config_useCaseAddressReview() {
     h_review_update_data();
 
 #if defined(CUSTOM_ADDRESS_TEXT)
-    const char ADDRESS_TEXT[] = CUSTOM_ADDRESS_TEXT;
+    intro_message = CUSTOM_ADDRESS_TEXT;
 #else
-    const char ADDRESS_TEXT[] = "Verify " MENU_MAIN_APP_LINE1 "\naddress";
+    intro_message = ADDRESS_TEXT;
 #endif
-    nbgl_useCaseAddressReview(viewdata.value, &pairList, &C_icon_stax_64, ADDRESS_TEXT, NULL, reviewAddressChoice);
+    nbgl_useCaseAddressReview(viewdata.value, extraPagesPtr, &C_icon_stax_64, intro_message, NULL, reviewAddressChoice);
 }
 
 static nbgl_layoutTagValue_t *update_item_callback(uint8_t index) {
@@ -416,23 +421,22 @@ static void config_useCaseReview(nbgl_operationType_t type) {
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
 
-    nbgl_useCaseReview(type, &pairList, &C_icon_stax_64,
-                       (txn_intro_message == NULL ? "Review transaction" : txn_intro_message), NULL, APPROVE_LABEL_NBGL,
-                       reviewTransactionChoice);
+    nbgl_useCaseReview(type, &pairList, &C_icon_stax_64, (intro_message == NULL ? "Review transaction" : intro_message),
+                       NULL, APPROVE_LABEL_NBGL, reviewTransactionChoice);
 }
 
 void view_review_show_impl(unsigned int requireReply) {
     review_type = (review_type_e)requireReply;
 
     // Retrieve intro text for transaction
-    txn_intro_message = NULL;
+    intro_message = NULL;
     viewdata.key = viewdata.keys[0];
     viewdata.value = viewdata.values[0];
     if (viewdata.viewfuncGetItem != NULL) {
         const zxerr_t err = viewdata.viewfuncGetItem(0xFF, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
                                                      MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount);
         if (err == zxerr_ok) {
-            txn_intro_message = viewdata.value;
+            intro_message = viewdata.value;
         }
     }
     h_paging_init();
