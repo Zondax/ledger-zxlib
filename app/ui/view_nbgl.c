@@ -388,6 +388,7 @@ static void config_useCaseAddressReview() {
     h_review_update_data();
 
 #if defined(CUSTOM_ADDRESS_TEXT)
+    UNUSED(ADDRESS_TEXT);
     intro_message = CUSTOM_ADDRESS_TEXT;
 #else
     intro_message = ADDRESS_TEXT;
