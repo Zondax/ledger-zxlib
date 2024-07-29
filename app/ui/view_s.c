@@ -411,7 +411,9 @@ void h_secret_click() {
 }
 #endif
 
-void view_review_show_impl(unsigned int requireReply) {
+void view_review_show_impl(unsigned int requireReply, const char *title, const char *validate) {
+    UNUSED(title);
+    UNUSED(validate);
     zemu_log_stack("view_review_show_impl");
     review_type = requireReply;
 

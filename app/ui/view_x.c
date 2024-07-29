@@ -378,7 +378,9 @@ void view_initialize_show_impl(__Z_UNUSED uint8_t item_idx, const char *statusSt
      ux_flow_init(0, ux_menu_initialize, NULL);
 }
 
-void view_review_show_impl(unsigned int requireReply){
+void view_review_show_impl(unsigned int requireReply, const char *title, const char *validate){
+    UNUSED(title);
+    UNUSED(validate);
     review_type = requireReply;
     h_paging_init();
     h_paging_decrease();
@@ -412,6 +414,7 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t* const st
             ux_review_flow[index++] = &ux_review_flow_4_review_title;
             break;
 
+        case REVIEW_GENERIC:
         case REVIEW_TXN:
         default:
             ux_review_flow[index++] = &ux_review_flow_1_review_title;

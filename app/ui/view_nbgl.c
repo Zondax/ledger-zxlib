@@ -34,7 +34,9 @@ zxerr_t account_enabled();
 #endif
 
 #define APPROVE_LABEL_NBGL "Sign transaction?"
+#define APPROVE_LABEL_NBGL_GENERIC "Accept operation?"
 #define CANCEL_LABEL "Cancel"
+#define VERIFY_TITLE_LABEL_GENERIC "Verify operation"
 
 static const char HOME_TEXT[] =
     "This application enables\nsigning transactions on the\n" MENU_MAIN_APP_LINE1 " network";
@@ -110,6 +112,19 @@ static void reviewTransactionChoice(bool confirm) {
     } else {
         nbgl_useCaseReviewStatus(STATUS_TYPE_TRANSACTION_REJECTED, h_reject_internal);
     }
+}
+
+static void reviewGenericChoice(bool confirm) {
+    const char *msg = "Operation rejected";
+    bool isSuccess = false;
+
+    if (confirm) {
+        msg = "Operation approved";
+        isSuccess = true;
+        nbgl_useCaseReviewStatus(STATUS_TYPE_TRANSACTION_SIGNED, h_approve_internal);
+    }
+
+    nbgl_useCaseStatus(msg, isSuccess, confirm ? h_approve_internal : h_reject_internal);
 }
 
 static void confirm_setting(bool confirm) {
@@ -426,7 +441,25 @@ static void config_useCaseReview(nbgl_operationType_t type) {
                        NULL, APPROVE_LABEL_NBGL, reviewTransactionChoice);
 }
 
-void view_review_show_impl(unsigned int requireReply) {
+static void config_useCaseReviewLight(const char *title, const char *validate) {
+    if (viewdata.viewfuncGetNumItems == NULL) {
+        ZEMU_LOGF(50, "GetNumItems==NULL\n")
+        view_error_show();
+        return;
+    }
+
+    pairList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;
+    pairList.nbPairs = get_pair_number();
+    pairList.pairs = NULL;  // to indicate that callback should be used
+    pairList.callback = update_item_callback;
+    pairList.startIndex = 0;
+
+    nbgl_useCaseReviewLight(TYPE_OPERATION, &pairList, &C_icon_stax_64,
+                            (title == NULL ? VERIFY_TITLE_LABEL_GENERIC : title), NULL,
+                            (validate == NULL ? APPROVE_LABEL_NBGL_GENERIC : validate), reviewGenericChoice);
+}
+
+void view_review_show_impl(unsigned int requireReply, const char *title, const char *validate) {
     review_type = (review_type_e)requireReply;
 
     // Retrieve intro text for transaction
@@ -449,6 +482,10 @@ void view_review_show_impl(unsigned int requireReply) {
             break;
         case REVIEW_ADDRESS: {
             config_useCaseAddressReview();
+            break;
+        }
+        case REVIEW_GENERIC: {
+            config_useCaseReviewLight(title, validate);
             break;
         }
         case REVIEW_TXN:

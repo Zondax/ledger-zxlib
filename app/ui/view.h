@@ -1,31 +1,32 @@
 /*******************************************************************************
-*   (c) 2018 - 2022 Zondax AG
-*   (c) 2016 Ledger
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   (c) 2018 - 2022 Zondax AG
+ *   (c) 2016 Ledger
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 #pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
+
 #include "coin.h"
 #include "zxerror.h"
 
 #if defined(LEDGER_SPECIFIC)
 #include "bolos_target.h"
 #if defined(BOLOS_SDK)
-#include "os.h"
 #include "cx.h"
+#include "os.h"
 #endif
 #endif
 
@@ -42,7 +43,6 @@
 #define MENU_MAIN_APP_LINE1 APPVERSION_LINE1 " DEMO"
 #define MENU_MAIN_APP_LINE2 "DO NOT USE"
 #endif
-
 
 typedef struct {
     uint8_t displayIdx;
@@ -61,7 +61,7 @@ typedef struct {
     uint8_t pageCount;
 } paging_t;
 
-#define MAX_DEPTH   10
+#define MAX_DEPTH 10
 typedef struct {
     uint8_t level;
     uint8_t trace[MAX_DEPTH];
@@ -70,10 +70,8 @@ typedef struct {
 
 typedef zxerr_t (*viewfunc_getNumItems_t)(uint8_t *num_items);
 
-typedef zxerr_t (*viewfunc_getItem_t)(int8_t displayIdx,
-                                      char *outKey, uint16_t outKeyLen,
-                                      char *outVal, uint16_t outValLen,
-                                      uint8_t pageIdx, uint8_t *pageCount);
+typedef zxerr_t (*viewfunc_getItem_t)(int8_t displayIdx, char *outKey, uint16_t outKeyLen, char *outVal,
+                                      uint16_t outValLen, uint8_t pageIdx, uint8_t *pageCount);
 
 typedef zxerr_t (*viewfunc_getInnerItem_t)(uint8_t depth_level, uint8_t *trace, ui_field_t *ui_field);
 
@@ -84,10 +82,12 @@ typedef void (*viewfunc_accept_t)();
 typedef zxerr_t (*viewfunc_initialize_t)();
 
 typedef enum {
-  REVIEW_UI = 0,
-  REVIEW_ADDRESS,
-  REVIEW_TXN,
-  REVIEW_MSG,
+    REVIEW_UI = 0,
+    REVIEW_ADDRESS,
+    // Used to review keys or params that needs user confirmation before send the response
+    REVIEW_GENERIC,
+    REVIEW_TXN,
+    REVIEW_MSG,
 } review_type_e;
 
 #ifdef APP_SECRET_MODE_ENABLED
@@ -111,12 +111,12 @@ void view_error_show();
 
 void view_custom_error_show(const char *upper, const char *lower);
 
-void view_review_init(viewfunc_getItem_t viewfuncGetItem,
-                      viewfunc_getNumItems_t viewfuncGetNumItems,
+void view_review_init(viewfunc_getItem_t viewfuncGetItem, viewfunc_getNumItems_t viewfuncGetNumItems,
                       viewfunc_accept_t viewfuncAccept);
 
-void view_inspect_init(viewfunc_getInnerItem_t view_funcGetInnerItem,
-                      viewfunc_getNumItems_t view_funcGetInnerNumItems,
-                      viewfunc_canInspectItem_t view_funcCanInspectItem);
+void view_inspect_init(viewfunc_getInnerItem_t view_funcGetInnerItem, viewfunc_getNumItems_t view_funcGetInnerNumItems,
+                       viewfunc_canInspectItem_t view_funcCanInspectItem);
 
 void view_review_show(review_type_e reviewKind);
+
+void view_review_show_generic(review_type_e reviewKind, const char *title, const char *validate);

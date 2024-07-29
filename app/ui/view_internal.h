@@ -91,6 +91,15 @@ static const char *shortcut_value = SHORTCUT_VALUE;
 #define INTRO_PAGES 0
 #endif
 
+// FIXME: Wait to be fixed on SDK:
+// https://github.com/LedgerHQ/ledger-secure-sdk/blob/fe169b19c7445f2477c26035a827c22ba9f84964/lib_nbgl/include/nbgl_use_case.h#L59
+#if defined(TARGET_STAX) || defined(TARGET_FLEX)
+#ifdef NB_MAX_DISPLAYED_PAIRS_IN_REVIEW
+#undef NB_MAX_DISPLAYED_PAIRS_IN_REVIEW
+#define NB_MAX_DISPLAYED_PAIRS_IN_REVIEW 5
+#endif
+#endif
+
 typedef struct {
     struct {
 #if defined(TARGET_STAX) || defined(TARGET_FLEX)
@@ -163,7 +172,7 @@ void h_paging_init();
 
 void h_inspect_init();
 
-void view_review_show_impl(unsigned int requireReply);
+void view_review_show_impl(unsigned int requireReply, const char *title, const char *validate);
 
 void view_inspect_show_impl();
 
