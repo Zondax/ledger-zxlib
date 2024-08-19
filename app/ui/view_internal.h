@@ -96,7 +96,7 @@ static const char *shortcut_value = SHORTCUT_VALUE;
 #if defined(TARGET_STAX) || defined(TARGET_FLEX)
 #ifdef NB_MAX_DISPLAYED_PAIRS_IN_REVIEW
 #undef NB_MAX_DISPLAYED_PAIRS_IN_REVIEW
-#define NB_MAX_DISPLAYED_PAIRS_IN_REVIEW 5
+#define NB_MAX_DISPLAYED_PAIRS_IN_REVIEW 6
 #endif
 #endif
 
