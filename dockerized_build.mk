@@ -383,14 +383,21 @@ format:
 shell:
 	poetry install --no-root && poetry shell
 
+.PHONY: ts_upgrade
 ts_upgrade:
 	if [ -d js ]; then cd js && bun run upgrade; fi
 	if [ -d tests_zemu ]; then cd tests_zemu && bun run upgrade; fi
 
+.PHONY: ts_format
 ts_format:
 	if [ -d js ]; then cd js && bun run format; fi
 	if [ -d tests_zemu ]; then cd tests_zemu && bun run format; fi
 
+.PHONY: ts_lint
 ts_lint:
 	if [ -d js ]; then cd js && bun run lint; fi
 	if [ -d tests_zemu ]; then cd tests_zemu && bun run lint; fi
+
+.PHONY: dumpconfig
+dumpconfig:
+	$(call run_docker,$(DOCKER_BOLOS_SDKS),$(TARGET_S2),make -j $(NPROC) dumpconfig)
