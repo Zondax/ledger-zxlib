@@ -25,9 +25,9 @@ buffer_state_t ram;         // Ram
 buffer_state_t flash;       // Flash
 
 void buffering_init(uint8_t *ram_buffer,
-                    uint16_t ram_buffer_size,
+                    size_t ram_buffer_size,
                     uint8_t *flash_buffer,
-                    uint16_t flash_buffer_size) {
+                    size_t flash_buffer_size) {
     ram.data = ram_buffer;
     ram.size = ram_buffer_size;
     ram.pos = 0;
@@ -46,11 +46,11 @@ void buffering_reset() {
     flash.in_use = 0;
 }
 
-int buffering_append(uint8_t *data, int length) {
+int buffering_append(uint8_t *data, size_t length) {
     if (ram.in_use) {
         if (ram.size - ram.pos >= length) {
             // RAM in use, append to ram if there is enough space
-            MEMCPY(ram.data + ram.pos, data, (size_t) length);
+            MEMCPY(ram.data + ram.pos, data, length);
             ram.pos += length;
         } else {
             // If RAM is not big enough copy memory to flash
@@ -66,7 +66,7 @@ int buffering_append(uint8_t *data, int length) {
     } else {
         // Flash in use, append to flash
         if (flash.size - flash.pos >= length) {
-            MEMCPY_NV(flash.data + flash.pos, data, (size_t) length);
+            MEMCPY_NV(flash.data + flash.pos, data, length);
             flash.pos += length;
         } else {
             return 0;
