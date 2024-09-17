@@ -142,6 +142,34 @@ clean_build:
 .PHONY: clean
 clean: clean_output clean_build
 
+.PHONY: ledger-setup
+ledger-setup:
+	cargo ledger setup
+
+.PHONY: format
+format:
+	TARGET_NAME=TARGET_NANOS2 make -C app format
+
+# To be run on linux only
+.PHONY: lint-all
+lint-all: lint-nanosplus lint-flex lint-stax lint-nanox
+
+.PHONY: lint-nanosplus
+lint-nanosplus:
+	TARGET_NAME=TARGET_NANOS2 make -C app lint-nanosplus
+
+.PHONY: lint-nanox
+lint-nanox:
+	TARGET_NAME=TARGET_NANOX make -C app lint-nanox
+
+.PHONY: lint-flex
+lint-flex:
+	TARGET_NAME=TARGET_FLEX make -C app lint-flex
+
+.PHONY: lint-stax
+lint-stax:
+	TARGET_NAME=TARGET_STAX make -C app lint-stax
+
 .PHONY: listvariants
 listvariants:
 	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),make listvariants)
