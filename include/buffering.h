@@ -26,8 +26,8 @@ extern "C" {
 
 typedef struct {
     uint8_t *data;
-    uint16_t size;
-    uint16_t pos;
+    size_t size;
+    size_t pos;
     uint8_t in_use: 1;
 } buffer_state_t;
 
@@ -37,9 +37,9 @@ typedef struct {
 /// \param flash_buffer
 /// \param flash_buffer_size
 void buffering_init(uint8_t *ram_buffer,
-                    uint16_t ram_buffer_size,
+                    size_t ram_buffer_size,
                     uint8_t *flash_buffer,
-                    uint16_t flash_buffer_size);
+                    size_t flash_buffer_size);
 
 /// Reset buffer
 void buffering_reset();
@@ -48,7 +48,7 @@ void buffering_reset();
 /// \param data
 /// \param length
 /// \return the number of appended bytes
-int buffering_append(uint8_t *data, int length);
+int buffering_append(uint8_t *data, size_t length);
 
 /// buffering_get_ram_buffer
 /// \return
