@@ -371,10 +371,6 @@ fuzz_crash: FUZZ_LOGGING=1
 fuzz_crash: fuzz_build
 	./fuzz/run-fuzz-crashes.py
 
-.PHONY: format
-format:
-	find . \( -iname '*.h' -o -iname '*.c' -o -iname '*.cpp' -o -iname '*.hpp' \) -a ! -path "*/deps/*" -a ! -path "./tests_zemu/node_modules/*" -a ! -path "./cmake/*" ! -path "./build/*" | xargs clang-format -i
-
 .PHONY: shell
 shell:
 	poetry install --no-root && poetry shell
