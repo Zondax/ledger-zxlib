@@ -93,8 +93,6 @@ endef
 
 all:
 	@$(MAKE) clean
-	@$(MAKE) buildS
-	@$(MAKE) buildX
 	@$(MAKE) buildS2
 	@$(MAKE) buildST
 	@$(MAKE) buildFL
@@ -108,35 +106,6 @@ deps: check_python
 	@echo "Install dependencies"
 	$(CURDIR)/deps/ledger-zxlib/scripts/install_deps.sh
 
-.PHONY: pull
-pull:
-	docker pull $(DOCKER_IMAGE_ZONDAX)
-	docker pull $(DOCKER_IMAGE_LEDGER)
-
-.PHONY: ledger_lint
-ledger_lint:
-	$(call run_docker_ledger,"scan-build --use-cc=clang -analyze-headers -enable-checker security -enable-checker unix -enable-checker valist -o scan-build --status-bugs make default")
-
-.PHONY: build_rustS
-build_rustS:
-	$(call run_docker,$(DOCKER_BOLOS_SDKS),$(TARGET_S),make -j $(NPROC) rust)
-
-.PHONY: build_rustX
-build_rustX:
-	$(call run_docker,$(DOCKER_BOLOS_SDKX),$(TARGET_X),make -j $(NPROC) rust)
-
-.PHONY: build_rustS2
-build_rustS2:
-	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),make -j $(NPROC) rust)
-
-.PHONY: build_rustST
-build_rustST:
-	$(call run_docker,$(DOCKER_BOLOS_SDKST),$(TARGET_ST),make -j $(NPROC) rust)
-
-.PHONY: build_rustFL
-build_rustFL:
-	$(call run_docker,$(DOCKER_BOLOS_SDKFL),$(TARGET_FL),make -j $(NPROC) rust)
-
 .PHONY: convert_icon
 convert_icon:
 	@convert $(LEDGER_SRC)/tmp.gif -monochrome -size 16x16 -depth 1 $(LEDGER_SRC)/nanos_icon.gif
@@ -144,32 +113,31 @@ convert_icon:
 
 .PHONY: buildS
 buildS:
-	$(call run_docker,$(DOCKER_BOLOS_SDKS),$(TARGET_S),make -j $(NPROC))
+	TARGET_NAME=TARGET_NANOS make -C app buildS
 
 .PHONY: buildX
 buildX:
-	$(call run_docker,$(DOCKER_BOLOS_SDKX),$(TARGET_X),make -j $(NPROC))
+	TARGET_NAME=TARGET_NANOX make -C app buildX
 
 .PHONY: buildS2
 buildS2:
-	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),make -j $(NPROC))
+	TARGET_NAME=TARGET_NANOS2 make -C app buildS2
 
 .PHONY: buildST
 buildST:
-	$(call run_docker,$(DOCKER_BOLOS_SDKST),$(TARGET_ST),make -j $(NPROC))
+	TARGET_NAME=TARGET_STAX make -C app buildST
 
 .PHONY: buildFL
 buildFL:
-	$(call run_docker,$(DOCKER_BOLOS_SDKFL),$(TARGET_FL),make -j $(NPROC))
+	TARGET_NAME=TARGET_FLEX make -C app buildFL
 
 .PHONY: clean_output
 clean_output:
-	@echo "Removing output files"
-	@rm -f app/output/app* || true
+	TARGET_NAME=TARGET_NANOS2 make -C app clean_output
 
 .PHONY: clean_build
 clean_build:
-	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),make clean)
+	TARGET_NAME=TARGET_NANOS2 make -C app clean_build
 
 .PHONY: clean
 clean: clean_output clean_build
