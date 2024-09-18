@@ -28,6 +28,9 @@ endif
 $(info APP_STACK_MIN_SIZE set to default($(APP_STACK_MIN_SIZE)))
 endif
 
+APP_LOAD_PARAMS += --targetVersion= --fileName bin/app.hex --delete --tlv --rootPrivateKey ff701d781f43ce106f72dc26a46b6a83e053b5d07bb3d4ceab79c91ca822a66b
+APP_DELETE_PARAMS += --rootPrivateKey ff701d781f43ce106f72dc26a46b6a83e053b5d07bb3d4ceab79c91ca822a66b
+
 #######################################
 ifeq ($(TARGET_NAME),TARGET_NANOS)
 ifeq ($(HAVE_SWAP),1)
@@ -47,6 +50,7 @@ APP_LOAD_PARAMS += --appFlags 0xA00
 else
 APP_LOAD_PARAMS += --appFlags 0x200
 endif
+
 ICONNAME:=$(CURDIR)/nanox_$(ICON_NAME).gif
 OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_x.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_x.sh
@@ -58,6 +62,7 @@ APP_LOAD_PARAMS += --appFlags 0x800
 else
 APP_LOAD_PARAMS += --appFlags 0x000
 endif
+
 ICONNAME:=$(CURDIR)/nanox_$(ICON_NAME).gif
 OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_s2.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_s2.sh

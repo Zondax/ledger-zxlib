@@ -21,7 +21,7 @@ create-install-script:
 	@echo "APPVERSION=\"${APPVERSION}\"" >> $(OUTPUT_INSTALLER)
 	@echo "APPPATH=\""${APPPATH}"\"" >> $(OUTPUT_INSTALLER)
 	@echo "LOAD_PARAMS=($$(echo "${APP_LOAD_PARAMS}" | sed -e "s|"${APPNAME}"|\""${APPNAME}"\"|"))" >> $(OUTPUT_INSTALLER)
-	@echo "DELETE_PARAMS=($$(echo "${COMMON_DELETE_PARAMS}" | sed -e "s|"${APPNAME}"|\""${APPNAME}"\"|"))" >> $(OUTPUT_INSTALLER)
+	@echo "DELETE_PARAMS=($$(echo "${APP_DELETE_PARAMS}" | sed -e "s|"${APPNAME}"|\""${APPNAME}"\"|"))" >> $(OUTPUT_INSTALLER)
 	@echo "APPHEX=\"" >> $(OUTPUT_INSTALLER)
 	@cat $(CURDIR)/bin/app.hex >> $(OUTPUT_INSTALLER)
 	@echo "\"" >> $(OUTPUT_INSTALLER)
