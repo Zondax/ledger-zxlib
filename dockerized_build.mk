@@ -170,6 +170,27 @@ lint-flex:
 lint-stax:
 	TARGET_NAME=TARGET_STAX make -C app lint-stax
 
+
+# To be run on linux only
+.PHONY: lint-fix-all
+lint-fix-all: lint-nanosplus-fix lint-flex-fix lint-stax-fix lint-nanox-fix
+
+.PHONY: lint-nanosplus-fix
+lint-nanosplus-fix:
+	TARGET_NAME=TARGET_NANOS2 make -C app lint-nanosplus-fix
+
+.PHONY: lint-nanox-fix
+lint-nanox-fix:
+	TARGET_NAME=TARGET_NANOX make -C app lint-nanox-fix
+
+.PHONY: lint-flex-fix
+lint-flex-fix:
+	TARGET_NAME=TARGET_FLEX make -C app lint-flex-fix
+
+.PHONY: lint-stax-fix
+lint-stax-fix:
+	TARGET_NAME=TARGET_STAX make -C app lint-stax-fix
+
 .PHONY: listvariants
 listvariants:
 	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),make listvariants)
