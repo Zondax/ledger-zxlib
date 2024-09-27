@@ -88,7 +88,8 @@ endef
 define run_docker_ledger
 	docker run $(TTY_SETTING) $(INTERACTIVE_SETTING) --rm \
 	-v $(shell pwd):/app \
-	$(DOCKER_IMAGE_LEDGER) "$(1)"
+	-e TARGET_NAME=$(1) \
+	$(DOCKER_IMAGE_LEDGER) $(2)
 endef
 
 all:
@@ -117,27 +118,27 @@ buildS:
 
 .PHONY: buildX
 buildX:
-	TARGET_NAME=TARGET_NANOX make -C app buildX
+	$(call run_docker_ledger,TARGET_NANOX,make -C app buildX)
 
 .PHONY: buildS2
 buildS2:
-	TARGET_NAME=TARGET_NANOS2 make -C app buildS2
+	$(call run_docker_ledger,TARGET_NANOS2,make -C app buildS2)
 
 .PHONY: buildST
 buildST:
-	TARGET_NAME=TARGET_STAX make -C app buildST
+	$(call run_docker_ledger,TARGET_STAX,make -C app buildST)
 
 .PHONY: buildFL
 buildFL:
-	TARGET_NAME=TARGET_FLEX make -C app buildFL
+	$(call run_docker_ledger,TARGET_FLEX,make -C app buildFL)
 
 .PHONY: clean_output
 clean_output:
-	TARGET_NAME=TARGET_NANOS2 make -C app clean_output
+	$(call run_docker_ledger,TARGET_NANOS2,make -C app clean_output)
 
 .PHONY: clean_build
 clean_build:
-	TARGET_NAME=TARGET_NANOS2 make -C app clean_build
+	$(call run_docker_ledger,TARGET_NANOS2,make -C app clean_build)
 
 .PHONY: clean
 clean: clean_output clean_build
@@ -148,7 +149,7 @@ ledger-setup:
 
 .PHONY: format
 format:
-	TARGET_NAME=TARGET_NANOS2 make -C app format
+	$(call run_docker_ledger,TARGET_NANOS2,make -C app format)
 
 # To be run on linux only
 .PHONY: lint-all
@@ -156,19 +157,19 @@ lint-all: lint-nanosplus lint-flex lint-stax lint-nanox
 
 .PHONY: lint-nanosplus
 lint-nanosplus:
-	TARGET_NAME=TARGET_NANOS2 make -C app lint-nanosplus
+	$(call run_docker_ledger,TARGET_NANOS2,make -C app lint-nanosplus)
 
 .PHONY: lint-nanox
 lint-nanox:
-	TARGET_NAME=TARGET_NANOX make -C app lint-nanox
+	$(call run_docker_ledger,TARGET_NANOX,make -C app lint-nanox)
 
 .PHONY: lint-flex
 lint-flex:
-	TARGET_NAME=TARGET_FLEX make -C app lint-flex
+	$(call run_docker_ledger,TARGET_FLEX,make -C app lint-flex)
 
 .PHONY: lint-stax
 lint-stax:
-	TARGET_NAME=TARGET_STAX make -C app lint-stax
+	$(call run_docker_ledger,TARGET_STAX,make -C app lint-stax)
 
 
 # To be run on linux only
@@ -177,19 +178,19 @@ lint-fix-all: lint-nanosplus-fix lint-flex-fix lint-stax-fix lint-nanox-fix
 
 .PHONY: lint-nanosplus-fix
 lint-nanosplus-fix:
-	TARGET_NAME=TARGET_NANOS2 make -C app lint-nanosplus-fix
+	$(call run_docker_ledger,TARGET_NANOS2,make -C app lint-nanosplus-fix)
 
 .PHONY: lint-nanox-fix
 lint-nanox-fix:
-	TARGET_NAME=TARGET_NANOX make -C app lint-nanox-fix
+	$(call run_docker_ledger,TARGET_NANOX,make -C app lint-nanox-fix)
 
 .PHONY: lint-flex-fix
 lint-flex-fix:
-	TARGET_NAME=TARGET_FLEX make -C app lint-flex-fix
+	$(call run_docker_ledger,TARGET_FLEX,make -C app lint-flex-fix)
 
 .PHONY: lint-stax-fix
 lint-stax-fix:
-	TARGET_NAME=TARGET_STAX make -C app lint-stax-fix
+	$(call run_docker_ledger,TARGET_STAX,make -C app lint-stax-fix)
 
 .PHONY: listvariants
 listvariants:
