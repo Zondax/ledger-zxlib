@@ -40,6 +40,10 @@ bool app_mode_shortcut();
 
 void app_mode_set_shortcut(uint8_t val);
 
+bool app_mode_blindsign();
+
+void app_mode_set_blindsign(uint8_t val);
+
 #ifdef __cplusplus
 }
 #endif

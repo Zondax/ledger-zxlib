@@ -63,6 +63,11 @@ static void h_shortcut_toggle();
 static void h_shortcut_update();
 #endif
 
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+static void h_blindsign_toggle();
+static void h_blindsign_update();
+#endif
+
 enum MAINMENU_SCREENS {
     SCREEN_HOME = 0,
     SCREEN_EXPERT,
@@ -71,6 +76,9 @@ enum MAINMENU_SCREENS {
 #endif
 #ifdef SHORTCUT_MODE_ENABLED
     SCREEN_SHORTCUT,
+#endif
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+    SCREEN_BLINDSIGN,
 #endif
 };
 
@@ -86,6 +94,10 @@ void os_exit(uint32_t id) {
 const ux_menu_entry_t menu_main[] = {
     {NULL, NULL, 0, &C_icon_app, MENU_MAIN_APP_LINE1, viewdata.key, 33, 12},
     {NULL, h_expert_toggle, 0, &C_icon_app, "Expert mode:", viewdata.value, 33, 12},
+
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+    {NULL, h_blindsign_toggle, 0, &C_icon_app, "Blind sign:", viewdata.value, 33, 12},
+#endif
 
 #ifdef APP_ACCOUNT_MODE_ENABLED
     {NULL, h_account_toggle, 0, &C_icon_app, "Account:", viewdata.value, 33, 12},
@@ -123,6 +135,12 @@ const ux_menu_entry_t menu_initialize[] = {
 const ux_menu_entry_t menu_custom_error[] = {
     {NULL, NULL, 0, &C_icon_warning, viewdata.key, viewdata.value, 33, 12},
     {NULL, h_error_accept, 0, &C_icon_validate_14, "Ok", NULL, 50, 29},
+    UX_MENU_END
+};
+
+const ux_menu_entry_t blindsign_error[] = {
+    {NULL, NULL, 0, &C_icon_warning, "Blindsing Mode", " Required", 33, 12},
+    {NULL, h_error_accept, 0, &C_icon_validate_14, "Exit", NULL, 50, 29},
     UX_MENU_END
 };
 
@@ -194,6 +212,11 @@ const bagl_element_t* idle_preprocessor(__Z_UNUSED const ux_menu_entry_t* entry,
         case SCREEN_EXPERT:
             h_expert_update();
             break;
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+        case SCREEN_BLINDSIGN:
+            h_blindsign_update();
+            break;
+#endif
 #ifdef APP_ACCOUNT_MODE_ENABLED
         case SCREEN_ACCOUNT:
             h_account_update();
@@ -344,6 +367,10 @@ void view_custom_error_show_impl() {
     UX_MENU_DISPLAY(0, menu_custom_error, NULL);
 }
 
+void view_blindsign_error_show_impl() {
+    UX_MENU_DISPLAY(0, blindsign_error, NULL);
+}
+
 void h_expert_toggle() {
     app_mode_set_expert(!app_mode_expert());
     view_idle_show(1, NULL);
@@ -355,6 +382,20 @@ void h_expert_update() {
         snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "enabled");
     }
 }
+
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+void h_blindsign_toggle() {
+    app_mode_set_blindsign(!app_mode_blindsign());
+    view_idle_show(SCREEN_BLINDSIGN, NULL);
+}
+
+void h_blindsign_update() {
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "disabled");
+    if (app_mode_blindsign()) {
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE_LINE, "enabled");
+    }
+}
+#endif
 
 #ifdef APP_ACCOUNT_MODE_ENABLED
 void h_account_toggle() {
