@@ -66,12 +66,16 @@ typedef enum {
 #ifdef APP_SECRET_MODE_ENABLED
     SECRET_MODE,
 #endif
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+    BLINDSIGN_MODE,
+#endif
 } settings_list_e;
 
 typedef enum {
     EXPERT_MODE_TOKEN = FIRST_USER_TOKEN,
     ACCOUNT_MODE_TOKEN,
     SECRET_MODE_TOKEN,
+    BLINDSIGN_MODE_TOKEN,
 } config_token_e;
 
 void app_quit(void) {
@@ -95,6 +99,10 @@ static const char *const INFO_KEYS_PAGE[] = {"Version", "Developed by", "Website
 static const char *const INFO_VALUES_PAGE[] = {APPVERSION, "Zondax AG", "https://zondax.ch", "Apache 2.0"};
 
 static void h_expert_toggle() { app_mode_set_expert(!app_mode_expert()); }
+
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+static void h_blindsign_toggle() { app_mode_set_blindsign(!app_mode_blindsign()); }
+#endif
 
 static void confirm_error(__Z_UNUSED bool confirm) { h_error_accept(0); }
 
@@ -155,6 +163,13 @@ void view_custom_error_show(const char *upper, const char *lower) {
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", lower);
 
     nbgl_useCaseChoice(&C_Important_Circle_64px, viewdata.key, viewdata.value, "Ok", "", confirm_error);
+}
+
+void view_blindsign_error_show() {
+    nbgl_useCaseChoice(&C_Warning_64px,
+                       "This message cannot\nbe clear-signed",
+                       "Enable blind-signing in\nthe settings to sign\nthis transaction.",
+                       "Exit", "", confirm_error);
 }
 
 void view_error_show_impl() {
@@ -247,6 +262,15 @@ static bool settings_screen_callback(uint8_t page, nbgl_pageContent_t *content) 
             settings[0].tuneId = TUNE_TAP_CASUAL;
             settings[0].token = EXPERT_MODE_TOKEN;
 
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+            settings[BLINDSIGN_MODE].initState = app_mode_blindsign();
+            settings[BLINDSIGN_MODE].text = "Blind sign";
+            settings[BLINDSIGN_MODE].tuneId = TUNE_TAP_CASUAL;
+            settings[BLINDSIGN_MODE].token = BLINDSIGN_MODE_TOKEN;
+            content->switchesList.nbSwitches++;
+
+#endif
+
 #ifdef APP_ACCOUNT_MODE_ENABLED
             if (app_mode_expert() || app_mode_account()) {
                 settings[ACCOUNT_MODE].initState = app_mode_account();
@@ -310,6 +334,12 @@ static void settings_toggle_callback(int token, __Z_UNUSED uint8_t index) {
 #ifdef APP_SECRET_MODE_ENABLED
         case SECRET_MODE_TOKEN:
             secret_enabled();
+            break;
+#endif
+
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+        case BLINDSIGN_MODE_TOKEN:
+            h_blindsign_toggle();
             break;
 #endif
 
@@ -436,9 +466,14 @@ static void config_useCaseReview(nbgl_operationType_t type) {
     pairList.pairs = NULL;  // to indicate that callback should be used
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
-
-    nbgl_useCaseReview(type, &pairList, &C_icon_stax_64, (intro_message == NULL ? "Review transaction" : intro_message),
+    if (app_mode_blindsign()) {
+        nbgl_useCaseReviewBlindSigning(type, &pairList, &C_icon_stax_64, (intro_message == NULL ? "Review transaction" : intro_message), NULL,
+                       "Accept risk and sign transaction ?", NULL, reviewTransactionChoice);
+    } else {
+        nbgl_useCaseReview(type, &pairList, &C_icon_stax_64, (intro_message == NULL ? "Review transaction" : intro_message),
                        NULL, APPROVE_LABEL_NBGL, reviewTransactionChoice);
+    }
+    
 }
 
 static void config_useCaseReviewLight(const char *title, const char *validate) {
