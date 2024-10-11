@@ -63,6 +63,12 @@ static void h_shortcut_toggle();
 static void h_shortcut_update();
 #endif
 
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+static void h_blindsign_toggle();
+static void h_blindsign_update();
+#endif
+
+static void ui_idle();
 static void h_shortcut(unsigned int);
 static void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t* const start_step);
 const ux_flow_step_t *ux_review_flow[MAX_REVIEW_UX_SCREENS];
@@ -95,9 +101,16 @@ UX_STEP_CB_INIT(ux_idle_flow_7_step, bn,  h_account_update(), h_account_toggle()
 UX_STEP_CB_INIT(ux_idle_flow_8_step, bn,  h_shortcut_update(), h_shortcut_toggle(), { "Shortcut mode:", viewdata.value, });
 #endif
 
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+UX_STEP_CB_INIT(ux_idle_flow_9_step, bn,  h_blindsign_update(), h_blindsign_toggle(), { "Blind sign:", viewdata.value, });
+#endif
+
 const ux_flow_step_t *const ux_idle_flow [] = {
   &ux_idle_flow_1_step,
   &ux_idle_flow_2_step,
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+  &ux_idle_flow_9_step,
+#endif
 #ifdef APP_ACCOUNT_MODE_ENABLED
   &ux_idle_flow_7_step,
 #endif
@@ -158,6 +171,25 @@ UX_FLOW(
 );
 
 ///////////
+UX_STEP_CB(
+    ux_warning_blind_sign_step,
+    pnn,
+    ui_idle(),
+    {
+      &C_icon_crossmark,
+      "Blind signing must be",
+      "enabled in Settings",
+    });
+UX_FLOW(ux_warning_blind_sign_flow, &ux_warning_blind_sign_step);
+
+UX_STEP_NOCB(ux_approval_blind_signing_warning_step,
+    pbb,
+    {
+      &C_icon_warning,
+      "Blind",
+      "Signing",
+    });
+///////////
 
 UX_FLOW_DEF_NOCB(ux_review_flow_1_review_title, pbb, { &C_icon_app, REVIEW_SCREEN_TITLE, REVIEW_SCREEN_TXN_VALUE,});
 UX_FLOW_DEF_NOCB(ux_review_flow_2_review_title, pbb, { &C_icon_app, REVIEW_SCREEN_TITLE, REVIEW_SCREEN_ADDR_VALUE,});
@@ -182,6 +214,14 @@ UX_STEP_CB_INIT(ux_review_flow_5_step, pb,  NULL, h_shortcut(0), { &C_icon_eye, 
 //////////////////////////
 //////////////////////////
 //////////////////////////
+
+void ui_idle(void) {
+    // reserve a display stack slot if none yet
+    if (G_ux.stack_count == 0) {
+        ux_stack_push();
+    }
+    ux_flow_init(0, ux_idle_flow, NULL);
+}
 
 void h_review_update() {
     zxerr_t err = h_review_update_data();
@@ -278,6 +318,20 @@ void h_expert_update() {
         snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "enabled");
     }
 }
+
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+void h_blindsign_toggle() {
+    app_mode_set_blindsign(!app_mode_blindsign());
+    ux_flow_init(0, ux_idle_flow, &ux_idle_flow_9_step);
+}
+
+void h_blindsign_update() {
+    snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "disabled");
+    if (app_mode_blindsign()) {
+        snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "enabled");
+    }
+}
+#endif
 
 #ifdef APP_ACCOUNT_MODE_ENABLED
 void h_account_toggle() {
@@ -417,6 +471,11 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t* const st
         case REVIEW_GENERIC:
         case REVIEW_TXN:
         default:
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+            if(app_mode_blindsign()) {
+                ux_review_flow[index++] = &ux_approval_blind_signing_warning_step;
+            }
+#endif
             ux_review_flow[index++] = &ux_review_flow_1_review_title;
             if(app_mode_shortcut()) {
                 ux_review_flow[index++] = &ux_review_flow_5_step;
@@ -462,5 +521,9 @@ void view_custom_error_show_impl() {
         ux_stack_push();
     }
     ux_flow_init(0, ux_custom_error_flow, NULL);
+}
+
+void view_blindsign_error_show_impl() { 
+    ux_flow_init(0, ux_warning_blind_sign_flow, NULL);
 }
 #endif

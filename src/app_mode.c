@@ -19,6 +19,7 @@
 typedef struct {
     uint8_t expert;
     uint8_t account;
+    uint8_t blindsign;
 } app_mode_persistent_t;
 
 typedef struct {
@@ -60,6 +61,16 @@ void app_mode_set_account(uint8_t val) {
     MEMCPY_NV((void *)PIC(&N_appmode_impl), (void *)&mode, sizeof(app_mode_persistent_t));
 }
 
+bool app_mode_blindsign() { return N_appmode.blindsign; }
+
+void app_mode_set_blindsign(uint8_t val) {
+    app_mode_persistent_t mode;
+    mode.expert = N_appmode.expert;
+    mode.account = N_appmode.account;
+    mode.blindsign = val;
+    MEMCPY_NV((void *)PIC(&N_appmode_impl), (void *)&mode, sizeof(app_mode_persistent_t));
+}
+
 #else
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -82,6 +93,10 @@ bool app_mode_account() { return app_mode.account; }
 void app_mode_set_expert(uint8_t val) { app_mode.expert = val; }
 
 void app_mode_set_account(uint8_t val) { app_mode.account = val; }
+
+bool app_mode_blindsign() { return app_mode.blindsign; }
+
+void app_mode_set_blindsign(uint8_t val) { app_mode.blindsign = val; }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

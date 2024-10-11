@@ -168,6 +168,8 @@ void view_error_show_impl();
 
 void view_custom_error_show_impl();
 
+void view_blindsign_error_show_impl();
+
 void h_paging_init();
 
 void h_inspect_init();

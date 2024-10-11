@@ -75,6 +75,10 @@ void view_custom_error_show(const char *upper, const char *lower) {
     view_custom_error_show_impl();
 }
 
+void view_blindsign_error_show() {
+    view_blindsign_error_show_impl();
+}
+
 ///////////////////////////////////
 // Paging related
 bool h_paging_can_increase() {
