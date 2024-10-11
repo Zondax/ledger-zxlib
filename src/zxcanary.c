@@ -20,7 +20,7 @@
 
 // This symbol is defined by the link script to be at the start of the stack area.
 extern unsigned int app_stack_canary;
-#define ZONDAX_CANARY (*((volatile uint32_t*) (&app_stack_canary + sizeof(uint32_t))))
+#define ZONDAX_CANARY (*((volatile uint32_t*) (((uint8_t*) &app_stack_canary) + sizeof(uint32_t))))
 
 #if defined(HAVE_ZONDAX_CANARY)
 #include "errors.h"
