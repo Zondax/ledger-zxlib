@@ -324,6 +324,40 @@ namespace {
         EXPECT_EQ(std::string(number), "12.34567");
     }
 
+    TEST(UINT32_TO_STR, Zero) {
+        char temp[10];
+        const char *error = uint32_to_str(temp, sizeof(temp), uint32_t(0));
+        EXPECT_STREQ(temp, "0");
+        EXPECT_TRUE(error == nullptr);
+    }
+
+    TEST(UINT32_TO_STR, Positive_1234) {
+        char temp[10];
+        const char *error = uint32_to_str(temp, sizeof(temp), uint32_t(1234));
+        EXPECT_STREQ(temp, "1234");
+        EXPECT_TRUE(error == nullptr);
+    }
+
+    TEST(UINT32_TO_STR, TooSmall_0) {
+        char temp[1];
+        const char *error = uint32_to_str(temp, sizeof(temp), uint32_t(0));
+        EXPECT_STREQ("Buffer too small", error);
+    }
+
+    TEST(UINT32_TO_STR, FitsJust) {
+        char temp[4];
+        const char *error = uint32_to_str(temp, sizeof(temp), uint32_t(999));
+        EXPECT_STREQ(temp, "999");
+        EXPECT_TRUE(error == nullptr);
+    }
+
+    TEST(UINT32_TO_STR, Max) {
+        char temp[20];
+        const char *error = uint32_to_str(temp, sizeof(temp), std::numeric_limits<uint32_t>::max());
+        EXPECT_STREQ(temp, "4294967295");
+        EXPECT_TRUE(error == nullptr);
+    }
+
     TEST(INT64_TO_STR, Zero) {
         char temp[10];
         const char *error = int64_to_str(temp, sizeof(temp), int64_t(0));
