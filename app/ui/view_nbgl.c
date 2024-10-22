@@ -287,12 +287,14 @@ static void settings_screen_callback(uint8_t index, nbgl_content_t *content) {
     UNUSED(index);
     switches[EXPERT_MODE].initState = app_mode_expert();
     switches[EXPERT_MODE].text = "Expert mode";
+    switches[EXPERT_MODE].subText = "";
     switches[EXPERT_MODE].tuneId = TUNE_TAP_CASUAL;
     switches[EXPERT_MODE].token = EXPERT_MODE_TOKEN;
 
 #ifdef APP_BLINDSIGN_MODE_ENABLED
     switches[BLINDSIGN_MODE].initState = app_mode_blindsign();
     switches[BLINDSIGN_MODE].text = "Blind sign";
+    switches[BLINDSIGN_MODE].subText = "";
     switches[BLINDSIGN_MODE].tuneId = TUNE_TAP_CASUAL;
     switches[BLINDSIGN_MODE].token = BLINDSIGN_MODE_TOKEN;
 #endif
@@ -301,6 +303,7 @@ static void settings_screen_callback(uint8_t index, nbgl_content_t *content) {
     if (app_mode_expert() || app_mode_account()) {
         switches[ACCOUNT_MODE].initState = app_mode_account();
         switches[ACCOUNT_MODE].text = "Crowdloan account";
+        switches[ACCOUNT_MODE].subText = "";
         switches[ACCOUNT_MODE].tuneId = TUNE_TAP_CASUAL;
         switches[ACCOUNT_MODE].token = ACCOUNT_MODE_TOKEN;
             }
@@ -310,6 +313,7 @@ static void settings_screen_callback(uint8_t index, nbgl_content_t *content) {
     if (app_mode_expert() || app_mode_secret()) {
         switches[SECRET_MODE].initState = app_mode_secret();
         switches[SECRET_MODE].text = "Secret mode";
+        switches[SECRET_MODE].subText = "";
         switches[SECRET_MODE].tuneId = TUNE_TAP_CASUAL;
         switches[SECRET_MODE].token = SECRET_MODE_TOKEN;
     }
