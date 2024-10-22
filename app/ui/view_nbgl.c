@@ -68,7 +68,7 @@ typedef enum {
 #ifdef APP_BLINDSIGN_MODE_ENABLED
     BLINDSIGN_MODE,
 #endif
-    SETTINGS_SWITCHES_NB
+    SETTINGS_SWITCHES_NB_LEN
 } settings_list_e;
 
 typedef enum {
@@ -98,7 +98,7 @@ static const char *const INFO_VALUES_PAGE[] = {APPVERSION, "Zondax AG", "https:/
 
 static nbgl_contentInfoList_t infoList = {0};
 static nbgl_genericContents_t settingContents = {0};
-static nbgl_contentSwitch_t switches[4];
+static nbgl_contentSwitch_t switches[SETTINGS_SWITCHES_NB_LEN];
 
 static void h_expert_toggle() { app_mode_set_expert(!app_mode_expert()); }
 
@@ -320,7 +320,7 @@ static void settings_screen_callback(uint8_t index, nbgl_content_t *content) {
 #endif
 
     content->type = SWITCHES_LIST;
-    content->content.switchesList.nbSwitches = SETTINGS_SWITCHES_NB;
+    content->content.switchesList.nbSwitches = SETTINGS_SWITCHES_NB_LEN;
     content->content.switchesList.switches = switches;
     content->contentActionCallback = settings_toggle_callback;
 }
