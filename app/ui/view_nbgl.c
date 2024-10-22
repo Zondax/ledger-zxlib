@@ -37,7 +37,8 @@ zxerr_t account_enabled();
 #define APPROVE_LABEL_NBGL_GENERIC "Accept operation?"
 #define CANCEL_LABEL "Cancel"
 #define VERIFY_TITLE_LABEL_GENERIC "Verify operation"
-
+#define INFO_LIST_SIZE 4
+#define SETTING_CONTENTS_NB 1
 static const char HOME_TEXT[] =
     "This application enables\nsigning transactions on the\n" MENU_MAIN_APP_LINE1 " network";
 
@@ -54,8 +55,6 @@ static nbgl_layoutTagValue_t pairs[NB_MAX_DISPLAYED_PAIRS_IN_REVIEW];
 static nbgl_layoutTagValue_t pair;
 static nbgl_layoutTagValueList_t pairList;
 
-static nbgl_layoutSwitch_t settings[4];
-
 static nbgl_layoutTagValueList_t *extraPagesPtr = NULL;
 
 typedef enum {
@@ -69,6 +68,7 @@ typedef enum {
 #ifdef APP_BLINDSIGN_MODE_ENABLED
     BLINDSIGN_MODE,
 #endif
+    SETTINGS_SWITCHES_NB
 } settings_list_e;
 
 typedef enum {
@@ -87,8 +87,6 @@ static void h_reject_internal(void) { h_reject(review_type); }
 
 static void h_approve_internal(void) { h_approve(review_type); }
 
-static void view_idle_show_impl_callback() { view_idle_show_impl(0, NULL); }
-
 #ifdef TARGET_STAX
 #define MAX_INFO_LIST_ITEM_PER_PAGE 3
 #else  // TARGET_FLEX
@@ -97,6 +95,10 @@ static void view_idle_show_impl_callback() { view_idle_show_impl(0, NULL); }
 
 static const char *const INFO_KEYS_PAGE[] = {"Version", "Developed by", "Website", "License"};
 static const char *const INFO_VALUES_PAGE[] = {APPVERSION, "Zondax AG", "https://zondax.ch", "Apache 2.0"};
+
+static nbgl_contentInfoList_t infoList = {0};
+static nbgl_genericContents_t settingContents = {0};
+static nbgl_contentSwitch_t switches[4];
 
 static void h_expert_toggle() { app_mode_set_expert(!app_mode_expert()); }
 
@@ -248,78 +250,10 @@ void h_review_update() {
     }
 }
 
-static bool settings_screen_callback(uint8_t page, nbgl_pageContent_t *content) {
-    const uint16_t infoElements = sizeof(INFO_KEYS_PAGE) / sizeof(INFO_KEYS_PAGE[0]);
-    switch (page) {
-        case 0: {
-            // Config
-            content->type = SWITCHES_LIST;
-            content->switchesList.nbSwitches = 1;
-            content->switchesList.switches = settings;
+void settings_toggle_callback(int token, uint8_t index, int page) {
+    UNUSED(index);
+    UNUSED(page);
 
-            settings[0].initState = app_mode_expert();
-            settings[0].text = "Expert mode";
-            settings[0].tuneId = TUNE_TAP_CASUAL;
-            settings[0].token = EXPERT_MODE_TOKEN;
-
-#ifdef APP_BLINDSIGN_MODE_ENABLED
-            settings[BLINDSIGN_MODE].initState = app_mode_blindsign();
-            settings[BLINDSIGN_MODE].text = "Blind sign";
-            settings[BLINDSIGN_MODE].tuneId = TUNE_TAP_CASUAL;
-            settings[BLINDSIGN_MODE].token = BLINDSIGN_MODE_TOKEN;
-            content->switchesList.nbSwitches++;
-
-#endif
-
-#ifdef APP_ACCOUNT_MODE_ENABLED
-            if (app_mode_expert() || app_mode_account()) {
-                settings[ACCOUNT_MODE].initState = app_mode_account();
-                settings[ACCOUNT_MODE].text = "Crowdloan account";
-                settings[ACCOUNT_MODE].tuneId = TUNE_TAP_CASUAL;
-                settings[ACCOUNT_MODE].token = ACCOUNT_MODE_TOKEN;
-                content->switchesList.nbSwitches++;
-            }
-#endif
-
-#ifdef APP_SECRET_MODE_ENABLED
-            if (app_mode_expert() || app_mode_secret()) {
-                settings[SECRET_MODE].initState = app_mode_secret();
-                settings[SECRET_MODE].text = "Secret mode";
-                settings[SECRET_MODE].tuneId = TUNE_TAP_CASUAL;
-                settings[SECRET_MODE].token = SECRET_MODE_TOKEN;
-                content->switchesList.nbSwitches++;
-            }
-#endif
-            break;
-        }
-
-        // Info page 1
-        case 1: {
-            content->type = INFOS_LIST;
-            content->infosList.nbInfos = MAX_INFO_LIST_ITEM_PER_PAGE;
-            content->infosList.infoContents = INFO_VALUES_PAGE;
-            content->infosList.infoTypes = INFO_KEYS_PAGE;
-            break;
-        }
-
-        // Info page 2
-        case 2: {
-            content->type = INFOS_LIST;
-            content->infosList.nbInfos = infoElements - MAX_INFO_LIST_ITEM_PER_PAGE;
-            content->infosList.infoContents = &INFO_VALUES_PAGE[MAX_INFO_LIST_ITEM_PER_PAGE];
-            content->infosList.infoTypes = &INFO_KEYS_PAGE[MAX_INFO_LIST_ITEM_PER_PAGE];
-            break;
-        }
-
-        default:
-            ZEMU_LOGF(50, "Incorrect settings page: %d\n", page)
-            return false;
-    }
-
-    return true;
-}
-
-static void settings_toggle_callback(int token, __Z_UNUSED uint8_t index) {
     switch (token) {
         case EXPERT_MODE_TOKEN:
             h_expert_toggle();
@@ -349,13 +283,42 @@ static void settings_toggle_callback(int token, __Z_UNUSED uint8_t index) {
     }
 }
 
-void setting_screen() {
-    // Set return button top-left (true) botton-left (false)
-    const bool return_button_top_left = false;
-    const uint8_t init_page = 0;
-    const uint8_t settings_pages = 3;
-    nbgl_useCaseSettings(MENU_MAIN_APP_LINE1, init_page, settings_pages, return_button_top_left,
-                         view_idle_show_impl_callback, settings_screen_callback, settings_toggle_callback);
+static void settings_screen_callback(uint8_t index, nbgl_content_t *content) {
+    UNUSED(index);
+    switches[EXPERT_MODE].initState = app_mode_expert();
+    switches[EXPERT_MODE].text = "Expert mode";
+    switches[EXPERT_MODE].tuneId = TUNE_TAP_CASUAL;
+    switches[EXPERT_MODE].token = EXPERT_MODE_TOKEN;
+
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+    switches[BLINDSIGN_MODE].initState = app_mode_blindsign();
+    switches[BLINDSIGN_MODE].text = "Blind sign";
+    switches[BLINDSIGN_MODE].tuneId = TUNE_TAP_CASUAL;
+    switches[BLINDSIGN_MODE].token = BLINDSIGN_MODE_TOKEN;
+#endif
+
+#ifdef APP_ACCOUNT_MODE_ENABLED
+    if (app_mode_expert() || app_mode_account()) {
+        switches[ACCOUNT_MODE].initState = app_mode_account();
+        switches[ACCOUNT_MODE].text = "Crowdloan account";
+        switches[ACCOUNT_MODE].tuneId = TUNE_TAP_CASUAL;
+        switches[ACCOUNT_MODE].token = ACCOUNT_MODE_TOKEN;
+            }
+#endif
+
+#ifdef APP_SECRET_MODE_ENABLED
+    if (app_mode_expert() || app_mode_secret()) {
+        switches[SECRET_MODE].initState = app_mode_secret();
+        switches[SECRET_MODE].text = "Secret mode";
+        switches[SECRET_MODE].tuneId = TUNE_TAP_CASUAL;
+        switches[SECRET_MODE].token = SECRET_MODE_TOKEN;
+    }
+#endif
+
+    content->type = SWITCHES_LIST;
+    content->content.switchesList.nbSwitches = SETTINGS_SWITCHES_NB;
+    content->content.switchesList.switches = switches;
+    content->contentActionCallback = settings_toggle_callback;
 }
 
 void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, const char *statusString) {
@@ -371,8 +334,16 @@ void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, const char *statusString) 
     } else {
         snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", statusString);
     }
-    const bool settings_icon = true;
-    nbgl_useCaseHome(MENU_MAIN_APP_LINE1, &C_icon_stax_64, home_text, settings_icon, setting_screen, app_quit);
+
+    settingContents.callbackCallNeeded = true;
+    settingContents.nbContents = SETTING_CONTENTS_NB;
+    settingContents.contentGetterCallback = settings_screen_callback;
+
+    infoList.nbInfos = INFO_LIST_SIZE;
+    infoList.infoContents = INFO_VALUES_PAGE;
+    infoList.infoTypes = INFO_KEYS_PAGE;
+
+    nbgl_useCaseHomeAndSettings(MENU_MAIN_APP_LINE1, &C_icon_stax_64, home_text, INIT_HOME_PAGE, &settingContents, &infoList, NULL, app_quit);
 }
 
 void view_message_impl(const char *title, const char *message) {
