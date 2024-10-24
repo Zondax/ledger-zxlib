@@ -152,6 +152,11 @@ typedef struct {
     uint8_t pageCount;
 
     inner_state_t innerField;
+    // Use to tell the engine to ask
+    // the user if they want to continue
+    // with the review, otherwise, go to the final
+    // approval and proceed to sign the transaction
+    bool with_confirmation;
 } view_t;
 
 typedef enum {

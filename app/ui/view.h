@@ -81,6 +81,9 @@ typedef void (*viewfunc_accept_t)();
 
 typedef zxerr_t (*viewfunc_initialize_t)();
 
+// Callback type for continuation confirmation
+typedef void (*viewfunc_confirm_continue_t)(char *outKey, uint16_t outKeyLen, char *outVal, uint16_t outValLen);
+
 typedef enum {
     REVIEW_UI = 0,
     REVIEW_ADDRESS,
@@ -115,6 +118,11 @@ void view_blindsign_error_show();
 
 void view_review_init(viewfunc_getItem_t viewfuncGetItem, viewfunc_getNumItems_t viewfuncGetNumItems,
                       viewfunc_accept_t viewfuncAccept);
+
+void view_review_init_progressive(
+    viewfunc_getItem_t viewfuncGetItem,
+    viewfunc_getNumItems_t viewfuncGetNumItems,
+    viewfunc_accept_t viewfuncAccept);
 
 void view_inspect_init(viewfunc_getInnerItem_t view_funcGetInnerItem, viewfunc_getNumItems_t view_funcGetInnerNumItems,
                        viewfunc_canInspectItem_t view_funcCanInspectItem);

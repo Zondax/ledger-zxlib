@@ -47,6 +47,9 @@ static void h_expert_update();
 static void h_review_loop_start();
 static void h_review_loop_inside();
 static void h_review_loop_end();
+static void h_review_continue(unsigned int _);
+static void h_review_skip_confirm();
+static void h_review_skip(unsigned int _);
 
 #ifdef APP_SECRET_MODE_ENABLED
 static void h_secret_click();
@@ -93,6 +96,15 @@ UX_STEP_NOCB(ux_idle_flow_3_step, bn,
                  APPVERSION_LINE1,
                  APPVERSION_LINE2,
              });
+
+// UI flows for the Continue Confirmation
+// To allow users to skip review at any time
+UX_STEP_VALID(ux_review_flow_continue_step, pb, h_review_continue(0),
+    { &C_icon_validate_14, "Continue Review" });
+UX_STEP_VALID(ux_review_flow_skip_step, pb, h_review_skip(0),
+    { &C_icon_crossmark, "Skip Review" });
+
+
 
 #ifdef APP_SECRET_MODE_ENABLED
 UX_STEP_CB(ux_idle_flow_4_step, bn, h_secret_click(),
@@ -337,6 +349,23 @@ void h_review_loop_end() {
         switch (err) {
             case zxerr_ok:
                 ux_layout_bnnn_paging_reset();
+                // Check if we need to show continue confirmation
+                // Only show after all pages of current item are shown
+                if (viewdata.with_confirmation &&
+                    (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
+                    viewdata.pageIdx == viewdata.pageCount - 1 &&
+                    viewdata.itemIdx < viewdata.itemCount - 1) {
+
+                    uint8_t index = 0;
+                    // Use the flow title step we defined
+                    ux_review_flow[index++] = &ux_review_flow_continue_step;
+                    ux_review_flow[index++] = &ux_review_flow_skip_step;
+                    ux_review_flow[index++] = FLOW_END_STEP;
+
+                    // Reset flow but don't move to next item yet - wait for user confirmation
+                    ux_flow_init(0, ux_review_flow, NULL);
+                    return;
+                }
                 break;
             case zxerr_no_data: {
                 flow_inside_loop = 0;
@@ -546,6 +575,7 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t *const st
     ux_review_flow[index++] = &ux_review_flow_2_start_step;
     ux_review_flow[index++] = &ux_review_flow_2_step;
     ux_review_flow[index++] = &ux_review_flow_2_end_step;
+
     if (reviewType == REVIEW_MSG) {
         ux_review_flow[index++] = &ux_review_flow_6_step;
     } else {
@@ -592,4 +622,22 @@ void view_custom_error_show_impl() {
 }
 
 void view_blindsign_error_show_impl() { ux_flow_init(0, ux_warning_blind_sign_flow, NULL); }
+
+// Handler functions
+static void h_review_continue(__Z_UNUSED unsigned int _) {
+    // Just continue to next item
+    viewdata.itemIdx++;
+    run_ux_review_flow((review_type_e)review_type, &ux_review_flow_2_start_step);
+}
+
+static void h_review_skip(__Z_UNUSED unsigned int _) {
+    // Go directly to approval flow
+    if (review_type == REVIEW_MSG) {
+        run_ux_review_flow((review_type_e)review_type, &ux_review_flow_6_step);
+    } else {
+        run_ux_review_flow((review_type_e)review_type, &ux_review_flow_3_step);
+    }
+}
 #endif
+
+
