@@ -61,6 +61,11 @@
 #define REVIEW_SCREEN_ADDR_VALUE "review"
 #endif
 
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+#define REVIEW_BLINDSIGN_MESSAGE_TITLE "Warning"
+#define REVIEW_BLINDSIGN_MESSAGE_VALUE "The details of this transaction or message are not fully verifiable. If you sign, you could lose all your assets."
+#endif
+
 static const char *review_key = REVIEW_SCREEN_TITLE;
 static const char *review_txvalue = REVIEW_SCREEN_TXN_VALUE;
 static const char *review_addrvalue = REVIEW_SCREEN_ADDR_VALUE;

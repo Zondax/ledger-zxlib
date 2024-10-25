@@ -188,6 +188,8 @@ UX_STEP_NOCB(ux_approval_blind_signing_warning_step,
       "Blind",
       "Signing",
     });
+
+UX_STEP_NOCB(ux_approval_blind_signing_message_step, bnnn_paging, { REVIEW_BLINDSIGN_MESSAGE_TITLE, REVIEW_BLINDSIGN_MESSAGE_VALUE, });
 ///////////
 
 UX_FLOW_DEF_NOCB(ux_review_flow_1_review_title, pbb, { &C_icon_app, REVIEW_SCREEN_TITLE, REVIEW_SCREEN_TXN_VALUE,});
@@ -459,12 +461,25 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t* const st
             ux_review_flow[index++] = &ux_review_flow_4_review_title;
             break;
 
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+        case REVIEW_SKIP:
+            ux_review_flow[index++] = &ux_approval_blind_signing_warning_step;
+            ux_review_flow[index++] = &ux_approval_blind_signing_message_step;
+            ux_review_flow[index++] = &ux_review_flow_3_step;
+            ux_review_flow[index++] = &ux_review_flow_4_step;
+            ux_review_flow[index++] = FLOW_END_STEP;
+
+            ux_flow_init(0, ux_review_flow, start_step);
+            break;
+#endif
+
         case REVIEW_GENERIC:
         case REVIEW_TXN:
         default:
 #ifdef APP_BLINDSIGN_MODE_ENABLED
             if(app_mode_blindsign()) {
                 ux_review_flow[index++] = &ux_approval_blind_signing_warning_step;
+                ux_review_flow[index++] = &ux_approval_blind_signing_message_step;
             }
 #endif
             ux_review_flow[index++] = &ux_review_flow_1_review_title;
