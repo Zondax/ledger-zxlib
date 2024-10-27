@@ -39,6 +39,10 @@
 #include <stdio.h>
 #include <string.h>
 
+static bool custom_callback_active = false;
+// Add global variable to store original callback at the top with other globals
+static unsigned int (*original_button_callback)(unsigned int button_mask, unsigned int button_mask_counter) = NULL;
+
 void account_enabled();
 void shortcut_enabled();
 
@@ -47,9 +51,9 @@ static void h_expert_update();
 static void h_review_loop_start();
 static void h_review_loop_inside();
 static void h_review_loop_end();
-static void h_review_continue(unsigned int _);
-static void h_review_skip_confirm();
-static void h_review_skip(unsigned int _);
+static unsigned int handle_button_push(unsigned int button_mask, unsigned int button_mask_counter);
+static void set_button_callback(void);
+static void reset_button_callback(void) ;
 
 #ifdef APP_SECRET_MODE_ENABLED
 static void h_secret_click();
@@ -97,14 +101,22 @@ UX_STEP_NOCB(ux_idle_flow_3_step, bn,
                  APPVERSION_LINE2,
              });
 
-// UI flows for the Continue Confirmation
-// To allow users to skip review at any time
-UX_STEP_VALID(ux_review_flow_continue_step, pb, h_review_continue(0),
-    { &C_icon_validate_14, "Continue Review" });
-UX_STEP_VALID(ux_review_flow_skip_step, pb, h_review_skip(0),
-    { &C_icon_crossmark, "Skip Review" });
+UX_STEP_INIT(
+    ux_review_dummy_pre,
+    NULL,
+    NULL,
+    {
+      set_button_callback();
+      ux_flow_next();
+    });
 
-
+UX_STEP_NOCB(
+    ux_review_skip_step,
+    nn,
+    {
+      "Press right to read",
+      "Double-press to skip"
+    });
 
 #ifdef APP_SECRET_MODE_ENABLED
 UX_STEP_CB(ux_idle_flow_4_step, bn, h_secret_click(),
@@ -345,28 +357,28 @@ void h_review_loop_end() {
         // coming from left
         h_paging_increase();
         zxerr_t err = h_review_update_data();
+        reset_button_callback();
 
         switch (err) {
             case zxerr_ok:
                 ux_layout_bnnn_paging_reset();
-                // Check if we need to show continue confirmation
-                // Only show after all pages of current item are shown
+                // If we're at the end of current item and there's more to show
                 if (viewdata.with_confirmation &&
                     (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
                     viewdata.pageIdx == viewdata.pageCount - 1 &&
                     viewdata.itemIdx < viewdata.itemCount - 1) {
 
+                    // Show skip screen and enable button handler
                     uint8_t index = 0;
-                    // Use the flow title step we defined
-                    ux_review_flow[index++] = &ux_review_flow_continue_step;
-                    ux_review_flow[index++] = &ux_review_flow_skip_step;
+                    ux_review_flow[index++] = &ux_review_dummy_pre;
+                    ux_review_flow[index++] = &ux_review_skip_step;
                     ux_review_flow[index++] = FLOW_END_STEP;
-
-                    // Reset flow but don't move to next item yet - wait for user confirmation
                     ux_flow_init(0, ux_review_flow, NULL);
+                    set_button_callback();
                     return;
                 }
                 break;
+
             case zxerr_no_data: {
                 flow_inside_loop = 0;
                 ux_flow_next();
@@ -623,21 +635,51 @@ void view_custom_error_show_impl() {
 
 void view_blindsign_error_show_impl() { ux_flow_init(0, ux_warning_blind_sign_flow, NULL); }
 
-// Handler functions
-static void h_review_continue(__Z_UNUSED unsigned int _) {
-    // Just continue to next item
-    viewdata.itemIdx++;
-    run_ux_review_flow((review_type_e)review_type, &ux_review_flow_2_start_step);
+static unsigned int handle_button_push(unsigned int button_mask, unsigned int button_mask_counter) {
+    UNUSED(button_mask_counter);
+
+    if (!custom_callback_active) {
+        if (original_button_callback != NULL) {
+            return original_button_callback(button_mask, button_mask_counter);
+        }
+        return 0;
+    }
+
+    switch (button_mask) {
+        // Handle skip to approve
+        case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
+            G_ux.stack[0].button_push_callback = NULL;
+            if (review_type == REVIEW_MSG) {
+                run_ux_review_flow((review_type_e)review_type, &ux_review_flow_6_step);
+            } else {
+                run_ux_review_flow((review_type_e)review_type, &ux_review_flow_3_step);
+            }
+            reset_button_callback();
+            return 1;
+
+        // Handle continue review
+        case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
+            viewdata.itemIdx++;
+            // Temporarily disable callback to prevent double processing
+            G_ux.stack[0].button_push_callback = NULL;
+            run_ux_review_flow((review_type_e)review_type, &ux_review_flow_2_start_step);
+            reset_button_callback();
+            return 1;
+    }
+
+    return 0;
 }
 
-static void h_review_skip(__Z_UNUSED unsigned int _) {
-    // Go directly to approval flow
-    if (review_type == REVIEW_MSG) {
-        run_ux_review_flow((review_type_e)review_type, &ux_review_flow_6_step);
-    } else {
-        run_ux_review_flow((review_type_e)review_type, &ux_review_flow_3_step);
-    }
+static void set_button_callback(void) {
+    custom_callback_active = true;
+    // Store default callback to restablish later
+    original_button_callback = G_ux.stack[0].button_push_callback;
+    G_ux.stack[0].button_push_callback = handle_button_push;
+}
+
+static void reset_button_callback(void) {
+    custom_callback_active = false;
+    G_ux.stack[0].button_push_callback = original_button_callback;
+    original_button_callback = NULL;
 }
 #endif
-
-
