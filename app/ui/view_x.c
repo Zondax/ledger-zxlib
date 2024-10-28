@@ -375,6 +375,8 @@ void h_review_loop_end() {
                     ux_review_flow[index++] = &ux_review_skip_step;
                     ux_review_flow[index++] = FLOW_END_STEP;
                     ux_flow_init(0, ux_review_flow, NULL);
+                    // set the callback before flow initialization, otherwise
+                    // it would be overwritten
                     set_button_callback();
                     return;
                 }
@@ -649,7 +651,6 @@ static unsigned int handle_button_push(unsigned int button_mask, unsigned int bu
     switch (button_mask) {
         // Handle skip to approve
         case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
-            G_ux.stack[0].button_push_callback = NULL;
             if (review_type == REVIEW_MSG) {
                 run_ux_review_flow((review_type_e)review_type, &ux_review_flow_6_step);
             } else {
@@ -661,8 +662,13 @@ static unsigned int handle_button_push(unsigned int button_mask, unsigned int bu
         // Handle continue review
         case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
             viewdata.itemIdx++;
-            // Temporarily disable callback to prevent double processing
+            run_ux_review_flow((review_type_e)review_type, &ux_review_flow_2_start_step);
+            reset_button_callback();
+            return 1;
+
+        case BUTTON_EVT_RELEASED | BUTTON_LEFT:
             G_ux.stack[0].button_push_callback = NULL;
+            // h_paging_init();
             run_ux_review_flow((review_type_e)review_type, &ux_review_flow_2_start_step);
             reset_button_callback();
             return 1;
