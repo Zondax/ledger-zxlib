@@ -71,6 +71,12 @@ static const char *review_txvalue = REVIEW_SCREEN_TXN_VALUE;
 static const char *review_addrvalue = REVIEW_SCREEN_ADDR_VALUE;
 static const char *review_keyconfig = "Review";
 static const char *review_configvalue = "configuration";
+static const char *review_skip_key = "Warning";
+static const char *review_skip_value = "BlindSign";
+static const char *review_skip_key_msg = "Tx details";
+static const char *review_skip_value_msg = "not verifiable";
+static const char *review_skip_key_msg_2 = "Could lose";
+static const char *review_skip_value_msg_2 = "all assets";
 
 // Review msg string can be customizable in each app
 #if !defined(REVIEW_MSG_TITLE) && !defined(REVIEW_MSG_VALUE)
@@ -85,7 +91,9 @@ static const char *shortcut_key = SHORTCUT_TITLE;
 static const char *shortcut_value = SHORTCUT_VALUE;
 
 #if defined(TARGET_NANOS)
-#if defined(REVIEW_SCREEN_ENABLED) && defined(SHORTCUT_MODE_ENABLED)
+#if defined(APP_BLINDSIGN_MODE_ENABLED)
+#define INTRO_PAGES 3
+#elif defined(REVIEW_SCREEN_ENABLED) && defined(SHORTCUT_MODE_ENABLED)
 #define INTRO_PAGES 2
 #elif defined(REVIEW_SCREEN_ENABLED) || defined(SHORTCUT_MODE_ENABLED)
 #define INTRO_PAGES 1
