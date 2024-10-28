@@ -117,6 +117,7 @@ UX_STEP_NOCB(
       "Press right to read",
       "Double-press to skip"
     });
+UX_STEP_NOCB(ux_review_skip_page, bnnn_paging, { .title = viewdata.key, .text = viewdata.value, });
 
 #ifdef APP_SECRET_MODE_ENABLED
 UX_STEP_CB(ux_idle_flow_4_step, bn, h_secret_click(),
@@ -357,7 +358,6 @@ void h_review_loop_end() {
         // coming from left
         h_paging_increase();
         zxerr_t err = h_review_update_data();
-        reset_button_callback();
 
         switch (err) {
             case zxerr_ok:
@@ -680,6 +680,6 @@ static void set_button_callback(void) {
 static void reset_button_callback(void) {
     custom_callback_active = false;
     G_ux.stack[0].button_push_callback = original_button_callback;
-    original_button_callback = NULL;
+    // original_button_callback = NULL;
 }
 #endif
