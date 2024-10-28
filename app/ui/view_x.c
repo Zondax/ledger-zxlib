@@ -39,9 +39,9 @@
 #include <stdio.h>
 #include <string.h>
 
-static bool custom_callback_active = false;
+bool custom_callback_active = false;
 // Add global variable to store original callback at the top with other globals
-static unsigned int (*original_button_callback)(unsigned int button_mask, unsigned int button_mask_counter) = NULL;
+unsigned int (*original_button_callback)(unsigned int button_mask, unsigned int button_mask_counter) = NULL;
 
 void account_enabled();
 void shortcut_enabled();
@@ -52,8 +52,8 @@ static void h_review_loop_start();
 static void h_review_loop_inside();
 static void h_review_loop_end();
 static unsigned int handle_button_push(unsigned int button_mask, unsigned int button_mask_counter);
-static void set_button_callback(void);
-static void reset_button_callback(void) ;
+static void set_button_callback(unsigned int slot);
+static void reset_button_callback(unsigned int slot) ;
 
 #ifdef APP_SECRET_MODE_ENABLED
 static void h_secret_click();
@@ -101,23 +101,18 @@ UX_STEP_NOCB(ux_idle_flow_3_step, bn,
                  APPVERSION_LINE2,
              });
 
-UX_STEP_INIT(
-    ux_review_dummy_pre,
-    NULL,
-    NULL,
-    {
-      set_button_callback();
-      ux_flow_next();
-    });
-
-UX_STEP_NOCB(
+UX_STEP_NOCB_INIT(
     ux_review_skip_step,
     nn,
+    {
+        // This will execute during initialization without requiring validation
+        custom_callback_active = true;
+        set_button_callback(stack_slot);
+    },
     {
       "Press right to read",
       "Double-press to skip"
     });
-UX_STEP_NOCB(ux_review_skip_page, bnnn_paging, { .title = viewdata.key, .text = viewdata.value, });
 
 #ifdef APP_SECRET_MODE_ENABLED
 UX_STEP_CB(ux_idle_flow_4_step, bn, h_secret_click(),
@@ -371,13 +366,16 @@ void h_review_loop_end() {
 
                     // Show skip screen and enable button handler
                     uint8_t index = 0;
-                    ux_review_flow[index++] = &ux_review_dummy_pre;
+
                     ux_review_flow[index++] = &ux_review_skip_step;
                     ux_review_flow[index++] = FLOW_END_STEP;
-                    ux_flow_init(0, ux_review_flow, NULL);
-                    // set the callback before flow initialization, otherwise
+
+
+                    unsigned int current_slot = G_ux.stack_count - 1;
+                    ux_flow_init(current_slot, ux_review_flow, NULL);
+                    // set the callback after flow initialization, otherwise
                     // it would be overwritten
-                    set_button_callback();
+                    set_button_callback(current_slot);
                     return;
                 }
                 break;
@@ -643,11 +641,14 @@ static unsigned int handle_button_push(unsigned int button_mask, unsigned int bu
 
     if (!custom_callback_active) {
         if (original_button_callback != NULL) {
+            // Just pass through to original callback
             return original_button_callback(button_mask, button_mask_counter);
         }
         return 0;
     }
 
+    // This is meant to handle the button interactions
+    // over the skip_step screen
     switch (button_mask) {
         // Handle skip to approve
         case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
@@ -656,37 +657,31 @@ static unsigned int handle_button_push(unsigned int button_mask, unsigned int bu
             } else {
                 run_ux_review_flow((review_type_e)review_type, &ux_review_flow_3_step);
             }
-            reset_button_callback();
             return 1;
 
         // Handle continue review
         case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
             viewdata.itemIdx++;
             run_ux_review_flow((review_type_e)review_type, &ux_review_flow_2_start_step);
-            reset_button_callback();
             return 1;
 
         case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-            G_ux.stack[0].button_push_callback = NULL;
             // h_paging_init();
             run_ux_review_flow((review_type_e)review_type, &ux_review_flow_2_start_step);
-            reset_button_callback();
             return 1;
     }
-
     return 0;
 }
 
-static void set_button_callback(void) {
-    custom_callback_active = true;
+static void set_button_callback(unsigned int slot) {
     // Store default callback to restablish later
-    original_button_callback = G_ux.stack[0].button_push_callback;
-    G_ux.stack[0].button_push_callback = handle_button_push;
+    original_button_callback = G_ux.stack[slot].button_push_callback;
+    G_ux.stack[slot].button_push_callback = handle_button_push;
 }
 
-static void reset_button_callback(void) {
-    custom_callback_active = false;
-    G_ux.stack[0].button_push_callback = original_button_callback;
-    // original_button_callback = NULL;
+static void reset_button_callback(unsigned int slot) {
+    G_ux.stack[slot].button_push_callback = original_button_callback;
+    if (custom_callback_active)
+        custom_callback_active = false;
 }
 #endif
