@@ -90,6 +90,17 @@ void os_exit(uint32_t id) {
     (void)id;
     os_sched_exit(0);
 }
+static unsigned int view_skip_button(unsigned int button_mask, unsigned int button_mask_counter);
+const bagl_element_t *view_prepro(const bagl_element_t *element);
+
+// Add new view state for skip screen
+static const bagl_element_t view_skip[] = {
+    UI_BACKGROUND_LEFT_RIGHT_ICONS,
+    UI_LabelLine(UIID_LABEL + 0, 0, 8, UI_SCREEN_WIDTH, UI_11PX, UI_WHITE, UI_BLACK,
+                 "Press right to read"),
+    UI_LabelLine(UIID_LABEL + 1, 0, 19, UI_SCREEN_WIDTH, UI_11PX, UI_WHITE, UI_BLACK,
+                 "Double-press to skip"),
+};
 
 const ux_menu_entry_t menu_main[] = {
     {NULL, NULL, 0, &C_icon_app, MENU_MAIN_APP_LINE1, viewdata.key, 33, 12},
@@ -186,20 +197,25 @@ static unsigned int view_message_button(unsigned int button_mask, __Z_UNUSED uns
     }
     return 0;
 }
-
-static unsigned int view_review_button(unsigned int button_mask, __Z_UNUSED unsigned int button_mask_counter) {
+// Modify review button handler to show skip screen when appropriate
+static unsigned int view_review_button(unsigned int button_mask, unsigned int button_mask_counter) {
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
             h_review_button_both();
             break;
         case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-            // Press left to progress to the previous element
             h_review_button_left();
             break;
-
         case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-            // Press right to progress to the next element
-            h_review_button_right();
+            if (viewdata.with_confirmation &&
+                (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
+                viewdata.pageIdx == viewdata.pageCount - 1 &&
+                viewdata.itemIdx < viewdata.itemCount - 1) {
+                // Show skip screen
+                UX_DISPLAY(view_skip, view_prepro);
+            } else {
+                h_review_button_right();
+            }
             break;
     }
     return 0;
@@ -507,5 +523,24 @@ max_char_display get_max_char_per_line() {
 bool exceed_pixel_in_display(const uint8_t length) {
     const unsigned short strWidth = zx_compute_line_width_light(viewdata.value, length);
     return (strWidth >= (BAGL_WIDTH - BAGL_WIDTH_MARGIN));
+}
+
+static unsigned int view_skip_button(unsigned int button_mask, unsigned int button_mask_counter) {
+    switch (button_mask) {
+        case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
+            // Skip to approve
+            h_review_action(review_type);
+            break;
+        case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
+            // Continue review
+            h_paging_increase();
+            h_review_update();
+            break;
+        case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+            // Go back
+            h_review_update();
+            break;
+    }
+    return 0;
 }
 #endif
