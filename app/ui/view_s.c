@@ -197,7 +197,7 @@ static unsigned int view_message_button(unsigned int button_mask, __Z_UNUSED uns
     }
     return 0;
 }
-// Modify review button handler to show skip screen when appropriate
+
 static unsigned int view_review_button(unsigned int button_mask, unsigned int button_mask_counter) {
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
@@ -206,13 +206,16 @@ static unsigned int view_review_button(unsigned int button_mask, unsigned int bu
         case BUTTON_EVT_RELEASED | BUTTON_LEFT:
             h_review_button_left();
             break;
+        // Are we at the point to display the skip/continue menu?
+        // for this with_cnfirmation must set
         case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
             if (viewdata.with_confirmation &&
                 (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
                 viewdata.pageIdx == viewdata.pageCount - 1 &&
-                viewdata.itemIdx < viewdata.itemCount - 1) {
-                // Show skip screen
-                UX_DISPLAY(view_skip, view_prepro);
+                // Render the skip screen after each item except the last one.
+                // For the last item, navigate directly to the approval screen.
+                viewdata.itemIdx != viewdata.itemCount - 2) {
+                    UX_DISPLAY(view_skip, view_prepro);
             } else {
                 h_review_button_right();
             }
