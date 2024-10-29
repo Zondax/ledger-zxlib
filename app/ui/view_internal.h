@@ -152,11 +152,28 @@ typedef struct {
     uint8_t pageCount;
 
     inner_state_t innerField;
-    // Use to tell the engine to ask
-    // the user if they want to continue
-    // with the review, otherwise, go to the final
-    // approval and proceed to sign the transaction
+#if defined(TARGET_NANOS) || defined(TARGET_NANOS2) || defined(TARGET_NANOX)
+    /**
+     * @brief Determines whether to prompt the user for confirmation during the review process.
+     *
+     * When `with_confirmation` is set to `true`, the engine will display a confirmation prompt
+     * to the user after each item review. This allows the user to either continue reviewing items
+     * or proceed to the final approval step.
+     *
+     * If `with_confirmation` is set to `false`, the engine will skip the confirmation prompts
+     * forcing users to review all items until they get to the approval menu.
+     *
+     * **Applicable Targets:**
+     * - Ledger Nano S (TARGET_NANOS)
+     * - Ledger Nano S2 (TARGET_NANOS2)
+     * - Ledger Nano X (TARGET_NANOX)
+     *
+     * **Excluded Targets:**
+     * - Stax
+     * - Flex
+     */
     bool with_confirmation;
+#endif
 } view_t;
 
 typedef enum {
