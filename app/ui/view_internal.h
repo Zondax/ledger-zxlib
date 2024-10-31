@@ -47,7 +47,11 @@
 
 // This takes data from G_io_apdu_buffer that is prefilled with the address
 
+#if defined(APP_BLINDSIGN_MODE_ENABLED)
+#define APPROVE_LABEL "ACCEPT RISK AND APPROVE"
+#else
 #define APPROVE_LABEL "APPROVE"
+#endif
 #define REJECT_LABEL "REJECT"
 
 #define SHORTCUT_TITLE "Skip"
