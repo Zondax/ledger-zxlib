@@ -50,7 +50,7 @@ $(info TESTS_JS_DIR          : $(TESTS_JS_DIR))
 $(info TESTS_JS_PACKAGE      : $(TESTS_JS_PACKAGE))
 
 DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:ledger-ec93499de7f17076ee90caaca5953fdb9d3daf6c
-DOCKER_IMAGE_LEDGER=ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
+DOCKER_IMAGE_LEDGER=ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:3.37.0
 
 ifdef INTERACTIVE
 INTERACTIVE_SETTING:="-i"
