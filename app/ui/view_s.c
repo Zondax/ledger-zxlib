@@ -316,6 +316,19 @@ void h_review_button_right() {
 }
 
 static void h_review_action(unsigned int requireReply) {
+    if (viewdata.with_confirmation &&
+        (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
+        viewdata.pageIdx == viewdata.pageCount - 1 &&
+        viewdata.itemIdx < viewdata.itemCount - 2) {
+        // Force jump to approval screen
+        viewdata.itemIdx = viewdata.itemCount - 1;
+        viewdata.pageIdx = 0;
+
+        h_review_update();
+
+        return;
+    }
+
     if( is_accept_item() ){
         zemu_log_stack("action_accept");
         h_approve(1);
