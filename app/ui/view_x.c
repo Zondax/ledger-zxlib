@@ -68,7 +68,6 @@ static void h_blindsign_toggle();
 static void h_blindsign_update();
 #endif
 
-static void ui_idle();
 static void h_shortcut(unsigned int);
 static void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t* const start_step);
 const ux_flow_step_t *ux_review_flow[MAX_REVIEW_UX_SCREENS];
@@ -174,7 +173,7 @@ UX_FLOW(
 UX_STEP_CB(
     ux_warning_blind_sign_step,
     pnn,
-    ui_idle(),
+    h_error_accept(0),
     {
       &C_icon_crossmark,
       "Blind signing must be",
@@ -214,14 +213,6 @@ UX_STEP_CB_INIT(ux_review_flow_5_step, pb,  NULL, h_shortcut(0), { &C_icon_eye, 
 //////////////////////////
 //////////////////////////
 //////////////////////////
-
-void ui_idle(void) {
-    // reserve a display stack slot if none yet
-    if (G_ux.stack_count == 0) {
-        ux_stack_push();
-    }
-    ux_flow_init(0, ux_idle_flow, NULL);
-}
 
 void h_review_update() {
     zxerr_t err = h_review_update_data();
