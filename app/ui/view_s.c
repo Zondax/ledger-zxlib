@@ -48,6 +48,9 @@ static void h_review_button_both();
 bool is_accept_item();
 void set_accept_item();
 bool is_reject_item();
+bool should_show_skip_menu_right();
+bool should_show_skip_menu_left();
+
 
 #ifdef APP_SECRET_MODE_ENABLED
 static void h_secret_click();
@@ -67,6 +70,9 @@ static void h_shortcut_update();
 static void h_blindsign_toggle();
 static void h_blindsign_update();
 #endif
+
+// Keep track of whether we're in skip menu view
+static bool is_in_skip_menu = false;
 
 enum MAINMENU_SCREENS {
     SCREEN_HOME = 0,
@@ -198,24 +204,56 @@ static unsigned int view_message_button(unsigned int button_mask, __Z_UNUSED uns
     return 0;
 }
 
+// Helper to check if we've completed reviewing an item
+bool should_show_skip_menu_right() {
+    // When going forwards: we're at last page of current item
+    // When going backwards: we're at first page of current item
+    return viewdata.with_confirmation &&
+        (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
+        // To enable left arrow rendering
+        viewdata.pageIdx > 0                      &&
+        // Not in reject screen
+        viewdata.pageIdx == viewdata.pageCount - 1 &&
+        // Not in approve screen
+        viewdata.itemIdx != viewdata.itemCount - 2 &&
+        !is_reject_item();
+}
+
+// Helper to check if we should show skip menu
+bool should_show_skip_menu_left() {
+    return viewdata.with_confirmation &&
+        (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
+        viewdata.itemIdx > 0 &&                     // Not the first item
+        viewdata.pageIdx == 0 &&                    // Reached first page of current item
+        !is_reject_item() &&
+        !is_accept_item() &&
+        viewdata.itemIdx < viewdata.itemCount - 2;  // Not in final screens
+}
+
 static unsigned int view_review_button(unsigned int button_mask, unsigned int button_mask_counter) {
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
-            h_review_button_both();
+            // Only handle double-click if we're in skip menu or approve/reject screens
+            if (is_in_skip_menu || is_accept_item() || is_reject_item()) {
+                h_review_button_both();
+            }
             break;
+
         case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-            h_review_button_left();
+            // Check if we should show skip menu before moving back
+            if (should_show_skip_menu_left()) {
+                is_in_skip_menu = true;
+                UX_DISPLAY(view_skip, view_prepro);
+            } else {
+                h_paging_decrease();
+                h_review_update();
+            }
             break;
-        // Are we at the point to display the skip/continue menu?
-        // for this with_cnfirmation must set
+
         case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-            if (viewdata.with_confirmation &&
-                (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
-                viewdata.pageIdx == viewdata.pageCount - 1 &&
-                // Render the skip screen after each item except the last one.
-                // For the last item, navigate directly to the approval screen.
-                viewdata.itemIdx != viewdata.itemCount - 2) {
-                    UX_DISPLAY(view_skip, view_prepro);
+            if (should_show_skip_menu_right()) {
+                is_in_skip_menu = true;           // Entering skip menu
+                UX_DISPLAY(view_skip, view_prepro);
             } else {
                 h_review_button_right();
             }
@@ -316,14 +354,12 @@ void h_review_button_right() {
 }
 
 static void h_review_action(unsigned int requireReply) {
-    if (viewdata.with_confirmation &&
-        (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
-        viewdata.pageIdx == viewdata.pageCount - 1 &&
-        viewdata.itemIdx < viewdata.itemCount - 2) {
+    if (is_in_skip_menu) {
         // Force jump to approval screen
         viewdata.itemIdx = viewdata.itemCount - 1;
         viewdata.pageIdx = 0;
 
+        is_in_skip_menu = false;  // Reset the flag after handling
         h_review_update();
 
         return;
@@ -353,7 +389,11 @@ static void h_review_action(unsigned int requireReply) {
 
 void h_review_button_both() {
     zemu_log_stack("h_review_button_both");
-    h_review_action(review_type);
+
+    // Handle double-click when in skip menu or approve/reject screens
+    if (is_in_skip_menu || is_accept_item() || is_reject_item()) {
+        h_review_action(review_type);
+    }
 }
 
 //////////////////////////
@@ -542,6 +582,7 @@ bool exceed_pixel_in_display(const uint8_t length) {
 }
 
 static unsigned int view_skip_button(unsigned int button_mask, unsigned int button_mask_counter) {
+    is_in_skip_menu = true;
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
             // Skip to approve
@@ -549,11 +590,13 @@ static unsigned int view_skip_button(unsigned int button_mask, unsigned int butt
             break;
         case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
             // Continue review
+            is_in_skip_menu = false;
             h_paging_increase();
             h_review_update();
             break;
         case BUTTON_EVT_RELEASED | BUTTON_LEFT:
             // Go back
+            is_in_skip_menu = false;
             h_review_update();
             break;
     }
