@@ -1,43 +1,40 @@
 /*******************************************************************************
-*   (c) 2018 - 2022 Zondax GmbH
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   (c) 2018 - 2022 Zondax GmbH
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 #include "bolos_target.h"
 
 #if defined(TARGET_NANOS) || defined(TARGET_NANOS2) || defined(TARGET_NANOX)
 
-#include "view_internal.h"
-#include "view_nano.h"
-
-#include "view.h"
-#include "coin.h"
-#include "view_internal.h"
-#include "crypto.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "actions.h"
 #include "apdu_codes.h"
-#include "ux.h"
-#include "bagl.h"
-#include "zxmacros.h"
-#include "view_templates.h"
-#include "tx.h"
 #include "app_mode.h"
+#include "bagl.h"
+#include "coin.h"
+#include "crypto.h"
+#include "tx.h"
+#include "ux.h"
+#include "view.h"
+#include "view_internal.h"
+#include "view_nano.h"
+#include "view_templates.h"
 #include "zxerror.h"
-
-#include <string.h>
-#include <stdio.h>
-#include <stdbool.h>
+#include "zxmacros.h"
 
 extern unsigned int review_type;
 
@@ -47,12 +44,15 @@ uint8_t getIntroPages() {
         return INTRO_PAGES ? INTRO_PAGES - 1 : 0;
     }
 #endif
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+    if (!app_mode_blindsign()) {
+        return 0;
+    }
+#endif
     return INTRO_PAGES;
 }
 
-bool h_paging_intro_screen() {
-    return viewdata.itemIdx < getIntroPages();
-}
+bool h_paging_intro_screen() { return viewdata.itemIdx < getIntroPages(); }
 
 void h_initialize() {
     ZEMU_LOGF(50, "Initialize function\n")
@@ -75,9 +75,7 @@ void view_custom_error_show(const char *upper, const char *lower) {
     view_custom_error_show_impl();
 }
 
-void view_blindsign_error_show() {
-    view_blindsign_error_show_impl();
-}
+void view_blindsign_error_show() { view_blindsign_error_show_impl(); }
 
 ///////////////////////////////////
 // Paging related
@@ -154,18 +152,14 @@ void h_paging_decrease() {
 }
 
 #ifdef INCLUDE_ACTIONS_AS_ITEMS
-bool is_accept_item(){
-    return viewdata.itemIdx == viewdata.itemCount - 1;
-}
+bool is_accept_item() { return viewdata.itemIdx == viewdata.itemCount - 1; }
 
-void set_accept_item(){
+void set_accept_item() {
     viewdata.itemIdx = viewdata.itemCount - 1;
     viewdata.pageIdx = 0;
 }
 
-bool is_reject_item(){
-    return viewdata.itemIdx == viewdata.itemCount;
-}
+bool is_reject_item() { return viewdata.itemIdx == viewdata.itemCount; }
 #endif
 
 zxerr_t h_review_update_data() {
@@ -183,12 +177,20 @@ zxerr_t h_review_update_data() {
 #ifdef INCLUDE_ACTIONS_AS_ITEMS
     viewdata.pageCount = 1;
 
-    if( is_accept_item() ){
+    if (is_accept_item()) {
         snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", "");
         if (review_type == REVIEW_MSG) {
             snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Ok");
         } else {
+#if defined(APP_BLINDSIGN_MODE_ENABLED)
+            if (app_mode_blindsign()) {
+                snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s  %s", APPROVE_LABEL_1, APPROVE_LABEL_2);
+            } else {
+                snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", APPROVE_LABEL);
+            }
+#else
             snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", APPROVE_LABEL);
+#endif
         }
         splitValueField();
         zemu_log_stack("show_accept_action - accept item");
@@ -196,7 +198,7 @@ zxerr_t h_review_update_data() {
         return zxerr_ok;
     }
 
-    if( is_reject_item() ){
+    if (is_reject_item()) {
         snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", "");
         snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", REJECT_LABEL);
         splitValueField();
@@ -206,39 +208,39 @@ zxerr_t h_review_update_data() {
     }
 
     if (h_paging_intro_screen()) {
-        char* intro_key = NULL;
-        char* intro_value = NULL;
+        char *intro_key = NULL;
+        char *intro_value = NULL;
 
 #if defined(REVIEW_SCREEN_ENABLED)
         switch (viewdata.itemIdx) {
             case 0:
                 intro_key = PIC(review_key);
                 switch (review_type) {
-                case REVIEW_MSG:
-                    return zxerr_unknown;
+                    case REVIEW_MSG:
+                        return zxerr_unknown;
 
-                case REVIEW_UI:
-                    intro_key = PIC(review_keyconfig);
-                    intro_value = PIC(review_configvalue);
-                    break;
+                    case REVIEW_UI:
+                        intro_key = PIC(review_keyconfig);
+                        intro_value = PIC(review_configvalue);
+                        break;
 
-                case REVIEW_ADDRESS:
-                    intro_value = PIC(review_addrvalue);
-                    break;
+                    case REVIEW_ADDRESS:
+                        intro_value = PIC(review_addrvalue);
+                        break;
 
-                case REVIEW_GENERIC:
-                case REVIEW_TXN:
-                default:
-                    intro_value = PIC(review_txvalue);
-                    break;
+                    case REVIEW_GENERIC:
+                    case REVIEW_TXN:
+                    default:
+                        intro_value = PIC(review_txvalue);
+                        break;
                 }
                 break;
-        #if defined(SHORTCUT_MODE_ENABLED)
+#if defined(SHORTCUT_MODE_ENABLED)
             case 1:
                 intro_key = PIC(shortcut_key);
                 intro_value = PIC(shortcut_value);
                 break;
-        #endif
+#endif
             default:
                 return zxerr_no_data;
         }
@@ -246,22 +248,23 @@ zxerr_t h_review_update_data() {
         intro_key = PIC(shortcut_key);
         intro_value = PIC(shortcut_value);
 #elif defined(APP_BLINDSIGN_MODE_ENABLED)
-        switch (viewdata.itemIdx)
-        {
-        case 0:
-            intro_key = PIC(review_skip_key);
-            intro_value = PIC(review_skip_value);
-            break;
-        case 1:
-            intro_key = PIC(review_skip_key_msg);
-            intro_value = PIC(review_skip_value_msg);
-            break;
-        case 2:
-            intro_key = PIC(review_skip_key_msg_2);
-            intro_value = PIC(review_skip_value_msg_2);
-            break;
-        default:
-            break;
+        if (app_mode_blindsign()) {
+            switch (viewdata.itemIdx) {
+                case 0:
+                    intro_key = PIC(review_skip_key);
+                    intro_value = PIC(review_skip_value);
+                    break;
+                case 1:
+                    intro_key = PIC(review_skip_key_msg);
+                    intro_value = PIC(review_skip_value_msg);
+                    break;
+                case 2:
+                    intro_key = PIC(review_skip_key_msg_2);
+                    intro_value = PIC(review_skip_value_msg_2);
+                    break;
+                default:
+                    break;
+            }
         }
 #else
         return zxerr_no_data;
@@ -280,62 +283,48 @@ zxerr_t h_review_update_data() {
         viewdata.itemCount += getIntroPages();
 
         if (viewdata.itemIdx - getIntroPages() < 0) {
-        return zxerr_out_of_bounds;
+            return zxerr_out_of_bounds;
         }
         const uint8_t realItemIdx = viewdata.itemIdx - getIntroPages();
 
-        //Verify how many chars fit in display (nanos)
-        CHECK_ZXERR(viewdata.viewfuncGetItem(
-                realItemIdx,
-                viewdata.key, MAX_CHARS_PER_KEY_LINE,
-                viewdata.value, MAX_CHARS_PER_VALUE1_LINE,
-                0, &viewdata.pageCount))
+        // Verify how many chars fit in display (nanos)
+        CHECK_ZXERR(viewdata.viewfuncGetItem(realItemIdx, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
+                                             MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount))
         viewdata.pageCount = 1;
         const max_char_display dyn_max_char_per_line1 = get_max_char_per_line();
 
         // be sure we are not out of bounds
-        CHECK_ZXERR(viewdata.viewfuncGetItem(
-                realItemIdx,
-                viewdata.key, MAX_CHARS_PER_KEY_LINE,
-                viewdata.value, dyn_max_char_per_line1,
-                0, &viewdata.pageCount))
+        CHECK_ZXERR(viewdata.viewfuncGetItem(realItemIdx, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
+                                             dyn_max_char_per_line1, 0, &viewdata.pageCount))
         if (viewdata.pageCount != 0 && viewdata.pageIdx > viewdata.pageCount) {
             // try again and get last page
             viewdata.pageIdx = viewdata.pageCount - 1;
         }
-        CHECK_ZXERR(viewdata.viewfuncGetItem(
-                realItemIdx,
-                viewdata.key, MAX_CHARS_PER_KEY_LINE,
-                viewdata.value, dyn_max_char_per_line1,
-                viewdata.pageIdx, &viewdata.pageCount))
+        CHECK_ZXERR(viewdata.viewfuncGetItem(realItemIdx, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
+                                             dyn_max_char_per_line1, viewdata.pageIdx, &viewdata.pageCount))
 
         viewdata.itemCount++;
 
         if (viewdata.pageCount > 1) {
             uint8_t keyLen = strnlen(viewdata.key, MAX_CHARS_PER_KEY_LINE);
             if (keyLen < MAX_CHARS_PER_KEY_LINE) {
-                snprintf(viewdata.key + keyLen,
-                        MAX_CHARS_PER_KEY_LINE - keyLen,
-                        " [%d/%d]",
-                        viewdata.pageIdx + 1,
-                        viewdata.pageCount);
+                snprintf(viewdata.key + keyLen, MAX_CHARS_PER_KEY_LINE - keyLen, " [%d/%d]", viewdata.pageIdx + 1,
+                         viewdata.pageCount);
             }
         }
 
         if (viewdata.pageCount == 0) {
             h_paging_increase();
         }
-        } while (viewdata.pageCount == 0);
+    } while (viewdata.pageCount == 0);
 
-        splitValueAddress();
+    splitValueAddress();
 
     return zxerr_ok;
 }
 
 ///////////////////////////////////
 // General
-void io_seproxyhal_display(const bagl_element_t *element) {
-    io_seproxyhal_display_default(element);
-}
+void io_seproxyhal_display(const bagl_element_t *element) { io_seproxyhal_display_default(element); }
 
 #endif

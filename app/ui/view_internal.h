@@ -48,10 +48,10 @@
 // This takes data from G_io_apdu_buffer that is prefilled with the address
 
 #if defined(APP_BLINDSIGN_MODE_ENABLED)
-#define APPROVE_LABEL "ACCEPT RISK AND APPROVE"
-#else
-#define APPROVE_LABEL "APPROVE"
+#define APPROVE_LABEL_1 "ACCEPT RISK"
+#define APPROVE_LABEL_2 "AND APPROVE"
 #endif
+#define APPROVE_LABEL "APPROVE"
 #define REJECT_LABEL "REJECT"
 
 #define SHORTCUT_TITLE "Skip"
@@ -67,7 +67,9 @@
 
 #ifdef APP_BLINDSIGN_MODE_ENABLED
 #define REVIEW_BLINDSIGN_MESSAGE_TITLE "Warning"
-#define REVIEW_BLINDSIGN_MESSAGE_VALUE "The details of this transaction or message are not fully verifiable. If you sign, you could lose all your assets."
+#define REVIEW_BLINDSIGN_MESSAGE_VALUE \
+    "Tx details not verifiable. "      \
+    "Could lose all assets"
 #endif
 
 static const char *review_key = REVIEW_SCREEN_TITLE;
