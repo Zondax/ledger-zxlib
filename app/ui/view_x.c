@@ -226,11 +226,13 @@ UX_STEP_NOCB(ux_approval_blind_signing_warning_step, pbb,
                  "Signing",
              });
 
+#ifdef APP_BLINDSIGN_MODE_ENABLED
 UX_STEP_NOCB(ux_approval_blind_signing_message_step, bnnn_paging,
              {
                  REVIEW_BLINDSIGN_MESSAGE_TITLE,
                  REVIEW_BLINDSIGN_MESSAGE_VALUE,
              });
+#endif
 ///////////
 
 UX_FLOW_DEF_NOCB(ux_review_flow_1_review_title, pbb,
