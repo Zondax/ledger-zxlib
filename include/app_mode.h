@@ -46,7 +46,7 @@ void app_mode_set_blindsign(uint8_t val);
 
 bool app_mode_blindsign_required();
 
-void app_mode_set_blindsign_required(uint8_t val);
+void app_mode_skip_blindsign_ui();
 #ifdef __cplusplus
 }
 #endif

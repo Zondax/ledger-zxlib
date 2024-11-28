@@ -440,7 +440,7 @@ static void config_useCaseReview(nbgl_operationType_t type) {
     pairList.pairs = NULL;  // to indicate that callback should be used
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
-    if (app_mode_blindsign() && app_mode_blindsign_required()) {
+    if (app_mode_blindsign_required()) {
         nbgl_useCaseReviewBlindSigning(type, &pairList, &C_icon_stax_64,
                                        (intro_message == NULL ? "Review transaction" : intro_message), NULL,
                                        "Accept risk and sign transaction ?", NULL, reviewTransactionChoice);
