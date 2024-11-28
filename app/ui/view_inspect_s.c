@@ -1,26 +1,26 @@
 /*******************************************************************************
-*   (c) 2018 - 2023 Zondax AG
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   (c) 2018 - 2023 Zondax AG
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 #include "bolos_target.h"
 
 #if defined(TARGET_NANOS)
+#include "bagl.h"
+#include "ux.h"
 #include "view_internal.h"
 #include "view_nano_inspect.h"
 #include "view_templates.h"
-#include "ux.h"
-#include "bagl.h"
 #include "zxmacros.h"
 
 static void h_inspect_button_left();
@@ -39,7 +39,6 @@ static const bagl_element_t view_inspect[] = {
     UI_LabelLine(UIID_LABEL + 1, 0, 19, UI_SCREEN_WIDTH, UI_11PX, UI_WHITE, UI_BLACK, viewdata.value),
     UI_LabelLine(UIID_LABEL + 2, 0, 30, UI_SCREEN_WIDTH, UI_11PX, UI_WHITE, UI_BLACK, viewdata.value2),
 };
-
 
 static unsigned int view_inspect_button(unsigned int button_mask, __Z_UNUSED unsigned int button_mask_counter) {
     switch (button_mask) {
@@ -100,9 +99,8 @@ void h_inspect() {
     const uint8_t idxOffset = (viewdata.innerField.paging.itemIdx > 0) ? 1 : 0;
     // Check if we can inspect this element
     if (viewdata.innerField.level >= MAX_DEPTH ||
-        !viewdata.viewfuncCanInspectItem(viewdata.innerField.level+1,
-                                        viewdata.innerField.trace,
-                                        viewdata.innerField.paging.itemIdx - idxOffset )) {
+        !viewdata.viewfuncCanInspectItem(viewdata.innerField.level + 1, viewdata.innerField.trace,
+                                         viewdata.innerField.paging.itemIdx - idxOffset)) {
         h_inspect_update_data();
         view_inspect_show_impl();
         return;
@@ -110,7 +108,8 @@ void h_inspect() {
 
     // NanoS counts Go to root screen as an item, adjust offset
     viewdata.innerField.level++;
-    viewdata.innerField.trace[viewdata.innerField.level] = viewdata.innerField.paging.itemIdx- idxOffset;    viewdata.innerField.paging.itemIdx = 1;
+    viewdata.innerField.trace[viewdata.innerField.level] = viewdata.innerField.paging.itemIdx - idxOffset;
+    viewdata.innerField.paging.itemIdx = 1;
     viewdata.innerField.paging.pageCount = 1;
     viewdata.innerField.paging.itemCount = 0xFF;
 
@@ -143,22 +142,21 @@ void h_back() {
 }
 
 void inspect_init() {
-    #ifdef HAVE_INSPECT
-        h_inspect_init();
-        if (!viewdata.viewfuncCanInspectItem(viewdata.innerField.level,
-                                            viewdata.innerField.trace,
-                                            viewdata.innerField.paging.itemIdx)) {
-            h_rootTxn();
-            return;
-        }
-        // Skip first screen for NanoS
-        viewdata.innerField.paging.itemIdx = 1;
-        const zxerr_t err = h_inspect_update_data();
-        if (err == zxerr_no_data) {
-            return;
-        }
-        view_inspect_show_impl();
-    #endif
+#ifdef HAVE_INSPECT
+    h_inspect_init();
+    if (!viewdata.viewfuncCanInspectItem(viewdata.innerField.level, viewdata.innerField.trace,
+                                         viewdata.innerField.paging.itemIdx)) {
+        h_rootTxn();
+        return;
+    }
+    // Skip first screen for NanoS
+    viewdata.innerField.paging.itemIdx = 1;
+    const zxerr_t err = h_inspect_update_data();
+    if (err == zxerr_no_data) {
+        return;
+    }
+    view_inspect_show_impl();
+#endif
 }
 
 #endif

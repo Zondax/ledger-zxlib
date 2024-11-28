@@ -1,50 +1,59 @@
 /*******************************************************************************
-*   (c) 2018 - 2024 Zondax AG
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   (c) 2018 - 2024 Zondax AG
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 #pragma once
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "zxmacros.h"
 #include "zxerror.h"
+#include "zxmacros.h"
 
 #define IS_PRINTABLE(c) (c >= 0x20 && c <= 0x7e)
 
-#define NUM_TO_STR(TYPE) __Z_INLINE const char * TYPE##_to_str(char *data, int dataLen, TYPE##_t number) { \
-    if (dataLen < 2) return "Buffer too small";     \
-    MEMZERO(data, dataLen);                         \
-    char *p = data;                                 \
-    if (number < 0) { *(p++) = '-'; data++; }       \
-    else if (number == 0) { *(p++) = '0'; }         \
-    TYPE##_t tmp;                                   \
-    while (number != 0) {                           \
-        if (p - data >= (dataLen - 1)) {    return "Buffer too small";  }   \
-        tmp = number % 10;                          \
-        tmp = tmp < 0 ? -tmp : tmp;                 \
-        *(p++) = (char) ('0' + tmp);                \
-        number /= 10u;                              \
-    }                                               \
-    while (p > data) {                              \
-        p--;                                        \
-        char z = *data; *data = *p; *p = z;         \
-        data++;                                     \
-    }                                               \
-    return NULL;                                    \
-}
+#define NUM_TO_STR(TYPE)                                                             \
+    __Z_INLINE const char *TYPE##_to_str(char *data, int dataLen, TYPE##_t number) { \
+        if (dataLen < 2) return "Buffer too small";                                  \
+        MEMZERO(data, dataLen);                                                      \
+        char *p = data;                                                              \
+        if (number < 0) {                                                            \
+            *(p++) = '-';                                                            \
+            data++;                                                                  \
+        } else if (number == 0) {                                                    \
+            *(p++) = '0';                                                            \
+        }                                                                            \
+        TYPE##_t tmp;                                                                \
+        while (number != 0) {                                                        \
+            if (p - data >= (dataLen - 1)) {                                         \
+                return "Buffer too small";                                           \
+            }                                                                        \
+            tmp = number % 10;                                                       \
+            tmp = tmp < 0 ? -tmp : tmp;                                              \
+            *(p++) = (char)('0' + tmp);                                              \
+            number /= 10u;                                                           \
+        }                                                                            \
+        while (p > data) {                                                           \
+            p--;                                                                     \
+            char z = *data;                                                          \
+            *data = *p;                                                              \
+            *p = z;                                                                  \
+            data++;                                                                  \
+        }                                                                            \
+        return NULL;                                                                 \
+    }
 
 NUM_TO_STR(int32)
 
@@ -107,9 +116,7 @@ __Z_INLINE void bip32_to_str(char *s, uint32_t max, const uint32_t *path, uint8_
     }
 }
 
-__Z_INLINE void bip44_to_str(char *s, uint32_t max, const uint32_t path[5]) {
-    bip32_to_str(s, max, path, 5);
-}
+__Z_INLINE void bip44_to_str(char *s, uint32_t max, const uint32_t path[5]) { bip32_to_str(s, max, path, 5); }
 
 __Z_INLINE int8_t str_to_int8(const char *start, const char *end, char *error) {
     int sign = 1;
@@ -135,7 +142,7 @@ __Z_INLINE int8_t str_to_int8(const char *start, const char *end, char *error) {
 
     value *= sign;
     if (value >= INT8_MIN && value <= INT8_MAX) {
-        return (int8_t) value;
+        return (int8_t)value;
     }
     if (error != NULL) {
         *error = 1;
@@ -248,7 +255,7 @@ __Z_INLINE void number_inplace_trimming(char *s, uint8_t non_trimmed) {
     }
 
     int16_t dec_point = -1;
-    for (int16_t i = 0; i < (int16_t) len && dec_point < 0; i++) {
+    for (int16_t i = 0; i < (int16_t)len && dec_point < 0; i++) {
         if (s[i] == '.') {
             dec_point = i;
         }
@@ -257,7 +264,7 @@ __Z_INLINE void number_inplace_trimming(char *s, uint8_t non_trimmed) {
         return;
     }
 
-    const size_t limit = (size_t) dec_point + non_trimmed;
+    const size_t limit = (size_t)dec_point + non_trimmed;
     for (size_t i = (len - 1); i > limit && s[i] == '0'; i--) {
         s[i] = 0;
     }
@@ -283,9 +290,9 @@ __Z_INLINE uint32_t array_to_hexstr(char *dst, uint16_t dstLen, const uint8_t *s
         *dst++ = hexchars[*src >> 4u];
         *dst++ = hexchars[*src & 0x0Fu];
     }
-    *dst = 0; // terminate string
+    *dst = 0;  // terminate string
 
-    return (uint32_t) (count * 2);
+    return (uint32_t)(count * 2);
 }
 
 __Z_INLINE uint32_t array_to_hexstr_uppercase(char *dst, uint16_t dstLen, const uint8_t *src, uint16_t count) {
@@ -299,18 +306,18 @@ __Z_INLINE uint32_t array_to_hexstr_uppercase(char *dst, uint16_t dstLen, const 
         *dst++ = hexchars[*src >> 4u];
         *dst++ = hexchars[*src & 0x0Fu];
     }
-    *dst = 0; // terminate string
+    *dst = 0;  // terminate string
 
-    return (uint32_t) (count * 2);
+    return (uint32_t)(count * 2);
 }
 
 __Z_INLINE uint32_t hexstr_to_array(uint8_t *dst, uint16_t dstLen, const char *src, const uint16_t srcLen) {
     MEMZERO(dst, dstLen);
-    if (srcLen % 2 != 0 || dstLen < srcLen/2) {
+    if (srcLen % 2 != 0 || dstLen < srcLen / 2) {
         return 0;
     }
 
-    for (size_t i = 0; i < srcLen/2; i++) {
+    for (size_t i = 0; i < srcLen / 2; i++) {
         uint8_t ch0 = src[2 * i];
         uint8_t ch1 = src[2 * i + 1];
         uint8_t nib0 = (ch0 & 0xF) + (ch0 >> 6) | ((ch0 >> 3) & 0x8);
@@ -318,15 +325,15 @@ __Z_INLINE uint32_t hexstr_to_array(uint8_t *dst, uint16_t dstLen, const char *s
         dst[i] = (nib0 << 4) | nib1;
     }
 
-  return srcLen/2;
+    return srcLen / 2;
 }
 
 __Z_INLINE zxerr_t to_uppercase(uint8_t *letter) {
     if (letter == NULL) {
         return zxerr_no_data;
     }
-    //Check if lowercase letter
-    if(*letter >= 0x61  && *letter <= 0x7A) {
+    // Check if lowercase letter
+    if (*letter >= 0x61 && *letter <= 0x7A) {
         *letter = *letter - 0x20;
     }
     return zxerr_ok;
@@ -336,8 +343,8 @@ __Z_INLINE zxerr_t to_lowercase(uint8_t *letter) {
     if (letter == NULL) {
         return zxerr_no_data;
     }
-    //Check if uppercase letter
-    if(*letter >= 0x41  && *letter <= 0x5A) {
+    // Check if uppercase letter
+    if (*letter >= 0x41 && *letter <= 0x5A) {
         *letter = *letter + 0x20;
     }
     return zxerr_ok;
@@ -349,7 +356,7 @@ __Z_INLINE zxerr_t array_to_uppercase(uint8_t *input, uint16_t inputLen) {
     }
 
     for (uint16_t i = 0; i < inputLen; i++) {
-        to_uppercase(input+i);
+        to_uppercase(input + i);
     }
     return zxerr_ok;
 }
@@ -360,13 +367,12 @@ __Z_INLINE zxerr_t array_to_lowercase(uint8_t *input, uint16_t inputLen) {
     }
 
     for (uint16_t i = 0; i < inputLen; i++) {
-        to_uppercase(input+i);
+        to_uppercase(input + i);
     }
     return zxerr_ok;
 }
 
-__Z_INLINE void pageStringExt(char *outValue, uint16_t outValueLen,
-                              const char *inValue, uint16_t inValueLen,
+__Z_INLINE void pageStringExt(char *outValue, uint16_t outValueLen, const char *inValue, uint16_t inValueLen,
                               uint8_t pageIdx, uint8_t *pageCount) {
     MEMZERO(outValue, outValueLen);
     *pageCount = 0;
@@ -380,7 +386,7 @@ __Z_INLINE void pageStringExt(char *outValue, uint16_t outValueLen,
         return;
     }
 
-    *pageCount = (uint8_t) (inValueLen / outValueLen);
+    *pageCount = (uint8_t)(inValueLen / outValueLen);
     const uint16_t lastChunkLen = (inValueLen % outValueLen);
 
     if (lastChunkLen > 0) {
@@ -396,19 +402,17 @@ __Z_INLINE void pageStringExt(char *outValue, uint16_t outValueLen,
     }
 }
 
-__Z_INLINE void pageString(char *outValue, uint16_t outValueLen,
-                           const char *inValue,
-                           uint8_t pageIdx, uint8_t *pageCount) {
-    pageStringExt(outValue, outValueLen, inValue, (uint16_t) strlen(inValue), pageIdx, pageCount);
+__Z_INLINE void pageString(char *outValue, uint16_t outValueLen, const char *inValue, uint8_t pageIdx,
+                           uint8_t *pageCount) {
+    pageStringExt(outValue, outValueLen, inValue, (uint16_t)strlen(inValue), pageIdx, pageCount);
 }
 
-__Z_INLINE void pageStringHex(char *outValue, uint16_t outValueLen,
-                              const char *inValue, uint16_t inValueLen,
+__Z_INLINE void pageStringHex(char *outValue, uint16_t outValueLen, const char *inValue, uint16_t inValueLen,
                               uint8_t pageIdx, uint8_t *pageCount) {
     MEMZERO(outValue, outValueLen);
     *pageCount = 0;
 
-    //array_to_hexstr adds a null terminator
+    // array_to_hexstr adds a null terminator
     if (outValueLen < 2) {
         return;
     }
@@ -418,7 +422,7 @@ __Z_INLINE void pageStringHex(char *outValue, uint16_t outValueLen,
     }
     // leaving space for null terminator
     const uint16_t bytesPerPage = (outValueLen - 1) / 2;
-    *pageCount = (uint8_t) (inValueLen / bytesPerPage);
+    *pageCount = (uint8_t)(inValueLen / bytesPerPage);
     const uint16_t lastChunkLen = inValueLen % bytesPerPage;
 
     if (lastChunkLen > 0) {
@@ -427,24 +431,15 @@ __Z_INLINE void pageStringHex(char *outValue, uint16_t outValueLen,
 
     if (pageIdx < *pageCount) {
         if (lastChunkLen > 0 && pageIdx == *pageCount - 1) {
-            array_to_hexstr(outValue, outValueLen,
-                            (const uint8_t *)inValue + pageIdx * bytesPerPage,
-                            lastChunkLen);
+            array_to_hexstr(outValue, outValueLen, (const uint8_t *)inValue + pageIdx * bytesPerPage, lastChunkLen);
         } else {
-            array_to_hexstr(outValue, outValueLen,
-                            (const uint8_t *)inValue + pageIdx * bytesPerPage,
-                            bytesPerPage);
+            array_to_hexstr(outValue, outValueLen, (const uint8_t *)inValue + pageIdx * bytesPerPage, bytesPerPage);
         }
     }
 }
 
-__Z_INLINE zxerr_t formatBufferData(
-        const uint8_t *ptr,
-        uint64_t len,
-        char *outValue,
-        uint16_t outValueLen,
-        uint8_t pageIdx,
-        uint8_t *pageCount) {
+__Z_INLINE zxerr_t formatBufferData(const uint8_t *ptr, uint64_t len, char *outValue, uint16_t outValueLen,
+                                    uint8_t pageIdx, uint8_t *pageCount) {
     char bufferUI[500 + 1];
     MEMZERO(bufferUI, sizeof(bufferUI));
     MEMZERO(outValue, 0);
