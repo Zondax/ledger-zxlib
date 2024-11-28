@@ -168,10 +168,8 @@ void view_custom_error_show(const char *upper, const char *lower) {
 }
 
 void view_blindsign_error_show() {
-    nbgl_useCaseChoice(&C_Warning_64px,
-                       "This message cannot\nbe clear-signed",
-                       "Enable blind-signing in\nthe settings to sign\nthis transaction.",
-                       "Exit", "", confirm_error);
+    nbgl_useCaseChoice(&C_Warning_64px, "This message cannot\nbe clear-signed",
+                       "Enable blind-signing in\nthe settings to sign\nthis transaction.", "Exit", "", confirm_error);
 }
 
 void view_error_show_impl() {
@@ -306,7 +304,7 @@ static void settings_screen_callback(uint8_t index, nbgl_content_t *content) {
         switches[ACCOUNT_MODE].subText = "";
         switches[ACCOUNT_MODE].tuneId = TUNE_TAP_CASUAL;
         switches[ACCOUNT_MODE].token = ACCOUNT_MODE_TOKEN;
-            }
+    }
 #endif
 
 #ifdef APP_SECRET_MODE_ENABLED
@@ -347,7 +345,8 @@ void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, const char *statusString) 
     infoList.infoContents = INFO_VALUES_PAGE;
     infoList.infoTypes = INFO_KEYS_PAGE;
 
-    nbgl_useCaseHomeAndSettings(MENU_MAIN_APP_LINE1, &C_icon_stax_64, home_text, INIT_HOME_PAGE, &settingContents, &infoList, NULL, app_quit);
+    nbgl_useCaseHomeAndSettings(MENU_MAIN_APP_LINE1, &C_icon_stax_64, home_text, INIT_HOME_PAGE, &settingContents,
+                                &infoList, NULL, app_quit);
 }
 
 void view_message_impl(const char *title, const char *message) {
@@ -441,14 +440,15 @@ static void config_useCaseReview(nbgl_operationType_t type) {
     pairList.pairs = NULL;  // to indicate that callback should be used
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
-    if (app_mode_blindsign()) {
-        nbgl_useCaseReviewBlindSigning(type, &pairList, &C_icon_stax_64, (intro_message == NULL ? "Review transaction" : intro_message), NULL,
-                       "Accept risk and sign transaction ?", NULL, reviewTransactionChoice);
+    if (app_mode_blindsign_required()) {
+        nbgl_useCaseReviewBlindSigning(type, &pairList, &C_icon_stax_64,
+                                       (intro_message == NULL ? "Review transaction" : intro_message), NULL,
+                                       "Accept risk and sign transaction ?", NULL, reviewTransactionChoice);
     } else {
-        nbgl_useCaseReview(type, &pairList, &C_icon_stax_64, (intro_message == NULL ? "Review transaction" : intro_message),
-                       NULL, APPROVE_LABEL_NBGL, reviewTransactionChoice);
+        nbgl_useCaseReview(type, &pairList, &C_icon_stax_64,
+                           (intro_message == NULL ? "Review transaction" : intro_message), NULL, APPROVE_LABEL_NBGL,
+                           reviewTransactionChoice);
     }
-    
 }
 
 static void config_useCaseReviewLight(const char *title, const char *validate) {

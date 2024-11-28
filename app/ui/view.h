@@ -113,8 +113,7 @@ void view_custom_error_show(const char *upper, const char *lower);
 
 void view_blindsign_error_show();
 
-void view_review_init(viewfunc_getItem_t viewfuncGetItem,
-                      viewfunc_getNumItems_t viewfuncGetNumItems,
+void view_review_init(viewfunc_getItem_t viewfuncGetItem, viewfunc_getNumItems_t viewfuncGetNumItems,
                       viewfunc_accept_t viewfuncAccept);
 
 void view_inspect_init(viewfunc_getInnerItem_t view_funcGetInnerItem, viewfunc_getNumItems_t view_funcGetInnerNumItems,

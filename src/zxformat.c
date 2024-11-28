@@ -1,36 +1,36 @@
 /*******************************************************************************
-*   (c) 2020 Zondax GmbH
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   (c) 2018 - 2024 Zondax AG
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 #include "zxformat.h"
+
 #include <string.h>
 #include <zxerror.h>
+
 #include "utf8.h"
 
-size_t asciify(char *utf8_in_ascii_out) {
-    return asciify_ext(utf8_in_ascii_out, utf8_in_ascii_out);
-}
+size_t asciify(char *utf8_in_ascii_out) { return asciify_ext(utf8_in_ascii_out, utf8_in_ascii_out); }
 
 size_t asciify_ext(const char *utf8_in, char *ascii_only_out) {
-    void *p = (void *) utf8_in;
+    void *p = (void *)utf8_in;
     char *q = ascii_only_out;
 
     // utf8valid returns zero on success
-    while (*((char *) p) && utf8valid(p) == 0) {
+    while (*((char *)p) && utf8valid(p) == 0) {
         utf8_int32_t tmp_codepoint = 0;
         p = utf8codepoint(p, &tmp_codepoint);
-        *q = (char) ((tmp_codepoint >= 32 && tmp_codepoint <= (int32_t) 0x7F) ? tmp_codepoint : '.');
+        *q = (char)((tmp_codepoint >= 32 && tmp_codepoint <= (int32_t)0x7F) ? tmp_codepoint : '.');
         q++;
     }
 
@@ -88,11 +88,11 @@ uint8_t intstr_to_fpstr_inplace(char *number, size_t number_max_size, uint8_t de
 
     // Now insert decimal point
 
-//        0123456789012     <-decimal places
-//        abcd              < numChars = 4
-//                 abcd     < shift
-//        000000000abcd     < fill
-//        0.00000000abcd    < add decimal point
+    //        0123456789012     <-decimal places
+    //        abcd              < numChars = 4
+    //                 abcd     < shift
+    //        000000000abcd     < fill
+    //        0.00000000abcd    < add decimal point
     const uint16_t tmpDecimalPlaces = decimalPlaces;
     if (numChars < tmpDecimalPlaces + 1) {
         // Move to end
@@ -112,11 +112,11 @@ uint8_t intstr_to_fpstr_inplace(char *number, size_t number_max_size, uint8_t de
 
     numChars = strnlen(number, number_max_size);
 
-   if (numChars > UINT8_MAX) {
-       // Overflow
-       return 0;
-   }
-    return (uint8_t) numChars;
+    if (numChars > UINT8_MAX) {
+        // Overflow
+        return 0;
+    }
+    return (uint8_t)numChars;
 }
 
 zxerr_t insertDecimalPoint(char *output, uint16_t outputLen, uint16_t decimalPlaces) {

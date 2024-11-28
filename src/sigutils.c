@@ -1,18 +1,18 @@
 /*******************************************************************************
-*   (c) 2020 Zondax GmbH
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   (c) 2018 - 2024 Zondax AG
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 
 #include <sigutils.h>
 #include <zxmacros.h>
@@ -21,12 +21,8 @@
 #define PAYLOADLEN 32
 #define MAXPAYLOADLEN 33
 
-err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER,
-                              unsigned int inInfo,
-                              uint8_t *outR,
-                              uint8_t *outS,
+err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER, unsigned int inInfo, uint8_t *outR, uint8_t *outS,
                               uint8_t *outV) {
-
     // https://github.com/libbitcoin/libbitcoin-system/wiki/ECDSA-and-DER-Signatures#serialised-der-signature-sequence
     // 0                [1 byte]   - DER Prefix
     // 1                [1 byte]   - Payload len
@@ -86,7 +82,7 @@ err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER,
         outR += PAYLOADLEN - rLen;
     }
     if (rLen > PAYLOADLEN) {
-        rPtr += rLen - PAYLOADLEN;       // move forward get only 32 bytes
+        rPtr += rLen - PAYLOADLEN;  // move forward get only 32 bytes
         rLen = PAYLOADLEN;
     }
 
@@ -94,7 +90,7 @@ err_convert_e convertDERtoRSV(const uint8_t *inSignatureDER,
         outS += PAYLOADLEN - sLen;
     }
     if (sLen > PAYLOADLEN) {
-        sPtr += sLen - PAYLOADLEN;       // move forward get only 32 bytes
+        sPtr += sLen - PAYLOADLEN;  // move forward get only 32 bytes
         sLen = PAYLOADLEN;
     }
 

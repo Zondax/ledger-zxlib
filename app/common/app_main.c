@@ -1,43 +1,42 @@
 /*******************************************************************************
-*   (c) 2018 - 2023 Zondax AG
-*   (c) 2016 Ledger
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   (c) 2018 - 2024 Zondax AG
+ *   (c) 2016 Ledger
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 
 #include "app_main.h"
 
-#include <string.h>
-#include <os_io_seproxyhal.h>
 #include <os.h>
+#include <os_io_seproxyhal.h>
+#include <string.h>
 #include <ux.h>
 
-#include "view.h"
 #include "actions.h"
-#include "tx.h"
-#include "coin.h"
-#include "zxmacros.h"
-#include "zxcanary.h"
 #include "app_mode.h"
+#include "coin.h"
+#include "tx.h"
+#include "view.h"
+#include "zxcanary.h"
+#include "zxmacros.h"
 #ifdef HAVE_SWAP
 #include "swap.h"
-#endif // HAVE_SWAP
+#endif  // HAVE_SWAP
 
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
 unsigned char io_event(__Z_UNUSED unsigned char channel) {
     switch (G_io_seproxyhal_spi_buffer[0]) {
-
         case SEPROXYHAL_TAG_BUTTON_PUSH_EVENT:  // for Nano
 #ifdef HAVE_BAGL
             UX_BUTTON_PUSH_EVENT(G_io_seproxyhal_spi_buffer);
@@ -51,7 +50,7 @@ unsigned char io_event(__Z_UNUSED unsigned char channel) {
                 THROW(EXCEPTION_IO_RESET);
             }
 
-        __attribute__((fallthrough));
+            __attribute__((fallthrough));
         case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
 #ifdef HAVE_BAGL
             UX_DISPLAYED_EVENT({});
@@ -78,7 +77,7 @@ unsigned char io_event(__Z_UNUSED unsigned char channel) {
     if (!io_seproxyhal_spi_is_status_sent()) {
         io_seproxyhal_general_status();
     }
-    return 1; // DO NOT reset the current APDU transport
+    return 1;  // DO NOT reset the current APDU transport
 }
 
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
@@ -94,7 +93,7 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
                 if (channel & IO_RESET_AFTER_REPLIED) {
                     reset();
                 }
-                return 0; // nothing received from the master so far (it's a tx
+                return 0;  // nothing received from the master so far (it's a tx
                 // transaction)
             } else {
                 return io_seproxyhal_spi_recv(G_io_apdu_buffer, sizeof(G_io_apdu_buffer), 0);
@@ -138,7 +137,7 @@ void app_init() {
 #ifdef HAVE_BLE
     // grab the current plane mode setting
     G_io_app.plane_mode = os_setting_get(OS_SETTING_PLANEMODE, NULL, 0);
-#endif // HAVE_BLE
+#endif  // HAVE_BLE
 
     USB_power(0);
     USB_power(1);
@@ -150,19 +149,18 @@ void app_init() {
         view_idle_show(0, NULL);
     }
 #else
-    #ifdef SUPPORT_SR25519
+#ifdef SUPPORT_SR25519
     zeroize_sr25519_signdata();
-    #endif
+#endif
     view_idle_show(0, NULL);
-#endif // HAVE_SWAP
-#endif // POSTPONE_MAIN_SCREEN_INIT
+#endif  // HAVE_SWAP
+#endif  // POSTPONE_MAIN_SCREEN_INIT
 
 #ifdef HAVE_BLE
     // Enable Bluetooth
     BLE_power(0, NULL);
     BLE_power(1, NULL);
-#endif // HAVE_BLE
-
+#endif  // HAVE_BLE
 }
 
 void app_main() {
@@ -185,8 +183,7 @@ void app_main() {
                 flags = 0;
                 CHECK_APP_CANARY()
 
-                if (rx == 0)
-                    THROW(APDU_CODE_EMPTY_BUFFER);
+                if (rx == 0) THROW(APDU_CODE_EMPTY_BUFFER);
 
                 handle_generic_apdu(&flags, &tx, rx);
                 CHECK_APP_CANARY()
@@ -194,8 +191,7 @@ void app_main() {
                 handleApdu(&flags, &tx, rx);
                 CHECK_APP_CANARY()
             }
-            CATCH(EXCEPTION_IO_RESET)
-            {
+            CATCH(EXCEPTION_IO_RESET) {
                 // reset IO and UX before continuing
                 app_init();
                 continue;
@@ -216,8 +212,7 @@ void app_main() {
                 tx += 2;
             }
             FINALLY;
-            {
-            }
+            {}
         }
         END_TRY;
     }

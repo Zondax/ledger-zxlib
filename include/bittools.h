@@ -25,12 +25,7 @@
 extern "C" {
 #endif
 
-int convert_bits(uint8_t *out,
-                 size_t *outlen,
-                 int outBits,
-                 const uint8_t *in,
-                 size_t inLen,
-                 int inBits, int pad);
+int convert_bits(uint8_t *out, size_t *outlen, int outBits, const uint8_t *in, size_t inLen, int inBits, int pad);
 
 #ifdef __cplusplus
 }

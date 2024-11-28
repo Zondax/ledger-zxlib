@@ -18,20 +18,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-
 #include "segwit_addr.h"
+
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 uint32_t bech32_polymod_step(uint32_t pre) {
     uint8_t b = pre >> 25u;
-    return ((pre & 0x1FFFFFFu) << 5u) ^
-           (-((b >> 0u) & 1u) & 0x3b6a57b2UL) ^
-           (-((b >> 1u) & 1u) & 0x26508e6dUL) ^
-           (-((b >> 2u) & 1u) & 0x1ea119faUL) ^
-           (-((b >> 3u) & 1u) & 0x3d4233ddUL) ^
-           (-((b >> 4u) & 1u) & 0x2a1462b3UL);
+    return ((pre & 0x1FFFFFFu) << 5u) ^ (-((b >> 0u) & 1u) & 0x3b6a57b2UL) ^ (-((b >> 1u) & 1u) & 0x26508e6dUL) ^
+           (-((b >> 2u) & 1u) & 0x1ea119faUL) ^ (-((b >> 3u) & 1u) & 0x3d4233ddUL) ^ (-((b >> 4u) & 1u) & 0x2a1462b3UL);
 }
 
 static uint32_t bech32_final_constant(bech32_encoding enc) {
@@ -40,18 +36,14 @@ static uint32_t bech32_final_constant(bech32_encoding enc) {
     return 0;
 }
 
-static const char* charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
+static const char *charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
 
 static const int8_t charset_rev[128] = {
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        15, -1, 10, 17, 21, 20, 26, 30,  7,  5, -1, -1, -1, -1, -1, -1,
-        -1, 29, -1, 24, 13, 25,  9,  8, 23, -1, 18, 22, 31, 27, 19, -1,
-        1,  0,  3, 16, 11, 28, 12, 14,  6,  4,  2, -1, -1, -1, -1, -1,
-        -1, 29, -1, 24, 13, 25,  9,  8, 23, -1, 18, 22, 31, 27, 19, -1,
-        1,  0,  3, 16, 11, 28, 12, 14,  6,  4,  2, -1, -1, -1, -1, -1
-};
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15, -1, 10, 17,
+    21, 20, 26, 30, 7,  5,  -1, -1, -1, -1, -1, -1, -1, 29, -1, 24, 13, 25, 9,  8,  23, -1, 18, 22, 31, 27,
+    19, -1, 1,  0,  3,  16, 11, 28, 12, 14, 6,  4,  2,  -1, -1, -1, -1, -1, -1, 29, -1, 24, 13, 25, 9,  8,
+    23, -1, 18, 22, 31, 27, 19, -1, 1,  0,  3,  16, 11, 28, 12, 14, 6,  4,  2,  -1, -1, -1, -1, -1};
 
 int bech32_encode(char *output, const char *hrp, const uint8_t *data, size_t data_len, bech32_encoding enc) {
     uint32_t chk = 1;
@@ -89,7 +81,7 @@ int bech32_encode(char *output, const char *hrp, const uint8_t *data, size_t dat
     return 1;
 }
 
-bech32_encoding bech32_decode(char* hrp, uint8_t *data, size_t *data_len, const char *input) {
+bech32_encoding bech32_decode(char *hrp, uint8_t *data, size_t *data_len, const char *input) {
     uint32_t chk = 1;
     size_t i;
     size_t input_len = strlen(input);
@@ -152,7 +144,7 @@ bech32_encoding bech32_decode(char* hrp, uint8_t *data, size_t *data_len, const 
     }
 }
 
-int convert_bits(uint8_t* out, size_t* outlen, int outBits, const uint8_t* in, size_t inLen, int inBits, int pad) {
+int convert_bits(uint8_t *out, size_t *outlen, int outBits, const uint8_t *in, size_t inLen, int inBits, int pad) {
     uint32_t val = 0;
     int bits = 0;
     uint32_t maxv = (((uint32_t)1u) << outBits) - 1u;
@@ -188,7 +180,7 @@ int segwit_addr_encode(char *output, const char *hrp, int witver, const uint8_t 
     return bech32_encode(output, hrp, data, datalen, enc);
 }
 
-int segwit_addr_decode(int* witver, uint8_t* witdata, size_t* witdata_len, const char* hrp, const char* addr) {
+int segwit_addr_decode(int *witver, uint8_t *witdata, size_t *witdata_len, const char *hrp, const char *addr) {
     uint8_t data[84];
     char hrp_actual[84];
     size_t data_len;

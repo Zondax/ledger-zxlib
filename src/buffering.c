@@ -1,33 +1,31 @@
 /*******************************************************************************
-*   (c) 2018 Zondax GmbH
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   (c) 2018 - 2024 Zondax AG
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 
 #include "buffering.h"
+
 #include <zxmacros.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-buffer_state_t ram;         // Ram
-buffer_state_t flash;       // Flash
+buffer_state_t ram;    // Ram
+buffer_state_t flash;  // Flash
 
-void buffering_init(uint8_t *ram_buffer,
-                    size_t ram_buffer_size,
-                    uint8_t *flash_buffer,
-                    size_t flash_buffer_size) {
+void buffering_init(uint8_t *ram_buffer, size_t ram_buffer_size, uint8_t *flash_buffer, size_t flash_buffer_size) {
     ram.data = ram_buffer;
     ram.size = ram_buffer_size;
     ram.pos = 0;
@@ -75,13 +73,9 @@ int buffering_append(uint8_t *data, size_t length) {
     return length;
 }
 
-buffer_state_t *buffering_get_ram_buffer() {
-    return &ram;
-}
+buffer_state_t *buffering_get_ram_buffer() { return &ram; }
 
-buffer_state_t *buffering_get_flash_buffer() {
-    return &flash;
-}
+buffer_state_t *buffering_get_flash_buffer() { return &flash; }
 
 buffer_state_t *buffering_get_buffer() {
     if (ram.in_use) {

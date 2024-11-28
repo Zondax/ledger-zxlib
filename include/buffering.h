@@ -1,19 +1,19 @@
 /*******************************************************************************
-*   (c) 2016 Ledger
-*   (c) 2018 Zondax GmbH
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   (c) 2016 Ledger
+ *   (c) 2018 - 2024 Zondax AG
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 
 #pragma once
 
@@ -28,7 +28,7 @@ typedef struct {
     uint8_t *data;
     size_t size;
     size_t pos;
-    uint8_t in_use: 1;
+    uint8_t in_use : 1;
 } buffer_state_t;
 
 /// Initialize buffer
@@ -36,10 +36,7 @@ typedef struct {
 /// \param ram_buffer_size
 /// \param flash_buffer
 /// \param flash_buffer_size
-void buffering_init(uint8_t *ram_buffer,
-                    size_t ram_buffer_size,
-                    uint8_t *flash_buffer,
-                    size_t flash_buffer_size);
+void buffering_init(uint8_t *ram_buffer, size_t ram_buffer_size, uint8_t *flash_buffer, size_t flash_buffer_size);
 
 /// Reset buffer
 void buffering_reset();
