@@ -1,22 +1,22 @@
 /*******************************************************************************
-*   (c) 2018 - 2022 Zondax AG
-*   (c) 2016 Ledger
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   (c) 2018 - 2022 Zondax AG
+ *   (c) 2016 Ledger
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 
-#include "view_internal.h"
 #include "actions.h"
+#include "view_internal.h"
 #include "zxmacros.h"
 
 view_t viewdata;
@@ -43,25 +43,18 @@ void view_init(void) {
 #endif
 }
 
-void view_idle_show(uint8_t item_idx, const char *statusString) {
-    view_idle_show_impl(item_idx, statusString);
-}
+void view_idle_show(uint8_t item_idx, const char *statusString) { view_idle_show_impl(item_idx, statusString); }
 
-void view_message_show(const char *title, const char *message) {
-    view_message_impl(title, message);
-}
+void view_message_show(const char *title, const char *message) { view_message_impl(title, message); }
 
-void view_review_init(viewfunc_getItem_t viewfuncGetItem,
-                      viewfunc_getNumItems_t viewfuncGetNumItems,
+void view_review_init(viewfunc_getItem_t viewfuncGetItem, viewfunc_getNumItems_t viewfuncGetNumItems,
                       viewfunc_accept_t viewfuncAccept) {
     viewdata.viewfuncGetItem = viewfuncGetItem;
     viewdata.viewfuncGetNumItems = viewfuncGetNumItems;
     viewdata.viewfuncAccept = viewfuncAccept;
 }
 
-void view_initialize_init(viewfunc_initialize_t viewFuncInit) {
-    viewdata.viewfuncInitialize = viewFuncInit;
-}
+void view_initialize_init(viewfunc_initialize_t viewFuncInit) { viewdata.viewfuncInitialize = viewFuncInit; }
 
 void view_review_show(review_type_e reviewKind) {
     // Set > 0 to reply apdu message
