@@ -1,26 +1,28 @@
 /*******************************************************************************
-*   (c) 2018 - 2023 Zondax AG
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   (c) 2018 - 2023 Zondax AG
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 #include "zxcanary.h"
-#include <stdint.h>
+
 #include <stdbool.h>
+#include <stdint.h>
+
 #include "zxmacros.h"
 
 // This symbol is defined by the link script to be at the start of the stack area.
 extern unsigned int app_stack_canary;
-#define ZONDAX_CANARY (*((volatile uint32_t*) (((uint8_t*) &app_stack_canary) + sizeof(uint32_t))))
+#define ZONDAX_CANARY (*((volatile uint32_t *)(((uint8_t *)&app_stack_canary) + sizeof(uint32_t))))
 
 #if defined(HAVE_ZONDAX_CANARY)
 #include "errors.h"
@@ -39,7 +41,7 @@ void init_zondax_canary() {
         handle_stack_overflow();
     }
 
-    for(uint8_t i = 0; i < sizeof(uint32_t); i++) {
+    for (uint8_t i = 0; i < sizeof(uint32_t); i++) {
         ZEMU_LOGF(50, "BYTE %d is: %x\n", i, randomNum[i])
         dynamicCanary += randomNum[i] << (8 * i);
     }
