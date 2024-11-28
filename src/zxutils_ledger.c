@@ -1,5 +1,5 @@
 //#*******************************************************************************
-//#*   (c) 2021 Zondax GmbH
+//#*   (c) 2018 - 2024 Zondax AG
 //#*   (c) 2020 Ledger SAS
 //#*
 //#*  Licensed under the Apache License, Version 2.0 (the "License");

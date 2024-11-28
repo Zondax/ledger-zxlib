@@ -1,5 +1,5 @@
 /*******************************************************************************
- *   (c) 2018 - 2022 Zondax GmbH
+ *   (c) 2018 - 2024 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ uint8_t getIntroPages() {
     }
 #endif
 #ifdef APP_BLINDSIGN_MODE_ENABLED
-    if (!app_mode_blindsign()) {
+    if (!app_mode_blindsign_required() || review_type == REVIEW_ADDRESS) {
         return 0;
     }
 #endif
@@ -183,7 +183,7 @@ zxerr_t h_review_update_data() {
             snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Ok");
         } else {
 #if defined(APP_BLINDSIGN_MODE_ENABLED)
-            if (app_mode_blindsign()) {
+            if (app_mode_blindsign_required() && review_type == REVIEW_TXN) {
                 snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s  %s", APPROVE_LABEL_1, APPROVE_LABEL_2);
             } else {
                 snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", APPROVE_LABEL);
@@ -248,7 +248,7 @@ zxerr_t h_review_update_data() {
         intro_key = PIC(shortcut_key);
         intro_value = PIC(shortcut_value);
 #elif defined(APP_BLINDSIGN_MODE_ENABLED)
-        if (app_mode_blindsign()) {
+        if (app_mode_blindsign_required() && review_type == REVIEW_TXN) {
             switch (viewdata.itemIdx) {
                 case 0:
                     intro_key = PIC(review_skip_key);
