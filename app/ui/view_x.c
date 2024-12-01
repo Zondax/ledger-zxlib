@@ -361,7 +361,7 @@ void h_review_loop_end() {
                 if (viewdata.with_confirmation &&
                     (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
                     viewdata.pageIdx == viewdata.pageCount - 1               &&
-                    viewdata.itemIdx > getIntroPages()                       &&
+                    viewdata.itemIdx > getIntroPages() + 1                   &&
                     viewdata.itemIdx < viewdata.itemCount - 1) {
 
                     // Show skip screen and enable button handler
