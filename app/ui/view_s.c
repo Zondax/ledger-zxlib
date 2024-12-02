@@ -211,11 +211,11 @@ bool should_show_skip_menu_right() {
     return viewdata.with_confirmation &&
         (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
         // To enable left arrow rendering
-        viewdata.pageIdx > 0                      &&
-        // Not in reject screen
+        viewdata.pageIdx > 0                       &&
         viewdata.pageIdx == viewdata.pageCount - 1 &&
         // Not in approve screen
-        viewdata.itemIdx != viewdata.itemCount - 2 &&
+        // Not in reject screen
+        !is_accept_item()                          &&
         !is_reject_item();
 }
 
@@ -225,9 +225,10 @@ bool should_show_skip_menu_left() {
         (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
         viewdata.itemIdx > 0 &&                     // Not the first item
         viewdata.pageIdx == 0 &&                    // Reached first page of current item
-        !is_reject_item() &&
+        // Not in approve screen
+        // Not in reject screen
         !is_accept_item() &&
-        viewdata.itemIdx < viewdata.itemCount - 2;  // Not in final screens
+        !is_reject_item();
 }
 
 static unsigned int view_review_button(unsigned int button_mask, unsigned int button_mask_counter) {
@@ -245,8 +246,7 @@ static unsigned int view_review_button(unsigned int button_mask, unsigned int bu
                 is_in_skip_menu = true;
                 UX_DISPLAY(view_skip, view_prepro);
             } else {
-                h_paging_decrease();
-                h_review_update();
+                h_review_button_left();
             }
             break;
 
