@@ -361,7 +361,13 @@ void h_review_loop_end() {
                 if (viewdata.with_confirmation &&
                     (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
                     viewdata.pageIdx == viewdata.pageCount - 1               &&
-                    viewdata.itemIdx > getIntroPages() + 1                   &&
+                    // Ensure that at least the first item is displayed.
+                    // The UI design may vary between applications. For example, item 0 might
+                    // serve as a title for the transaction type rather than a regular item.
+                    // In this implementation, we check if there is more than one item (>1).
+                    // If so, we treat item 0 as a title and display the skip menu after it.
+                    // This approach allows for flexible UI designs while maintaining essential functionality.
+                    viewdata.itemIdx > 1                                     &&
                     viewdata.itemIdx < viewdata.itemCount - 1) {
 
                     // Show skip screen and enable button handler
