@@ -39,6 +39,10 @@
 #include <stdio.h>
 #include <string.h>
 
+bool custom_callback_active = false;
+// Add global variable to store original callback at the top with other globals
+unsigned int (*original_button_callback)(unsigned int button_mask, unsigned int button_mask_counter) = NULL;
+
 void account_enabled();
 void shortcut_enabled();
 
@@ -47,6 +51,9 @@ static void h_expert_update();
 static void h_review_loop_start();
 static void h_review_loop_inside();
 static void h_review_loop_end();
+static unsigned int handle_button_push(unsigned int button_mask, unsigned int button_mask_counter);
+static void set_button_callback(unsigned int slot);
+static void reset_button_callback(unsigned int slot) ;
 
 #ifdef APP_SECRET_MODE_ENABLED
 static void h_secret_click();
@@ -93,6 +100,19 @@ UX_STEP_NOCB(ux_idle_flow_3_step, bn,
                  APPVERSION_LINE1,
                  APPVERSION_LINE2,
              });
+
+UX_STEP_NOCB_INIT(
+    ux_review_skip_step,
+    nn,
+    {
+        // This will execute during initialization without requiring validation
+        custom_callback_active = true;
+        set_button_callback(stack_slot);
+    },
+    {
+      "Press right to read",
+      "Double-press to skip"
+    });
 
 #ifdef APP_SECRET_MODE_ENABLED
 UX_STEP_CB(ux_idle_flow_4_step, bn, h_secret_click(),
@@ -337,7 +357,35 @@ void h_review_loop_end() {
         switch (err) {
             case zxerr_ok:
                 ux_layout_bnnn_paging_reset();
+                // If we're at the end of current item and there's more to show
+                if (viewdata.with_confirmation &&
+                    (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
+                    viewdata.pageIdx == viewdata.pageCount - 1               &&
+                    // Ensure that at least the first item is displayed.
+                    // The UI design may vary between applications. For example, item 0 might
+                    // serve as a title for the transaction type rather than a regular item.
+                    // In this implementation, we check if there is more than one item (>1).
+                    // If so, we treat item 0 as a title and display the skip menu after it.
+                    // This approach allows for flexible UI designs while maintaining essential functionality.
+                    viewdata.itemIdx > 1                                     &&
+                    viewdata.itemIdx < viewdata.itemCount - 1) {
+
+                    // Show skip screen and enable button handler
+                    uint8_t index = 0;
+
+                    ux_review_flow[index++] = &ux_review_skip_step;
+                    ux_review_flow[index++] = FLOW_END_STEP;
+
+
+                    unsigned int current_slot = G_ux.stack_count - 1;
+                    ux_flow_init(current_slot, ux_review_flow, NULL);
+                    // set the callback after flow initialization, otherwise
+                    // it would be overwritten
+                    set_button_callback(current_slot);
+                    return;
+                }
                 break;
+
             case zxerr_no_data: {
                 flow_inside_loop = 0;
                 ux_flow_next();
@@ -546,6 +594,7 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t *const st
     ux_review_flow[index++] = &ux_review_flow_2_start_step;
     ux_review_flow[index++] = &ux_review_flow_2_step;
     ux_review_flow[index++] = &ux_review_flow_2_end_step;
+
     if (reviewType == REVIEW_MSG) {
         ux_review_flow[index++] = &ux_review_flow_6_step;
     } else {
@@ -592,4 +641,53 @@ void view_custom_error_show_impl() {
 }
 
 void view_blindsign_error_show_impl() { ux_flow_init(0, ux_warning_blind_sign_flow, NULL); }
+
+static unsigned int handle_button_push(unsigned int button_mask, unsigned int button_mask_counter) {
+    UNUSED(button_mask_counter);
+
+    if (!custom_callback_active) {
+        if (original_button_callback != NULL) {
+            // Just pass through to original callback
+            return original_button_callback(button_mask, button_mask_counter);
+        }
+        return 0;
+    }
+
+    // This is meant to handle the button interactions
+    // over the skip_step screen
+    switch (button_mask) {
+        // Handle skip to approve
+        case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
+            if (review_type == REVIEW_MSG) {
+                run_ux_review_flow((review_type_e)review_type, &ux_review_flow_6_step);
+            } else {
+                run_ux_review_flow((review_type_e)review_type, &ux_review_flow_3_step);
+            }
+            return 1;
+
+        // Handle continue review
+        case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
+            viewdata.itemIdx++;
+            run_ux_review_flow((review_type_e)review_type, &ux_review_flow_2_start_step);
+            return 1;
+
+        case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+            // h_paging_init();
+            run_ux_review_flow((review_type_e)review_type, &ux_review_flow_2_start_step);
+            return 1;
+    }
+    return 0;
+}
+
+static void set_button_callback(unsigned int slot) {
+    // Store default callback to restablish later
+    original_button_callback = G_ux.stack[slot].button_push_callback;
+    G_ux.stack[slot].button_push_callback = handle_button_push;
+}
+
+static void reset_button_callback(unsigned int slot) {
+    G_ux.stack[slot].button_push_callback = original_button_callback;
+    if (custom_callback_active)
+        custom_callback_active = false;
+}
 #endif

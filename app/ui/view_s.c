@@ -48,6 +48,9 @@ static void h_review_button_both();
 bool is_accept_item();
 void set_accept_item();
 bool is_reject_item();
+bool should_show_skip_menu_right();
+bool should_show_skip_menu_left();
+
 
 #ifdef APP_SECRET_MODE_ENABLED
 static void h_secret_click();
@@ -67,6 +70,9 @@ static void h_shortcut_update();
 static void h_blindsign_toggle();
 static void h_blindsign_update();
 #endif
+
+// Keep track of whether we're in skip menu view
+static bool is_in_skip_menu = false;
 
 enum MAINMENU_SCREENS {
     SCREEN_HOME = 0,
@@ -90,6 +96,17 @@ void os_exit(uint32_t id) {
     (void)id;
     os_sched_exit(0);
 }
+static unsigned int view_skip_button(unsigned int button_mask, unsigned int button_mask_counter);
+const bagl_element_t *view_prepro(const bagl_element_t *element);
+
+// Add new view state for skip screen
+static const bagl_element_t view_skip[] = {
+    UI_BACKGROUND_LEFT_RIGHT_ICONS,
+    UI_LabelLine(UIID_LABEL + 0, 0, 8, UI_SCREEN_WIDTH, UI_11PX, UI_WHITE, UI_BLACK,
+                 "Press right to read"),
+    UI_LabelLine(UIID_LABEL + 1, 0, 19, UI_SCREEN_WIDTH, UI_11PX, UI_WHITE, UI_BLACK,
+                 "Double-press to skip"),
+};
 
 const ux_menu_entry_t menu_main[] = {
     {NULL, NULL, 0, &C_icon_app, MENU_MAIN_APP_LINE1, viewdata.key, 33, 12},
@@ -187,19 +204,68 @@ static unsigned int view_message_button(unsigned int button_mask, __Z_UNUSED uns
     return 0;
 }
 
-static unsigned int view_review_button(unsigned int button_mask, __Z_UNUSED unsigned int button_mask_counter) {
+// Helper to check if we've completed reviewing an item
+bool should_show_skip_menu_right() {
+    // When going forwards: we're at last page of current item
+    // When going backwards: we're at first page of current item
+    return viewdata.with_confirmation &&
+        (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
+        // To enable left arrow rendering
+        viewdata.pageIdx > 0                       &&
+        // only if all item's pages has been rendered
+        viewdata.pageIdx == viewdata.pageCount - 1 &&
+        // Not in approve screen
+        // Not in reject screen
+        !is_accept_item()                          &&
+        !is_reject_item()                          &&
+        // if we are not in the skip menu already
+        !is_in_skip_menu;
+}
+
+// Helper to check if we should show skip menu
+bool should_show_skip_menu_left() {
+    return viewdata.with_confirmation &&
+        (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
+        viewdata.itemIdx > 0 &&                     // Not the first item
+        // if all pages have been rendered
+        // Reached first page of current item
+        viewdata.pageIdx == 0 &&
+        // Not in approve screen
+        // Not in reject screen
+        !is_accept_item()                                        &&
+        !is_reject_item()                                        &&
+        // if we are not in the skip menu already
+        !is_in_skip_menu;
+}
+
+static unsigned int view_review_button(unsigned int button_mask, unsigned int button_mask_counter) {
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
-            h_review_button_both();
+            // Only handle double-click if we're in skip menu or approve/reject screens
+            if (is_in_skip_menu || is_accept_item() || is_reject_item()) {
+                h_review_button_both();
+            }
             break;
+
         case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-            // Press left to progress to the previous element
-            h_review_button_left();
+            // Check if we should show skip menu before moving back
+            if (should_show_skip_menu_left()) {
+                is_in_skip_menu = true;
+                UX_DISPLAY(view_skip, view_prepro);
+            } else {
+                is_in_skip_menu = false;
+                h_review_button_left();
+            }
             break;
 
         case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-            // Press right to progress to the next element
-            h_review_button_right();
+            if (should_show_skip_menu_right()) {
+                is_in_skip_menu = true;           // Entering skip menu
+                UX_DISPLAY(view_skip, view_prepro);
+            } else {
+                is_in_skip_menu = false;
+                h_review_button_right();
+            }
             break;
     }
     return 0;
@@ -297,6 +363,16 @@ void h_review_button_right() {
 }
 
 static void h_review_action(unsigned int requireReply) {
+    if (is_in_skip_menu) {
+        // Force jump to approval screen
+        set_accept_item();
+
+        is_in_skip_menu = false;  // Reset the flag after handling
+        h_review_update();
+
+        return;
+    }
+
     if( is_accept_item() ){
         zemu_log_stack("action_accept");
         h_approve(1);
@@ -321,7 +397,12 @@ static void h_review_action(unsigned int requireReply) {
 
 void h_review_button_both() {
     zemu_log_stack("h_review_button_both");
-    h_review_action(review_type);
+
+    // Handle double-click when in skip menu or approve/reject screens
+    if (is_in_skip_menu || is_accept_item() || is_reject_item()) {
+        is_in_skip_menu = false;
+        h_review_action(review_type);
+    }
 }
 
 //////////////////////////
@@ -507,5 +588,25 @@ max_char_display get_max_char_per_line() {
 bool exceed_pixel_in_display(const uint8_t length) {
     const unsigned short strWidth = zx_compute_line_width_light(viewdata.value, length);
     return (strWidth >= (BAGL_WIDTH - BAGL_WIDTH_MARGIN));
+}
+
+static unsigned int view_skip_button(unsigned int button_mask, unsigned int button_mask_counter) {
+    switch (button_mask) {
+        case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
+            // Skip to approve
+            h_review_action(review_type);
+            break;
+        case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
+            // Continue review
+            is_in_skip_menu = false;
+            h_review_button_right();
+            break;
+        case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+            // Go back
+            is_in_skip_menu = false;
+            h_review_button_left();
+            break;
+    }
+    return 0;
 }
 #endif
