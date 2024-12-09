@@ -52,6 +52,24 @@ void view_review_init(viewfunc_getItem_t viewfuncGetItem, viewfunc_getNumItems_t
     viewdata.viewfuncGetItem = viewfuncGetItem;
     viewdata.viewfuncGetNumItems = viewfuncGetNumItems;
     viewdata.viewfuncAccept = viewfuncAccept;
+
+#if defined(TARGET_NANOS) || defined(TARGET_NANOS2) || defined(TARGET_NANOX)
+    viewdata.with_confirmation = false;
+#endif
+
+}
+
+void view_review_init_progressive(
+    viewfunc_getItem_t viewfuncGetItem,
+    viewfunc_getNumItems_t viewfuncGetNumItems,
+    viewfunc_accept_t viewfuncAccept) {
+
+    view_review_init(viewfuncGetItem, viewfuncGetNumItems, viewfuncAccept);
+
+#if defined(TARGET_NANOS) || defined(TARGET_NANOS2) || defined(TARGET_NANOX)
+    viewdata.with_confirmation = true;
+#endif
+
 }
 
 void view_initialize_init(viewfunc_initialize_t viewFuncInit) { viewdata.viewfuncInitialize = viewFuncInit; }
