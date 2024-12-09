@@ -53,7 +53,6 @@ static void h_review_loop_inside();
 static void h_review_loop_end();
 static unsigned int handle_button_push(unsigned int button_mask, unsigned int button_mask_counter);
 static void set_button_callback(unsigned int slot);
-static void reset_button_callback(unsigned int slot) ;
 
 #ifdef APP_SECRET_MODE_ENABLED
 static void h_secret_click();
@@ -685,9 +684,4 @@ static void set_button_callback(unsigned int slot) {
     G_ux.stack[slot].button_push_callback = handle_button_push;
 }
 
-static void reset_button_callback(unsigned int slot) {
-    G_ux.stack[slot].button_push_callback = original_button_callback;
-    if (custom_callback_active)
-        custom_callback_active = false;
-}
 #endif
