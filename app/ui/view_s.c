@@ -96,7 +96,6 @@ void os_exit(uint32_t id) {
     (void)id;
     os_sched_exit(0);
 }
-static unsigned int view_skip_button(unsigned int button_mask, unsigned int button_mask_counter);
 const bagl_element_t *view_prepro(const bagl_element_t *element);
 
 // Add new view state for skip screen
@@ -236,39 +235,6 @@ bool should_show_skip_menu_left() {
         !is_reject_item()                                        &&
         // if we are not in the skip menu already
         !is_in_skip_menu;
-}
-
-static unsigned int view_review_button(unsigned int button_mask, unsigned int button_mask_counter) {
-    switch (button_mask) {
-        case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
-            // Only handle double-click if we're in skip menu or approve/reject screens
-            if (is_in_skip_menu || is_accept_item() || is_reject_item()) {
-                h_review_button_both();
-            }
-            break;
-
-        case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-            // Check if we should show skip menu before moving back
-            if (should_show_skip_menu_left()) {
-                is_in_skip_menu = true;
-                UX_DISPLAY(view_skip, view_prepro);
-            } else {
-                is_in_skip_menu = false;
-                h_review_button_left();
-            }
-            break;
-
-        case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-            if (should_show_skip_menu_right()) {
-                is_in_skip_menu = true;           // Entering skip menu
-                UX_DISPLAY(view_skip, view_prepro);
-            } else {
-                is_in_skip_menu = false;
-                h_review_button_right();
-            }
-            break;
-    }
-    return 0;
 }
 
 const bagl_element_t* idle_preprocessor(__Z_UNUSED const ux_menu_entry_t* entry, bagl_element_t* element) {
@@ -590,23 +556,4 @@ bool exceed_pixel_in_display(const uint8_t length) {
     return (strWidth >= (BAGL_WIDTH - BAGL_WIDTH_MARGIN));
 }
 
-static unsigned int view_skip_button(unsigned int button_mask, unsigned int button_mask_counter) {
-    switch (button_mask) {
-        case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
-            // Skip to approve
-            h_review_action(review_type);
-            break;
-        case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-            // Continue review
-            is_in_skip_menu = false;
-            h_review_button_right();
-            break;
-        case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-            // Go back
-            is_in_skip_menu = false;
-            h_review_button_left();
-            break;
-    }
-    return 0;
-}
 #endif
