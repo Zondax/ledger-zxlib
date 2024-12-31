@@ -58,20 +58,6 @@ static nbgl_layoutTagValueList_t pairList;
 static nbgl_layoutTagValueList_t *extraPagesPtr = NULL;
 
 typedef enum {
-    EXPERT_MODE = 0,
-#ifdef APP_ACCOUNT_MODE_ENABLED
-    ACCOUNT_MODE,
-#endif
-#ifdef APP_SECRET_MODE_ENABLED
-    SECRET_MODE,
-#endif
-#ifdef APP_BLINDSIGN_MODE_ENABLED
-    BLINDSIGN_MODE,
-#endif
-    SETTINGS_SWITCHES_NB_LEN
-} settings_list_e;
-
-typedef enum {
     EXPERT_MODE_TOKEN = FIRST_USER_TOKEN,
     ACCOUNT_MODE_TOKEN,
     SECRET_MODE_TOKEN,
@@ -292,7 +278,9 @@ static void settings_screen_callback(uint8_t index, nbgl_content_t *content) {
 #ifdef APP_BLINDSIGN_MODE_ENABLED
     switches[BLINDSIGN_MODE].initState = app_mode_blindsign();
     switches[BLINDSIGN_MODE].text = "Blind sign";
-    switches[BLINDSIGN_MODE].subText = "";
+    if ((switches[BLINDSIGN_MODE].subText) == NULL) {
+        switches[BLINDSIGN_MODE].subText = "Allows signing transactions without seeing all fields";
+    }
     switches[BLINDSIGN_MODE].tuneId = TUNE_TAP_CASUAL;
     switches[BLINDSIGN_MODE].token = BLINDSIGN_MODE_TOKEN;
 #endif
@@ -503,6 +491,13 @@ void view_review_show_impl(unsigned int requireReply, const char *title, const c
             config_useCaseReview(TYPE_TRANSACTION);
             break;
     }
+}
+
+void view_set_switch_subtext(settings_list_e switch_id, const char *subtext) {
+    if (switch_id >= SETTINGS_SWITCHES_NB_LEN) {
+        return;
+    }
+    switches[switch_id].subText = subtext;
 }
 
 #endif
