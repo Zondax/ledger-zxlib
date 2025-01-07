@@ -130,3 +130,21 @@ void view_inspect_init(viewfunc_getInnerItem_t view_funcGetInnerItem, viewfunc_g
 void view_review_show(review_type_e reviewKind);
 
 void view_review_show_generic(review_type_e reviewKind, const char *title, const char *validate);
+
+#if defined(TARGET_STAX) || defined(TARGET_FLEX)
+typedef enum {
+    EXPERT_MODE = 0,
+#ifdef APP_ACCOUNT_MODE_ENABLED
+    ACCOUNT_MODE,
+#endif
+#ifdef APP_SECRET_MODE_ENABLED
+    SECRET_MODE,
+#endif
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+    BLINDSIGN_MODE,
+#endif
+    SETTINGS_SWITCHES_NB_LEN
+} settings_list_e;
+
+void view_set_switch_subtext(settings_list_e switch_id, const char *subtext);
+#endif // TARGET_STAX || TARGET_FLEX
