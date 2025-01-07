@@ -271,7 +271,7 @@ static void settings_screen_callback(uint8_t index, nbgl_content_t *content) {
     UNUSED(index);
     switches[EXPERT_MODE].initState = app_mode_expert();
     switches[EXPERT_MODE].text = "Expert mode";
-    switches[EXPERT_MODE].subText = "";
+    switches[EXPERT_MODE].subText = "Enable to review extra fields";
     switches[EXPERT_MODE].tuneId = TUNE_TAP_CASUAL;
     switches[EXPERT_MODE].token = EXPERT_MODE_TOKEN;
 
@@ -279,7 +279,7 @@ static void settings_screen_callback(uint8_t index, nbgl_content_t *content) {
     switches[BLINDSIGN_MODE].initState = app_mode_blindsign();
     switches[BLINDSIGN_MODE].text = "Blind sign";
     if ((switches[BLINDSIGN_MODE].subText) == NULL) {
-        switches[BLINDSIGN_MODE].subText = "Allows signing transactions without seeing all fields";
+        switches[BLINDSIGN_MODE].subText = "Enable to sign transactions without reviewing all fields";
     }
     switches[BLINDSIGN_MODE].tuneId = TUNE_TAP_CASUAL;
     switches[BLINDSIGN_MODE].token = BLINDSIGN_MODE_TOKEN;
