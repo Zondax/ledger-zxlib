@@ -94,6 +94,16 @@ static void h_blindsign_toggle() { app_mode_set_blindsign(!app_mode_blindsign())
 
 static void confirm_error(__Z_UNUSED bool confirm) { h_error_accept(0); }
 
+static void goto_settings(bool confirm) { 
+    if (confirm) {
+        view_settings_show_impl();
+    } else {
+        view_idle_show_impl(0, NULL);
+    }
+    UX_WAIT();
+    app_reply_error();
+}
+
 static void reviewAddressChoice(bool confirm) {
     if (confirm) {
         nbgl_useCaseReviewStatus(STATUS_TYPE_ADDRESS_VERIFIED, h_approve_internal);
@@ -154,12 +164,21 @@ void view_custom_error_show(const char *upper, const char *lower) {
 }
 
 void view_blindsign_error_show() {
-    nbgl_useCaseChoice(&C_Warning_64px, "This message cannot\nbe clear-signed",
-                       "Enable blind-signing in\nthe settings to sign\nthis transaction.", "Exit", "", confirm_error);
+    nbgl_useCaseChoice(&C_Warning_64px,
+                       "This transaction cannot\nbe clear-signed",
+                       "Enable blind signing in the\nsettings to sign this\ntransaction.",
+                       "Go to settings",
+                       "Reject Transaction",
+                       goto_settings);
 }
 
 void view_error_show_impl() {
     nbgl_useCaseChoice(&C_Important_Circle_64px, viewdata.key, viewdata.value, "Ok", NULL, confirm_setting);
+}
+
+void view_settings_show_impl() {
+    nbgl_useCaseHomeAndSettings(MENU_MAIN_APP_LINE1, &C_icon_stax_64, HOME_TEXT, 0, &settingContents,
+                                &infoList, NULL, app_quit);
 }
 
 static uint8_t get_pair_number() {
