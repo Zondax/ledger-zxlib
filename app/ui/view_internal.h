@@ -207,6 +207,8 @@ void view_message_impl(const char *title, const char *message);
 
 void view_error_show_impl();
 
+void view_settings_show_impl();
+
 void view_custom_error_show_impl();
 
 void view_blindsign_error_show_impl();
