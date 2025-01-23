@@ -291,7 +291,7 @@ static void settings_screen_callback(uint8_t index, nbgl_content_t *content) {
     switches[EXPERT_MODE].initState = app_mode_expert();
     switches[EXPERT_MODE].text = "Expert mode";
     if ((switches[EXPERT_MODE].subText) == NULL) {
-        switches[EXPERT_MODE].subText = "Enable expert mode.";
+        switches[EXPERT_MODE].subText = "Enable to review extra fields.";
     }
     switches[EXPERT_MODE].tuneId = TUNE_TAP_CASUAL;
     switches[EXPERT_MODE].token = EXPERT_MODE_TOKEN;
