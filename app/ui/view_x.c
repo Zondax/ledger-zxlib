@@ -78,8 +78,8 @@ static void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t *c
 const ux_flow_step_t *ux_review_flow[MAX_REVIEW_UX_SCREENS];
 
 #include "ux.h"
-ux_state_t G_ux;
-bolos_ux_params_t G_ux_params;
+extern ux_state_t G_ux;
+extern bolos_ux_params_t G_ux_params;
 uint8_t flow_inside_loop;
 extern unsigned int review_type;
 

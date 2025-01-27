@@ -31,9 +31,9 @@ endif
 #######################################
 ifeq ($(TARGET_NAME),TARGET_NANOS)
 ifeq ($(HAVE_SWAP),1)
-APP_LOAD_PARAMS += --appFlags 0x800
+CUSTOM_APP_FLAGS += 0x800
 else
-APP_LOAD_PARAMS += --appFlags 0x000
+CUSTOM_APP_FLAGS += 0x000
 endif
 
 ICONNAME:=$(CURDIR)/nanos_$(ICON_NAME).gif
@@ -43,9 +43,9 @@ endif
 #######################################
 ifeq ($(TARGET_NAME),TARGET_NANOX)
 ifeq ($(HAVE_SWAP),1)
-APP_LOAD_PARAMS += --appFlags 0xA00
+CUSTOM_APP_FLAGS += 0xA00
 else
-APP_LOAD_PARAMS += --appFlags 0x200
+CUSTOM_APP_FLAGS += 0x200
 endif
 ICONNAME:=$(CURDIR)/nanox_$(ICON_NAME).gif
 OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_x.elf
@@ -54,9 +54,9 @@ endif
 #######################################
 ifeq ($(TARGET_NAME),TARGET_NANOS2)
 ifeq ($(HAVE_SWAP),1)
-APP_LOAD_PARAMS += --appFlags 0x800
+CUSTOM_APP_FLAGS += 0x800
 else
-APP_LOAD_PARAMS += --appFlags 0x000
+CUSTOM_APP_FLAGS += 0x000
 endif
 ICONNAME:=$(CURDIR)/nanox_$(ICON_NAME).gif
 OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_s2.elf
@@ -65,9 +65,9 @@ endif
 #######################################
 ifeq ($(TARGET_NAME),TARGET_STAX)
 ifeq ($(HAVE_SWAP),1)
-APP_LOAD_PARAMS += --appFlags 0xA00
+CUSTOM_APP_FLAGS += 0xA00
 else
-APP_LOAD_PARAMS += --appFlags 0x200
+CUSTOM_APP_FLAGS += 0x200
 endif
 ICONNAME:=$(CURDIR)/stax_$(ICON_NAME).gif
 OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_stax.elf
@@ -76,9 +76,9 @@ endif
 #######################################
 ifeq ($(TARGET_NAME),TARGET_FLEX)
 ifeq ($(HAVE_SWAP),1)
-APP_LOAD_PARAMS += --appFlags 0xA00
+CUSTOM_APP_FLAGS += 0xA00
 else
-APP_LOAD_PARAMS += --appFlags 0x200
+CUSTOM_APP_FLAGS += 0x200
 endif
 ICONNAME:=$(CURDIR)/flex_$(ICON_NAME).gif
 OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_flex.elf
