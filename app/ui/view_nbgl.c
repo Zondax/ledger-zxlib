@@ -44,8 +44,8 @@ static const char HOME_TEXT[] =
 
 static const char ADDRESS_TEXT[] = "Verify " MENU_MAIN_APP_LINE1 "\naddress";
 
-ux_state_t G_ux;
-bolos_ux_params_t G_ux_params;
+extern ux_state_t G_ux;
+extern bolos_ux_params_t G_ux_params;
 extern unsigned int review_type;
 
 const char *intro_message = NULL;
