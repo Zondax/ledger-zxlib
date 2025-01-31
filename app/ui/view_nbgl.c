@@ -181,6 +181,10 @@ void view_settings_show_impl() {
                                 &infoList, NULL, app_quit);
 }
 
+void view_spinner_impl(const char *text) {
+    nbgl_useCaseSpinner(text);
+}
+
 static uint8_t get_pair_number() {
     uint8_t numItems = 0;
     uint8_t numPairs = 0;

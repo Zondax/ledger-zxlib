@@ -19,6 +19,8 @@
 #include "view_internal.h"
 #include "zxmacros.h"
 
+#define DEFAULT_SPINNER_TEXT "Processing..."
+
 view_t viewdata;
 unsigned int review_type = 0;
 
@@ -46,6 +48,8 @@ void view_init(void) {
 void view_idle_show(uint8_t item_idx, const char *statusString) { view_idle_show_impl(item_idx, statusString); }
 
 void view_message_show(const char *title, const char *message) { view_message_impl(title, message); }
+
+void view_spinner_show(const char *text) { view_spinner_impl(text ? text : DEFAULT_SPINNER_TEXT); }
 
 void view_review_init(viewfunc_getItem_t viewfuncGetItem, viewfunc_getNumItems_t viewfuncGetNumItems,
                       viewfunc_accept_t viewfuncAccept) {

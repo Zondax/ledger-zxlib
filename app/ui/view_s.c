@@ -182,6 +182,11 @@ static const bagl_element_t view_error[] = {
     UI_LabelLineScrolling(UIID_LABELSCROLL, 0, 30, 128, UI_11PX, UI_WHITE, UI_BLACK, viewdata.value2),
 };
 
+static const bagl_element_t view_spinner[] = {
+    UI_BACKGROUND,
+    UI_LabelLine(UIID_LABEL, 0, 19, UI_SCREEN_WIDTH, UI_11PX, UI_WHITE, UI_BLACK, viewdata.key),
+};
+
 static unsigned int view_error_button(unsigned int button_mask, __Z_UNUSED unsigned int button_mask_counter) {
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
@@ -195,6 +200,16 @@ static unsigned int view_error_button(unsigned int button_mask, __Z_UNUSED unsig
 }
 
 static unsigned int view_message_button(unsigned int button_mask, __Z_UNUSED unsigned int button_mask_counter) {
+    switch (button_mask) {
+        case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
+        case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+        case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
+            break;
+    }
+    return 0;
+}
+
+static unsigned int view_spinner_button(unsigned int button_mask, __Z_UNUSED unsigned int button_mask_counter) {
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
         case BUTTON_EVT_RELEASED | BUTTON_LEFT:
@@ -449,6 +464,13 @@ void view_custom_error_show_impl() {
 void view_blindsign_error_show_impl() {
     UX_MENU_DISPLAY(0, blindsign_error, NULL);
 }
+
+void view_spinner_impl(const char *text) {
+    snprintf(viewdata.key, MAX_CHARS_PER_VALUE_LINE, "%s", text);
+    UX_DISPLAY(view_spinner, view_prepro_idle)
+    UX_WAIT_DISPLAYED()
+}
+
 
 void h_expert_toggle() {
     app_mode_set_expert(!app_mode_expert());
