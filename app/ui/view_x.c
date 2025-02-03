@@ -305,6 +305,14 @@ UX_STEP_VALID(ux_review_flow_6_step, pb, h_approve(0), {&C_icon_validate_14, "Ok
 
 UX_STEP_CB_INIT(ux_review_flow_5_step, pb, NULL, h_shortcut(0), {&C_icon_eye, SHORTCUT_STR});
 
+UX_STEP_NOCB(ux_spinner_flow_step, pb,
+             {
+                 &C_icon_processing,
+                 viewdata.key,
+             });
+
+UX_FLOW(ux_spinner_flow, &ux_spinner_flow_step);
+
 //////////////////////////
 //////////////////////////
 //////////////////////////
@@ -640,6 +648,15 @@ void view_custom_error_show_impl() {
 }
 
 void view_blindsign_error_show_impl() { ux_flow_init(0, ux_warning_blind_sign_flow, NULL); }
+
+void view_spinner_impl(const char *text) {
+    snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", text);
+    ux_layout_bnnn_paging_reset();
+    if (G_ux.stack_count == 0) {
+        ux_stack_push();
+    }
+    ux_flow_init(0, ux_spinner_flow, NULL);
+}
 
 static unsigned int handle_button_push(unsigned int button_mask, unsigned int button_mask_counter) {
     UNUSED(button_mask_counter);

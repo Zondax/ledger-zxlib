@@ -211,6 +211,8 @@ void view_settings_show_impl();
 
 void view_custom_error_show_impl();
 
+void view_spinner_impl(const char *text);
+
 void view_blindsign_error_show_impl();
 
 void h_paging_init();
