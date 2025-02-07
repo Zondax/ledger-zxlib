@@ -49,6 +49,7 @@ extern bolos_ux_params_t G_ux_params;
 extern unsigned int review_type;
 
 const char *intro_message = NULL;
+char intro_msg_buf[MAX_CHARS_PER_VALUE1_LINE];
 
 static nbgl_layoutTagValue_t pairs[NB_MAX_DISPLAYED_PAIRS_IN_REVIEW];
 
@@ -489,15 +490,16 @@ static void config_useCaseReviewLight(const char *title, const char *validate) {
 void view_review_show_impl(unsigned int requireReply, const char *title, const char *validate) {
     review_type = (review_type_e)requireReply;
 
-    // Retrieve intro text for transaction
     intro_message = NULL;
+    intro_msg_buf[0] = '\0';
     viewdata.key = viewdata.keys[0];
     viewdata.value = viewdata.values[0];
+    // Retrieve intro text for transaction
     if (viewdata.viewfuncGetItem != NULL) {
-        const zxerr_t err = viewdata.viewfuncGetItem(0xFF, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
+        viewdata.viewfuncGetItem(0xFF, viewdata.key, MAX_CHARS_PER_KEY_LINE, intro_msg_buf,
                                                      MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount);
-        if (err == zxerr_ok) {
-            intro_message = viewdata.value;
+        if (strlen(intro_msg_buf) > strlen(" ")) {
+            intro_message = intro_msg_buf;
         }
     }
     h_paging_init();
