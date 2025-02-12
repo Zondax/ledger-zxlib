@@ -86,8 +86,8 @@ static const char *review_skip_value_msg_2 = "all assets";
 
 // Review msg string can be customizable in each app
 #if !defined(REVIEW_MSG_TITLE) && !defined(REVIEW_MSG_VALUE)
-#define REVIEW_MSG_TITLE "Please"
-#define REVIEW_MSG_VALUE "review"
+#define REVIEW_MSG_TITLE "Review"
+#define REVIEW_MSG_VALUE "Message"
 #endif
 
 static const char *review_msgKey = REVIEW_MSG_TITLE;
