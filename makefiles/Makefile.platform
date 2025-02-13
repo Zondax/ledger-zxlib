@@ -17,17 +17,11 @@
 
 ############
 # Platform
-
-APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
-DEFINES       += APPVERSION=\"$(APPVERSION)\"
-
 DEFINES       += HAVE_BOLOS_APP_STACK_CANARY
 DEFINES       += HAVE_ZONDAX_CANARY
 
 #Feature temporarily disabled
 DEFINES   += LEDGER_SPECIFIC
-
-APP_SOURCE_PATH += $(CURDIR)/src
 
 ZXLIB_DIR := $(CURDIR)/../deps/ledger-zxlib/
 APP_SOURCE_PATH += $(ZXLIB_DIR)/include
