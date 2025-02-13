@@ -16,71 +16,65 @@
 #*******************************************************************************
 
 INSTALLER_NAME ?= installer
-ICON_NAME ?= icon
 ELF_NAME ?= app
 
-ifndef APP_STACK_MIN_SIZE
-ifeq ($(TARGET_NAME),TARGET_NANOS)
-	APP_STACK_MIN_SIZE := 1600
-else
-	APP_STACK_MIN_SIZE := 1752
-endif
-$(info APP_STACK_MIN_SIZE set to default($(APP_STACK_MIN_SIZE)))
-endif
+########################################
+#     Application custom permissions   #
+########################################
+# See SDK `include/appflags.h` for the purpose of each permission
+#HAVE_APPLICATION_FLAG_DERIVE_MASTER = 1
+#HAVE_APPLICATION_FLAG_GLOBAL_PIN = 1
+#HAVE_APPLICATION_FLAG_BOLOS_SETTINGS = 1
+#HAVE_APPLICATION_FLAG_LIBRARY = 1
 
 #######################################
 ifeq ($(TARGET_NAME),TARGET_NANOS)
 ifeq ($(HAVE_SWAP),1)
-CUSTOM_APP_FLAGS += 0x800
-else
-CUSTOM_APP_FLAGS += 0x000
+HAVE_APPLICATION_FLAG_LIBRARY = 1
 endif
-
-ICONNAME:=$(CURDIR)/nanos_$(ICON_NAME).gif
 OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_s.elf
 OUTPUT_INSTALLER := $(CURDIR)/pkg/$(INSTALLER_NAME)_s.sh
 endif
+
 #######################################
 ifeq ($(TARGET_NAME),TARGET_NANOX)
 ifeq ($(HAVE_SWAP),1)
-CUSTOM_APP_FLAGS += 0xA00
+HAVE_APPLICATION_FLAG_BOLOS_SETTINGS = 1
+HAVE_APPLICATION_FLAG_LIBRARY = 1
 else
-CUSTOM_APP_FLAGS += 0x200
+HAVE_APPLICATION_FLAG_BOLOS_SETTINGS = 1
 endif
-ICONNAME:=$(CURDIR)/nanox_$(ICON_NAME).gif
 OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_x.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_x.sh
 endif
+
 #######################################
 ifeq ($(TARGET_NAME),TARGET_NANOS2)
 ifeq ($(HAVE_SWAP),1)
-CUSTOM_APP_FLAGS += 0x800
-else
-CUSTOM_APP_FLAGS += 0x000
+HAVE_APPLICATION_FLAG_LIBRARY = 1
 endif
-ICONNAME:=$(CURDIR)/nanox_$(ICON_NAME).gif
 OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_s2.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_s2.sh
 endif
 #######################################
 ifeq ($(TARGET_NAME),TARGET_STAX)
 ifeq ($(HAVE_SWAP),1)
-CUSTOM_APP_FLAGS += 0xA00
+HAVE_APPLICATION_FLAG_BOLOS_SETTINGS = 1
+HAVE_APPLICATION_FLAG_LIBRARY = 1
 else
-CUSTOM_APP_FLAGS += 0x200
+HAVE_APPLICATION_FLAG_BOLOS_SETTINGS = 1
 endif
-ICONNAME:=$(CURDIR)/stax_$(ICON_NAME).gif
 OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_stax.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_stax.sh
 endif
 #######################################
 ifeq ($(TARGET_NAME),TARGET_FLEX)
 ifeq ($(HAVE_SWAP),1)
-CUSTOM_APP_FLAGS += 0xA00
+HAVE_APPLICATION_FLAG_BOLOS_SETTINGS = 1
+HAVE_APPLICATION_FLAG_LIBRARY = 1
 else
-CUSTOM_APP_FLAGS += 0x200
+HAVE_APPLICATION_FLAG_BOLOS_SETTINGS = 1
 endif
-ICONNAME:=$(CURDIR)/flex_$(ICON_NAME).gif
 OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_flex.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_flex.sh
 endif
