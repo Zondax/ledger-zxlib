@@ -274,7 +274,7 @@ UX_FLOW_DEF_NOCB(ux_review_flow_3_review_title, pbb,
                  });
 UX_FLOW_DEF_NOCB(ux_review_flow_4_review_title, pbb,
                  {
-                     &C_icon_app,
+                     &C_icon_certificate,
                      REVIEW_MSG_TITLE,
                      REVIEW_MSG_VALUE,
                  });
@@ -301,7 +301,7 @@ UX_STEP_VALID(ux_review_flow_3_step_blindsign, pnn, h_approve(0),
 UX_STEP_VALID(ux_review_flow_3_step, pb, h_approve(0), {&C_icon_validate_14, APPROVE_LABEL});
 
 UX_STEP_VALID(ux_review_flow_4_step, pb, h_reject(review_type), {&C_icon_crossmark, REJECT_LABEL});
-UX_STEP_VALID(ux_review_flow_6_step, pb, h_approve(0), {&C_icon_validate_14, "Ok"});
+UX_STEP_VALID(ux_review_flow_6_step, pb, h_approve(0), {&C_icon_validate_14, APPROVE_LABEL});
 
 UX_STEP_CB_INIT(ux_review_flow_5_step, pb, NULL, h_shortcut(0), {&C_icon_eye, SHORTCUT_STR});
 
@@ -604,6 +604,7 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t *const st
 
     if (reviewType == REVIEW_MSG) {
         ux_review_flow[index++] = &ux_review_flow_6_step;
+        ux_review_flow[index++] = &ux_review_flow_4_step;
     } else {
 #ifdef APP_BLINDSIGN_MODE_ENABLED
         if (app_mode_blindsign_required() && reviewType == REVIEW_TXN) {

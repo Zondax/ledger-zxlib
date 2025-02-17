@@ -34,6 +34,7 @@ zxerr_t account_enabled();
 #endif
 
 #define APPROVE_LABEL_NBGL "Sign transaction?"
+#define APPROVE_LABEL_NBGL_MSG "Sign message?"
 #define APPROVE_LABEL_NBGL_GENERIC "Accept operation?"
 #define CANCEL_LABEL "Cancel"
 #define VERIFY_TITLE_LABEL_GENERIC "Verify operation"
@@ -122,6 +123,15 @@ static void reviewTransactionChoice(bool confirm) {
         nbgl_useCaseReviewStatus(STATUS_TYPE_TRANSACTION_REJECTED, h_reject_internal);
     }
 }
+
+static void reviewMessageChoice(bool confirm) {
+    if (confirm) {
+        nbgl_useCaseReviewStatus(STATUS_TYPE_MESSAGE_SIGNED, h_approve_internal);
+    } else {
+        nbgl_useCaseReviewStatus(STATUS_TYPE_MESSAGE_REJECTED, h_reject_internal);
+    }
+}
+
 
 static void reviewGenericChoice(bool confirm) {
     const char *msg = "Operation rejected";
@@ -471,6 +481,29 @@ static void config_useCaseReview(nbgl_operationType_t type) {
     }
 }
 
+static void config_useCaseMessageReview() {
+    if (viewdata.viewfuncGetNumItems == NULL) {
+        ZEMU_LOGF(50, "GetNumItems==NULL\n")
+        view_error_show();
+        return;
+    }
+
+    pairList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;
+    pairList.nbPairs = get_pair_number();
+    pairList.pairs = NULL;  // to indicate that callback should be used
+    pairList.callback = update_item_callback;
+    pairList.startIndex = 0;
+    if (app_mode_blindsign_required()) {
+        nbgl_useCaseReviewBlindSigning(TYPE_MESSAGE, &pairList, &C_Review_64px,
+                                       (intro_message == NULL ? "Review Message" : intro_message), NULL,
+                                       "Accept risk and sign message ?", NULL, reviewMessageChoice);
+    } else {
+        nbgl_useCaseReview(TYPE_MESSAGE, &pairList, &C_Review_64px,
+                           (intro_message == NULL ? "Review Message" : intro_message), NULL, APPROVE_LABEL_NBGL_MSG,
+                           reviewMessageChoice);
+    }
+}
+
 static void config_useCaseReviewLight(const char *title, const char *validate) {
     if (viewdata.viewfuncGetNumItems == NULL) {
         ZEMU_LOGF(50, "GetNumItems==NULL\n")
@@ -522,6 +555,10 @@ void view_review_show_impl(unsigned int requireReply, const char *title, const c
         }
         case REVIEW_GENERIC: {
             config_useCaseReviewLight(title, validate);
+            break;
+        }
+        case REVIEW_MSG: {
+            config_useCaseMessageReview();
             break;
         }
         case REVIEW_TXN:

@@ -83,11 +83,13 @@ static const char *review_skip_key_msg = "Tx details";
 static const char *review_skip_value_msg = "not verifiable";
 static const char *review_skip_key_msg_2 = "Could lose";
 static const char *review_skip_value_msg_2 = "all assets";
+static const char *review_msgvalue = "Review";
+static const char *review_msgvalue_2 = "Message";
 
 // Review msg string can be customizable in each app
 #if !defined(REVIEW_MSG_TITLE) && !defined(REVIEW_MSG_VALUE)
-#define REVIEW_MSG_TITLE "Please"
-#define REVIEW_MSG_VALUE "review"
+#define REVIEW_MSG_TITLE "Review"
+#define REVIEW_MSG_VALUE "Message"
 #endif
 
 static const char *review_msgKey = REVIEW_MSG_TITLE;

@@ -49,6 +49,11 @@ uint8_t getIntroPages() {
         return 0;
     }
 #endif
+#if defined(TARGET_NANOS)
+    if (review_type == REVIEW_MSG) {
+        return 1;
+    }
+#endif
     return INTRO_PAGES;
 }
 
@@ -87,9 +92,6 @@ bool h_paging_can_increase() {
 
     // passed page count, go to next index
     uint8_t extraScreens = INCLUDE_ACTIONS_COUNT;
-    if (review_type == REVIEW_MSG && extraScreens > 0) {
-        extraScreens--;
-    };
     if (viewdata.itemCount > 0 && viewdata.itemIdx < (viewdata.itemCount - 1 + extraScreens)) {
         zemu_log_stack("h_paging_can_increase");
         return true;
@@ -110,9 +112,6 @@ void h_paging_increase() {
 
     // passed page count, go to next index
     uint8_t extraScreens = INCLUDE_ACTIONS_COUNT;
-    if (review_type == REVIEW_MSG && extraScreens > 0) {
-        extraScreens--;
-    };
     if (viewdata.itemCount > 0 && viewdata.itemIdx < (viewdata.itemCount - 1 + extraScreens)) {
         viewdata.itemIdx++;
         viewdata.pageIdx = 0;
@@ -180,7 +179,7 @@ zxerr_t h_review_update_data() {
     if (is_accept_item()) {
         snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", "");
         if (review_type == REVIEW_MSG) {
-            snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "Ok");
+            snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, APPROVE_LABEL);
         } else {
 #if defined(APP_BLINDSIGN_MODE_ENABLED)
             if (app_mode_blindsign_required() && review_type == REVIEW_TXN) {
@@ -267,7 +266,12 @@ zxerr_t h_review_update_data() {
             }
         }
 #else
-        return zxerr_no_data;
+#if defined(TARGET_NANOS)
+        if (review_type == REVIEW_MSG) {
+            intro_key = PIC(review_msgvalue);
+            intro_value = PIC(review_msgvalue_2);
+        }
+#endif
 #endif
 
         snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", intro_key);
