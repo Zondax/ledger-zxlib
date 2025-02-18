@@ -39,6 +39,9 @@
 #include <stdio.h>
 #include <string.h>
 
+char intro_msg_buf[MAX_CHARS_PER_KEY_LINE];
+char intro_submsg_buf[MAX_CHARS_PER_VALUE1_LINE];
+
 bool custom_callback_active = false;
 // Add global variable to store original callback at the top with other globals
 unsigned int (*original_button_callback)(unsigned int button_mask, unsigned int button_mask_counter) = NULL;
@@ -260,6 +263,12 @@ UX_FLOW_DEF_NOCB(ux_review_flow_1_review_title, pbb,
                      REVIEW_SCREEN_TITLE,
                      REVIEW_SCREEN_TXN_VALUE,
                  });
+UX_FLOW_DEF_NOCB(ux_review_flow_1_review_group_title, pbb,
+                 {
+                     &C_icon_app,
+                     intro_msg_buf,
+                     intro_submsg_buf,
+                 });
 UX_FLOW_DEF_NOCB(ux_review_flow_2_review_title, pbb,
                  {
                      &C_icon_app,
@@ -366,7 +375,7 @@ void h_review_loop_end() {
                 ux_layout_bnnn_paging_reset();
                 // If we're at the end of current item and there's more to show
                 if (viewdata.with_confirmation &&
-                    (review_type == REVIEW_TXN || review_type == REVIEW_MSG) &&
+                    (review_type == REVIEW_TXN || review_type == REVIEW_GROUP_TXN || review_type == REVIEW_MSG) &&
                     viewdata.pageIdx == viewdata.pageCount - 1               &&
                     // Ensure that at least the first item is displayed.
                     // The UI design may vary between applications. For example, item 0 might
@@ -591,7 +600,13 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t *const st
                 ux_review_flow[index++] = &ux_approval_blind_signing_message_step;
             }
 #endif
-            ux_review_flow[index++] = &ux_review_flow_1_review_title;
+            if (reviewType == REVIEW_GROUP_TXN) {
+                viewdata.viewfuncGetItem(0xFF, intro_msg_buf, MAX_CHARS_PER_KEY_LINE, intro_submsg_buf,
+                                                            MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount);
+                ux_review_flow[index++] = &ux_review_flow_1_review_group_title;
+            } else {
+                ux_review_flow[index++] = &ux_review_flow_1_review_title;
+            }
             if (app_mode_shortcut()) {
                 ux_review_flow[index++] = &ux_review_flow_5_step;
             }
@@ -607,7 +622,7 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t *const st
         ux_review_flow[index++] = &ux_review_flow_4_step;
     } else {
 #ifdef APP_BLINDSIGN_MODE_ENABLED
-        if (app_mode_blindsign_required() && reviewType == REVIEW_TXN) {
+        if (app_mode_blindsign_required() && (reviewType == REVIEW_TXN || reviewType == REVIEW_GROUP_TXN)) {
             ux_review_flow[index++] = &ux_review_flow_3_step_blindsign;
         } else {
             ux_review_flow[index++] = &ux_review_flow_3_step;
