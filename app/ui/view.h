@@ -91,6 +91,7 @@ typedef enum {
     REVIEW_GENERIC,
     REVIEW_TXN,
     REVIEW_MSG,
+    REVIEW_GROUP_TXN,
 } review_type_e;
 
 #ifdef APP_SECRET_MODE_ENABLED

@@ -182,7 +182,7 @@ zxerr_t h_review_update_data() {
             snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, APPROVE_LABEL);
         } else {
 #if defined(APP_BLINDSIGN_MODE_ENABLED)
-            if (app_mode_blindsign_required() && review_type == REVIEW_TXN) {
+            if (app_mode_blindsign_required() && (review_type == REVIEW_TXN || review_type == REVIEW_GROUP_TXN)) {
                 snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s  %s", APPROVE_LABEL_1, APPROVE_LABEL_2);
             } else {
                 snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", APPROVE_LABEL);
@@ -247,7 +247,7 @@ zxerr_t h_review_update_data() {
         intro_key = PIC(shortcut_key);
         intro_value = PIC(shortcut_value);
 #elif defined(APP_BLINDSIGN_MODE_ENABLED)
-        if (app_mode_blindsign_required() && review_type == REVIEW_TXN) {
+        if (app_mode_blindsign_required() && (review_type == REVIEW_TXN || review_type == REVIEW_GROUP_TXN)) {
             switch (viewdata.itemIdx) {
                 case 0:
                     intro_key = PIC(review_skip_key);
