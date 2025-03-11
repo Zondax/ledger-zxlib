@@ -25,6 +25,7 @@
 #include "zxerror.h"
 
 #define MEMCPY_NV nvm_write
+#define MEMZERO_NV nvm_erase
 
 // This macros are kept for backwards compatibility
 // the most recent SDK has unified implementations and deprecated the original os_***
