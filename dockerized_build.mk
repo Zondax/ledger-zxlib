@@ -82,6 +82,7 @@ define run_docker
 	-e COIN=$(COIN) \
 	-e APP_TESTING=$(APP_TESTING) \
 	-e PRODUCTION_BUILD=$(PRODUCTION_BUILD) \
+	-e SKIP_NANOS=$(SKIP_NANOS) \
 	$(DOCKER_IMAGE_ZONDAX) "$(3)"
 endef
 
@@ -91,9 +92,13 @@ define run_docker_ledger
 	$(DOCKER_IMAGE_LEDGER) "$(1)"
 endef
 
+SKIP_NANOS ?= 0
+
 all:
 	@$(MAKE) clean
+ifeq ($(SKIP_NANOS), 0)
 	@$(MAKE) buildS
+endif
 	@$(MAKE) buildX
 	@$(MAKE) buildS2
 	@$(MAKE) buildST
@@ -144,7 +149,11 @@ convert_icon:
 
 .PHONY: buildS
 buildS:
+ifeq ($(SKIP_NANOS), 0)
 	$(call run_docker,$(DOCKER_BOLOS_SDKS),$(TARGET_S),make -j $(NPROC))
+else
+	@echo "Skipping NanoS build (SKIP_NANOS=1)"
+endif
 
 .PHONY: buildX
 buildX:
