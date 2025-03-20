@@ -624,12 +624,15 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t *const st
     ux_review_flow[index++] = &ux_review_flow_2_end_step;
 
     if (reviewType == REVIEW_MSG) {
+#ifdef APP_BLINDSIGN_MODE_ENABLED
         if (app_mode_blindsign_required()) {
             ux_review_flow[index++] = &ux_review_flow_3_step_blindsign;
         } else {
             ux_review_flow[index++] = &ux_review_flow_6_step;
         }
-        ux_review_flow[index++] = &ux_review_flow_4_step;
+#else
+        ux_review_flow[index++] = &ux_review_flow_6_step;
+#endif
     } else {
 #ifdef APP_BLINDSIGN_MODE_ENABLED
         if (app_mode_blindsign_required() && (reviewType == REVIEW_TXN || reviewType == REVIEW_GROUP_TXN)) {
@@ -640,8 +643,8 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t *const st
 #else
         ux_review_flow[index++] = &ux_review_flow_3_step;
 #endif
-        ux_review_flow[index++] = &ux_review_flow_4_step;
     }
+    ux_review_flow[index++] = &ux_review_flow_4_step;
     ux_review_flow[index++] = FLOW_END_STEP;
 
     ux_flow_init(0, ux_review_flow, start_step);
