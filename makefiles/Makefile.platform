@@ -17,34 +17,11 @@
 
 ############
 # Platform
-
-APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
-DEFINES       += APPVERSION=\"$(APPVERSION)\"
-
 DEFINES       += HAVE_BOLOS_APP_STACK_CANARY
 DEFINES       += HAVE_ZONDAX_CANARY
 
 #Feature temporarily disabled
 DEFINES   += LEDGER_SPECIFIC
-
-# Compiler, assembler, and linker
-ifneq ($(BOLOS_ENV),)
-$(info BOLOS_ENV is $(BOLOS_ENV))
-CLANGPATH := /usr/bin/
-GCCPATH := /usr/bin/
-else
-$(info BOLOS_ENV is not set: falling back to CLANGPATH and GCCPATH)
-endif
-
-ifeq ($(CLANGPATH),)
-$(info CLANGPATH is not set: clang will be used from PATH)
-endif
-
-ifeq ($(GCCPATH),)
-$(info GCCPATH is not set: arm-none-eabi-* will be used from PATH)
-endif
-
-APP_SOURCE_PATH += $(CURDIR)/src
 
 ZXLIB_DIR := $(CURDIR)/../deps/ledger-zxlib/
 APP_SOURCE_PATH += $(ZXLIB_DIR)/include
@@ -57,14 +34,4 @@ include $(BOLOS_SDK)/Makefile.standard_app
 ifeq ($(TARGET_NAME),TARGET_NANOS)
 # Nano S
 DEFINES += HAVE_UX_LEGACY
-DEFINES += HAVE_BAGL
-else ifeq ($(TARGET_NAME),$(filter $(TARGET_NAME),TARGET_NANOX TARGET_NANOS2))
-# Nano X/S+
-DEFINES       += HAVE_GLO096
-DEFINES       += HAVE_BAGL BAGL_WIDTH=128 BAGL_HEIGHT=64
-DEFINES       += HAVE_BAGL_ELLIPSIS # long label truncation feature
-DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_REGULAR_11PX
-DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_EXTRABOLD_11PX
-DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_LIGHT_16PX
-DEFINES       += HAVE_UX_FLOW
 endif
