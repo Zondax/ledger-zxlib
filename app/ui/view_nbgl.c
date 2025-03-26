@@ -52,7 +52,7 @@ extern unsigned int review_type;
 const char *intro_message = NULL;
 const char *intro_submessage = NULL;
 char intro_msg_buf[MAX_CHARS_PER_VALUE1_LINE];
-char intro_submsg_buf[MAX_CHARS_PER_VALUE1_LINE];
+char intro_submsg_buf[MAX_CHARS_SUBMSG_LINE];
 
 static nbgl_layoutTagValue_t pairs[NB_MAX_DISPLAYED_PAIRS_IN_REVIEW];
 
