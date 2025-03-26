@@ -40,7 +40,7 @@
 #include <string.h>
 
 char intro_msg_buf[MAX_CHARS_PER_KEY_LINE];
-char intro_submsg_buf[MAX_CHARS_PER_VALUE1_LINE];
+char intro_submsg_buf[MAX_CHARS_SUBMSG_LINE];
 
 bool custom_callback_active = false;
 // Add global variable to store original callback at the top with other globals
