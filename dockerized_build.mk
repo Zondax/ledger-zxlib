@@ -23,6 +23,7 @@ TESTS_JS_DIR?=
 LEDGER_SRC=$(CURDIR)/app
 DOCKER_APP_SRC=/app
 DOCKER_APP_BIN=$(DOCKER_APP_SRC)/app/bin/app.elf
+ZXLIB_DIR=$(dir $(lastword $(MAKEFILE_LIST)))
 
 DOCKER_BOLOS_SDKS = NANOS_SDK
 DOCKER_BOLOS_SDKX = NANOX_SDK
@@ -386,7 +387,11 @@ fuzz_crash: fuzz_build
 
 .PHONY: format
 format:
-	find . \( -iname '*.h' -o -iname '*.c' -o -iname '*.cpp' -o -iname '*.hpp' \) -a ! -path "*/deps/*" -a ! -path "./tests_zemu/node_modules/*" -a ! -path "./cmake/*" ! -path "./build/*" | xargs clang-format -i
+	@if [ ! -f "$(ZXLIB_DIR)/.clang-format" ]; then \
+		echo "ERROR: $(ZXLIB_DIR).clang-format not found."; \
+		exit 1; \
+	fi
+	find . \( -iname '*.h' -o -iname '*.c' -o -iname '*.cpp' -o -iname '*.hpp' \) -a ! -path "*/deps/*" -a ! -path "./tests_zemu/node_modules/*" -a ! -path "./cmake/*" ! -path "./build/*" | xargs clang-format -i -style=file -assume-filename=$(ZXLIB_DIR).clang-format
 
 .PHONY: shell
 shell:
