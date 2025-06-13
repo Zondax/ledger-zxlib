@@ -403,3 +403,6 @@ ts_format:
 ts_lint:
 	if [ -d js ]; then cd js && bun run lint; fi
 	if [ -d tests_zemu ]; then cd tests_zemu && bun run lint; fi
+
+update_snapshots:
+	cd tests_zemu && rm -rf snapshots/* && cp -r snapshots-tmp/* snapshots/
