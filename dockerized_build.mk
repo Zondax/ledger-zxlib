@@ -120,7 +120,7 @@ pull:
 
 .PHONY: ledger_lint
 ledger_lint:
-	$(call run_docker_ledger,"scan-build --use-cc=clang -analyze-headers -enable-checker security -enable-checker unix -enable-checker valist -o scan-build --status-bugs make default")
+	$(call run_docker,$(DOCKER_BOLOS_SDKS2),$(TARGET_S2),scan-build --use-cc=clang -analyze-headers -enable-checker security -enable-checker unix -enable-checker valist -o scan-build --status-bugs make)
 
 .PHONY: build_rustS
 build_rustS:
