@@ -21,6 +21,7 @@ TESTS_JS_PACKAGE?=
 TESTS_JS_DIR?=
 
 LEDGER_SRC=$(CURDIR)/app
+FUZZ_COVERAGE_DIR=$(CURDIR)/fuzz/coverage
 DOCKER_APP_SRC=/app
 DOCKER_APP_BIN=$(DOCKER_APP_SRC)/app/bin/app.elf
 
@@ -383,6 +384,25 @@ fuzz: fuzz_build
 fuzz_crash: FUZZ_LOGGING=1
 fuzz_crash: fuzz_build
 	./fuzz/run-fuzz-crashes.py
+
+.PHONY: fuzz_report
+fuzz_report:
+	@if [ ! -d "$(FUZZ_COVERAGE_DIR)" ] || [ -z "$$(ls -A $(FUZZ_COVERAGE_DIR) 2>/dev/null)" ]; then \
+		echo "Error: Coverage directory is empty. Please run the fuzzer with ENABLE_COVERAGE flag ON"; \
+		exit 1; \
+	fi
+	llvm-profdata merge -sparse $(FUZZ_COVERAGE_DIR)/*.profraw -o $(FUZZ_COVERAGE_DIR)/coverage.profdata
+	llvm-cov report build/fuzz-parser_parse -instr-profile=$(FUZZ_COVERAGE_DIR)/coverage.profdata
+
+.PHONY: fuzz_report_html
+fuzz_report_html:
+	@if [ ! -d "$(FUZZ_COVERAGE_DIR)" ] || [ -z "$$(ls -A $(FUZZ_COVERAGE_DIR) 2>/dev/null)" ]; then \
+		echo "Error: Coverage directory is empty. Please run the fuzzer with ENABLE_COVERAGE flag ON"; \
+		exit 1; \
+	fi
+	llvm-profdata merge -sparse $(FUZZ_COVERAGE_DIR)/*.profraw -o $(FUZZ_COVERAGE_DIR)/coverage.profdata
+	llvm-cov show build/fuzz-parser_parse -instr-profile=$(FUZZ_COVERAGE_DIR)/coverage.profdata -format=html -output-dir=$(FUZZ_COVERAGE_DIR)/report_html
+	open $(FUZZ_COVERAGE_DIR)/report_html/index.html
 
 .PHONY: format
 format:
