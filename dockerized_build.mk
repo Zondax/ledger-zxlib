@@ -23,7 +23,7 @@ TESTS_JS_DIR?=
 LEDGER_SRC=$(CURDIR)/app
 FUZZ_COVERAGE_DIR=$(CURDIR)/fuzz/coverage
 DOCKER_APP_SRC=/app
-DOCKER_APP_BIN=$(DOCKER_APP_SRC)/app/bin/app.elf
+DOCKER_APP_BIN=$(DOCKER_APP_SRC)/app/build/$(TARGET)/bin/app.elf
 
 DOCKER_BOLOS_SDKS = NANOS_SDK
 DOCKER_BOLOS_SDKX = NANOX_SDK
@@ -176,6 +176,7 @@ buildFL:
 clean_output:
 	@echo "Removing output files"
 	@rm -f app/output/app* || true
+	@rm -rf app/bin app/debug || true
 
 .PHONY: clean_build
 clean_build:
