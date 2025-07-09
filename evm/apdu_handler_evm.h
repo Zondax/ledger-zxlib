@@ -15,6 +15,15 @@
  ********************************************************************************/
 #pragma once
 
-#define ZXLIB_MAJOR 35
-#define ZXLIB_MINOR 1
-#define ZXLIB_PATCH 0
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include <stdint.h>
+
+void handleGetAddrEth(volatile uint32_t *flags, volatile uint32_t *tx, uint32_t rx);
+void handleSignEth(volatile uint32_t *flags, volatile uint32_t *tx, uint32_t rx);
+void handleSignEip191(volatile uint32_t *flags, volatile uint32_t *tx, uint32_t rx);
+
+#ifdef __cplusplus
+}
+#endif

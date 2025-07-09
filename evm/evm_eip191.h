@@ -1,5 +1,5 @@
 /*******************************************************************************
- *   (c) 2018 - 2024 Zondax AG
+ *  (c) 2018 - 2024 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,6 +15,22 @@
  ********************************************************************************/
 #pragma once
 
-#define ZXLIB_MAJOR 35
-#define ZXLIB_MINOR 1
-#define ZXLIB_PATCH 0
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "coin_evm.h"
+#include "zxerror.h"
+#include "zxmacros.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+bool eip191_msg_parse();
+zxerr_t eip191_msg_getNumItems(uint8_t *num_items);
+zxerr_t eip191_msg_getItem(int8_t displayIdx, char *outKey, uint16_t outKeyLen, char *outVal, uint16_t outValLen,
+                           uint8_t pageIdx, uint8_t *pageCount);
+zxerr_t eip191_hash_message(const uint8_t *message, uint16_t messageLen, uint8_t *hash);
+#ifdef __cplusplus
+}
+#endif

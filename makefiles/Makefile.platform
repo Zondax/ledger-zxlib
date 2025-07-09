@@ -29,6 +29,13 @@ APP_SOURCE_PATH += $(ZXLIB_DIR)/src
 APP_SOURCE_PATH += $(ZXLIB_DIR)/app/common
 APP_SOURCE_PATH += $(ZXLIB_DIR)/app/ui
 
+# Set default value for ENABLE_EVM if not already defined
+ENABLE_EVM ?= 0
+# Add EVM source path conditionally
+ifeq ($(ENABLE_EVM), 1)
+APP_SOURCE_PATH += $(ZXLIB_DIR)/evm
+endif
+
 include $(BOLOS_SDK)/Makefile.standard_app
 
 ifeq ($(TARGET_NAME),TARGET_NANOS)
