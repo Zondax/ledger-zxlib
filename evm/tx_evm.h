@@ -14,6 +14,8 @@
  *  limitations under the License.
  ********************************************************************************/
 #pragma once
+#ifndef EVM_TX_EVM_H
+#define EVM_TX_EVM_H
 
 #include "coin.h"
 #include "os.h"
@@ -32,3 +34,5 @@ zxerr_t tx_getItemEth(int8_t displayIdx, char *outKey, uint16_t outKeyLen, char 
                       uint8_t pageIdx, uint8_t *pageCount);
 
 zxerr_t tx_compute_eth_v(unsigned int info, uint8_t *v, bool is_personal_message);
+
+#endif // EVM_TX_EVM_H

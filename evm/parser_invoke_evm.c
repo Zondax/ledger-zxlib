@@ -44,7 +44,7 @@ parser_error_t getNumItemsInvokeEVM(uint8_t *numItems, const fil_base_tx_t *txOb
     eth_tx_t tmpEthObj = {.tx.value = tmpValue, .tx.to = tokenContract, .tx.data = data};
 
     CHECK_ERROR(getERC20Token(&tmpEthObj, tokenSymbol, &decimals));
-    const bool unknownToken = (memcmp(tokenSymbol, "?? ", 3) == 0);
+    const bool unknownToken = (MEMCMP(tokenSymbol, "?? ", 3) == 0);
 
     *numItems = 5;
 
@@ -117,7 +117,7 @@ parser_error_t printInvokeEVM(const fil_base_tx_t *txObj, uint8_t displayIdx, ch
     char tokenSymbol[10] = {0};
     uint8_t decimals = 0;
     CHECK_ERROR(getERC20Token(&tmpEthObj, tokenSymbol, &decimals));
-    const bool knownToken = (memcmp(tokenSymbol, "?? ", 3) != 0);
+    const bool knownToken = (MEMCMP(tokenSymbol, "?? ", 3) != 0);
 
     // Check if the from identifier is an F4 address.
     const uint16_t fromIdentifier = txObj->from.buffer[0] << 8 | txObj->from.buffer[1];

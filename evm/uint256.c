@@ -98,8 +98,6 @@ void shiftl128(uint128_t *number, uint32_t value, uint128_t *target) {
     } else if (value > 64) {
         UPPER_P(target) = LOWER_P(number) << (value - 64);
         LOWER_P(target) = 0;
-    } else {
-        clear128(target);
     }
 }
 
@@ -253,7 +251,7 @@ void add256(uint256_t *number1, uint256_t *number2, uint256_t *target) {
         LOWER(one) = 1;
         add128(&UPPER_P(target), &one, &UPPER_P(target));
     }
-    add128(&LOWER_P(number1), &LOWER_P(number2), &LOWER_P(target));
+    copy128(&LOWER_P(target), &tmp);
 }
 
 void minus128(uint128_t *number1, uint128_t *number2, uint128_t *target) {

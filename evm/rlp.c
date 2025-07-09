@@ -71,7 +71,15 @@ parser_error_t rlp_read(parser_context_t *ctx, rlp_t *rlp) {
         CHECK_ERROR(readBytes(ctx, &rlpLenPtr, bytesLen))
         rlp->rlpLen = 0;
         for (uint8_t i = 0; i < bytesLen; i++) {
+            // Check for overflow before shifting
+            if (rlp->rlpLen > (UINT64_MAX >> 8)) {
+                return parser_value_out_of_range;
+            }
             rlp->rlpLen <<= 8u;
+            // Check for overflow before adding
+            if (rlp->rlpLen > UINT64_MAX - *(rlpLenPtr + i)) {
+                return parser_value_out_of_range;
+            }
             rlp->rlpLen += *(rlpLenPtr + i);
         }
         CHECK_ERROR(readBytes(ctx, &rlp->ptr, rlp->rlpLen))
@@ -88,7 +96,15 @@ parser_error_t rlp_read(parser_context_t *ctx, rlp_t *rlp) {
         CHECK_ERROR(readBytes(ctx, &rlpLenPtr, bytesLen))
         rlp->rlpLen = 0;
         for (uint8_t i = 0; i < bytesLen; i++) {
+            // Check for overflow before shifting
+            if (rlp->rlpLen > (UINT64_MAX >> 8)) {
+                return parser_value_out_of_range;
+            }
             rlp->rlpLen <<= 8u;
+            // Check for overflow before adding
+            if (rlp->rlpLen > UINT64_MAX - *(rlpLenPtr + i)) {
+                return parser_value_out_of_range;
+            }
             rlp->rlpLen += *(rlpLenPtr + i);
         }
         CHECK_ERROR(readBytes(ctx, &rlp->ptr, rlp->rlpLen))

@@ -27,7 +27,7 @@ const uint8_t ERC20_TRANSFER_PREFIX[] = {0xa9, 0x05, 0x9c, 0xbb};
 
 parser_error_t getERC20Token(const eth_tx_t *ethObj, char tokenSymbol[MAX_SYMBOL_LEN], uint8_t *decimals) {
     if (ethObj == NULL || tokenSymbol == NULL || decimals == NULL || ethObj->tx.data.rlpLen != ERC20_DATA_LENGTH ||
-        memcmp(ethObj->tx.data.ptr, ERC20_TRANSFER_PREFIX, EVM_SELECTOR_LENGTH) != 0) {
+        MEMCMP(ethObj->tx.data.ptr, ERC20_TRANSFER_PREFIX, EVM_SELECTOR_LENGTH) != 0) {
         return parser_unexpected_value;
     }
 
@@ -41,15 +41,15 @@ parser_error_t getERC20Token(const eth_tx_t *ethObj, char tokenSymbol[MAX_SYMBOL
 
     // Check if token is in the list
     for (uint8_t i = 0; i < supportedTokensSize; i++) {
-        if (memcmp(ethObj->tx.to.ptr, supportedTokens[i].address, ETH_ADDRESS_LEN) == 0) {
+        if (MEMCMP(ethObj->tx.to.ptr, supportedTokens[i].address, ETH_ADDRESS_LEN) == 0) {
             // Set symbol and decimals
-            snprintf(tokenSymbol, 10, "%s", (char *)PIC(supportedTokens[i].symbol));
+            snprintf(tokenSymbol, MAX_SYMBOL_LEN, "%s", (char *)PIC(supportedTokens[i].symbol));
             *decimals = supportedTokens[i].decimals;
             return parser_ok;
         }
     }
 
-    snprintf(tokenSymbol, 10, "?? ");
+    snprintf(tokenSymbol, MAX_SYMBOL_LEN, "?? ");
     *decimals = 0;
     return parser_ok;
 }
@@ -97,7 +97,7 @@ bool validateERC20(eth_tx_t *ethObj) {
     // Check that data start with ERC20 prefix
     if (ethObj->tx.to.rlpLen != ETH_ADDRESS_LEN || ethObj->tx.data.ptr == NULL ||
         ethObj->tx.data.rlpLen != ERC20_DATA_LENGTH ||
-        memcmp(ethObj->tx.data.ptr, ERC20_TRANSFER_PREFIX, sizeof(ERC20_TRANSFER_PREFIX)) != 0) {
+        MEMCMP(ethObj->tx.data.ptr, ERC20_TRANSFER_PREFIX, sizeof(ERC20_TRANSFER_PREFIX)) != 0) {
         ethObj->is_erc20_transfer = false;
         return false;
     }

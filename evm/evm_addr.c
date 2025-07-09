@@ -38,11 +38,14 @@ zxerr_t eth_addr_getItem(int8_t displayIdx, char *outKey, uint16_t outKeyLen, ch
     char buffer[300] = {0};
     uint8_t *addr = G_io_apdu_buffer + VIEW_ADDRESS_OFFSET_ETH;
 
+    if (ETH_ADDR_LEN * 2 >= sizeof(buffer)) {
+        return zxerr_buffer_too_small;
+    }
+
     MEMCPY(buffer, addr, ETH_ADDR_LEN * 2);
 
     switch (displayIdx) {
         case 0:
-            // TODO: Add "0x" prefix to the address??
             snprintf(outKey, outKeyLen, "Eth Address");
             pageString(outVal, outValLen, buffer, pageIdx, pageCount);
             return zxerr_ok;
