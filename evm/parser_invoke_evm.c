@@ -29,7 +29,7 @@ parser_error_t getNumItemsInvokeEVM(uint8_t *numItems, const fil_base_tx_t *txOb
         return parser_unexpected_error;
     }
     const bool expertMode = app_mode_expert();
-    char tokenSymbol[10] = {0};
+    char tokenSymbol[MAX_SYMBOL_LEN] = {0};
     uint8_t decimals = 0;
 
     const uint16_t addressIdentifier = txObj->to.buffer[0] << 8 | txObj->to.buffer[1];
@@ -114,7 +114,7 @@ parser_error_t printInvokeEVM(const fil_base_tx_t *txObj, uint8_t displayIdx, ch
     rlp_t data = {.ptr = txObj->params, .rlpLen = ERC20_DATA_LENGTH, .kind = RLP_KIND_STRING};
     eth_tx_t tmpEthObj = {.tx.value = tmpValue, .tx.to = tokenContract, .tx.data = data};
 
-    char tokenSymbol[10] = {0};
+    char tokenSymbol[MAX_SYMBOL_LEN] = {0};
     uint8_t decimals = 0;
     CHECK_ERROR(getERC20Token(&tmpEthObj, tokenSymbol, &decimals));
     const bool knownToken = (MEMCMP(tokenSymbol, "?? ", 3) != 0);

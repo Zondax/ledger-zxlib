@@ -61,7 +61,7 @@ parser_error_t printERC20Value(const eth_tx_t *ethObj, char *outVal, uint16_t ou
     }
 
     // [identifier (4) | token contract (12 + 20) | value (32)]
-    char tokenSymbol[10] = {0};
+    char tokenSymbol[MAX_SYMBOL_LEN] = {0};
     uint8_t decimals = 0;
     CHECK_ERROR(getERC20Token(ethObj, tokenSymbol, &decimals))
 
