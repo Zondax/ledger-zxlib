@@ -32,7 +32,7 @@ ifeq ($(TARGET_NAME),TARGET_NANOS)
 ifeq ($(HAVE_SWAP),1)
 HAVE_APPLICATION_FLAG_LIBRARY = 1
 endif
-OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_s.elf
+OUTPUT_ELF ?= $(CURDIR)/build/nanos/bin/app.elf
 OUTPUT_INSTALLER := $(CURDIR)/pkg/$(INSTALLER_NAME)_s.sh
 endif
 
@@ -44,7 +44,7 @@ HAVE_APPLICATION_FLAG_LIBRARY = 1
 else
 HAVE_APPLICATION_FLAG_BOLOS_SETTINGS = 1
 endif
-OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_x.elf
+OUTPUT_ELF ?= $(CURDIR)/build/nanox/bin/app.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_x.sh
 endif
 
@@ -53,7 +53,7 @@ ifeq ($(TARGET_NAME),TARGET_NANOS2)
 ifeq ($(HAVE_SWAP),1)
 HAVE_APPLICATION_FLAG_LIBRARY = 1
 endif
-OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_s2.elf
+OUTPUT_ELF ?= $(CURDIR)/build/nanos2/bin/app.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_s2.sh
 endif
 #######################################
@@ -64,7 +64,7 @@ HAVE_APPLICATION_FLAG_LIBRARY = 1
 else
 HAVE_APPLICATION_FLAG_BOLOS_SETTINGS = 1
 endif
-OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_stax.elf
+OUTPUT_ELF ?= $(CURDIR)/build/stax/bin/app.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_stax.sh
 endif
 #######################################
@@ -75,7 +75,7 @@ HAVE_APPLICATION_FLAG_LIBRARY = 1
 else
 HAVE_APPLICATION_FLAG_BOLOS_SETTINGS = 1
 endif
-OUTPUT_ELF ?= $(CURDIR)/output/$(ELF_NAME)_flex.elf
+OUTPUT_ELF ?= $(CURDIR)/build/flex/bin/app.elf
 OUTPUT_INSTALLER:= $(CURDIR)/pkg/$(INSTALLER_NAME)_flex.sh
 endif
 #######################################

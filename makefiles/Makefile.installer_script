@@ -23,10 +23,10 @@ all: default
 	@echo "LOAD_PARAMS=($$(echo "${APP_LOAD_PARAMS}" | sed -e "s|"${APPNAME}"|\""${APPNAME}"\"|"))" >> $(OUTPUT_INSTALLER)
 	@echo "DELETE_PARAMS=($$(echo "${COMMON_DELETE_PARAMS}" | sed -e "s|"${APPNAME}"|\""${APPNAME}"\"|"))" >> $(OUTPUT_INSTALLER)
 	@echo "APPHEX=\"" >> $(OUTPUT_INSTALLER)
-	@cat $(CURDIR)/bin/app.hex >> $(OUTPUT_INSTALLER)
+	@cat $(CURDIR)/build/$(TARGET)/bin/app.hex >> $(OUTPUT_INSTALLER)
 	@echo "\"" >> $(OUTPUT_INSTALLER)
 	@cat $(CURDIR)/../deps/ledger-zxlib/scripts/template.sh >> $(OUTPUT_INSTALLER)
 	@chmod +x $(OUTPUT_INSTALLER)
-	@cp $(CURDIR)/bin/* $(CURDIR)/output
+	@cp $(CURDIR)/build/$(TARGET)/bin/* $(CURDIR)/output
 	@cp $(CURDIR)/output/app.elf ${OUTPUT_ELF}
 	@rm $(CURDIR)/output/app.elf
