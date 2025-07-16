@@ -20,7 +20,7 @@
 #include <zxmacros.h>
 
 #include "app_mode.h"
-#include "crypto.h"
+#include "crypto_evm.h"
 #include "evm_erc20.h"
 #include "evm_utils.h"
 #include "parser_common.h"
