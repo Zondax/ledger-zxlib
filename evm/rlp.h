@@ -22,7 +22,6 @@
 extern "C" {
 #endif
 
-#include "parser_common.h"
 #include "rlp_def.h"
 #include "uint256.h"
 
