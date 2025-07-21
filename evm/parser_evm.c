@@ -57,14 +57,14 @@ parser_error_t parser_getNumItemsEth(const parser_context_t *ctx, uint8_t *num_i
     return parser_ok;
 }
 
-static void cleanOutput(char *outKey, uint16_t outKeyLen, char *outVal, uint16_t outValLen) {
+static void cleanOutputEth(char *outKey, uint16_t outKeyLen, char *outVal, uint16_t outValLen) {
     MEMZERO(outKey, outKeyLen);
     MEMZERO(outVal, outValLen);
     snprintf(outKey, outKeyLen, "?");
     snprintf(outVal, outValLen, " ");
 }
 
-static parser_error_t checkSanity(uint8_t numItems, uint8_t displayIdx) {
+static parser_error_t checkSanityEth(uint8_t numItems, uint8_t displayIdx) {
     if (displayIdx >= numItems) {
         return parser_display_idx_out_of_range;
     }
@@ -77,8 +77,8 @@ parser_error_t parser_getItemEth(const parser_context_t *ctx, uint8_t displayIdx
     CHECK_ERROR(parser_getNumItemsEth(ctx, &numItems))
     CHECK_APP_CANARY()
 
-    CHECK_ERROR(checkSanity(numItems, displayIdx))
-    cleanOutput(outKey, outKeyLen, outVal, outValLen);
+    CHECK_ERROR(checkSanityEth(numItems, displayIdx))
+    cleanOutputEth(outKey, outKeyLen, outVal, outValLen);
 
     return _getItemEth(ctx, displayIdx, outKey, outKeyLen, outVal, outValLen, pageIdx, pageCount);
 }

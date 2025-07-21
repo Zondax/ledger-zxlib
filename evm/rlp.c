@@ -53,7 +53,7 @@ parser_error_t rlp_read(parser_context_t *ctx, rlp_t *rlp) {
     if (prefix <= RLP_KIND_BYTE_PREFIX) {
         rlp->kind = RLP_KIND_BYTE;
         rlp->ptr = prefixPtr;
-        rlp->rlpLen = 1;
+        rlp->rlpLen = 0;
 
     } else if (prefix <= RLP_KIND_STRING_SHORT_MAX) {
         rlp->kind = RLP_KIND_STRING;

@@ -64,7 +64,7 @@ zxerr_t keccak_digest(const unsigned char *in, unsigned int inLen, unsigned char
     return zxerr_ok;
 }
 
-zxerr_t crypto_extractUncompressedPublicKey(uint8_t *pubKey, uint16_t pubKeyLen, uint8_t *chainCode) {
+zxerr_t crypto_extractUncompressedPublicKeyEth(uint8_t *pubKey, uint16_t pubKeyLen, uint8_t *chainCode) {
     if (pubKey == NULL || pubKeyLen < PK_LEN_SECP256K1_UNCOMPRESSED) {
         return zxerr_invalid_crypto_settings;
     }
@@ -180,7 +180,7 @@ zxerr_t crypto_fillEthAddress(uint8_t *buffer, uint16_t buffer_len, uint16_t *ad
     MEMZERO(buffer, buffer_len);
     answer_eth_t *const answer = (answer_eth_t *)buffer;
 
-    CHECK_ZXERR(crypto_extractUncompressedPublicKey(&answer->publicKey[1], sizeof_field(answer_eth_t, publicKey) - 1,
+    CHECK_ZXERR(crypto_extractUncompressedPublicKeyEth(&answer->publicKey[1], sizeof_field(answer_eth_t, publicKey) - 1,
                                                     &evm_chain_code))
 
     answer->publicKey[0] = SECP256K1_PK_LEN;

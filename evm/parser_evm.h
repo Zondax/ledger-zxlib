@@ -20,6 +20,8 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
+
 #include "parser_impl.h"
 
 const char *parser_getErrorDescription(parser_error_t err);
