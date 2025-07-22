@@ -30,8 +30,8 @@
  #include "zxformat.h"
  
  // External implementation specific to each app
- extern parser_error_t getNumItemsEthAppSpecific(uint8_t *numItems);
- extern parser_error_t printGenericAppSpecific(const parser_context_t *ctx, uint8_t displayIdx, char *outKey,
+ extern parser_error_t getNumItemsEthAppSpecific(eth_tx_t *ethTxObj, uint8_t *numItems);
+ extern parser_error_t printGenericAppSpecific(const parser_context_t *ctx, eth_tx_t *ethTxObj, uint8_t displayIdx, char *outKey,
                                                uint16_t outKeyLen, char *outVal, uint16_t outValLen, uint8_t pageIdx,
                                                uint8_t *pageCount);
  extern parser_error_t printERC20TransferAppSpecific(const parser_context_t *ctx, eth_tx_t *ethTxObj, uint8_t displayIdx, char *outKey,
@@ -278,7 +278,7 @@
      MEMZERO(outVal, outValLen);
      *pageCount = 1;
  
-     return printGenericAppSpecific(ctx, displayIdx, outKey, outKeyLen, outVal, outValLen, pageIdx, pageCount);
+     return printGenericAppSpecific(ctx, &eth_tx_obj, displayIdx, outKey, outKeyLen, outVal, outValLen, pageIdx, pageCount);
  }
  
  parser_error_t _getItemEth(const parser_context_t *ctx, uint8_t displayIdx, char *outKey, uint16_t outKeyLen,
@@ -294,7 +294,9 @@
  // returns the number of items to display on the screen.
  // Note: we might need to add a transaction state object,
  // Defined with one parameter for now.
- parser_error_t _getNumItemsEth(uint8_t *numItems) { return getNumItemsEthAppSpecific(numItems); }
+ parser_error_t _getNumItemsEth(uint8_t *numItems) { 
+    return getNumItemsEthAppSpecific(&eth_tx_obj, numItems); 
+}
  
  // https://github.com/LedgerHQ/ledger-live/commit/b93a421866519b80fdd8a029caea97323eceae93
  parser_error_t _computeV(parser_context_t *ctx, eth_tx_t *tx_obj, unsigned int info, uint8_t *v,
