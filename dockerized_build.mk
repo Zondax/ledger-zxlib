@@ -376,6 +376,10 @@ fuzz_build:
 	cmake -B build -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -DENABLE_FUZZING=1 -DENABLE_SANITIZERS=1 .
 	make -C build
 
+.PHONY: fuzz_clean
+fuzz_clean:
+	rm -rf fuzz/corpora fuzz/coverage fuzz/logs build
+
 .PHONY: fuzz
 fuzz: fuzz_build
 	./fuzz/run-fuzzers.py
@@ -403,6 +407,16 @@ fuzz_report_html:
 	llvm-profdata merge -sparse $(FUZZ_COVERAGE_DIR)/*.profraw -o $(FUZZ_COVERAGE_DIR)/coverage.profdata
 	llvm-cov show build/fuzz-parser_parse -instr-profile=$(FUZZ_COVERAGE_DIR)/coverage.profdata -format=html -output-dir=$(FUZZ_COVERAGE_DIR)/report_html
 	open $(FUZZ_COVERAGE_DIR)/report_html/index.html
+
+.PHONY: fuzz_fmt
+fuzz_fmt:
+	@echo "🎨 Formatting Python files in fuzzing infrastructure..."
+	@$(MAKE) -C $(CURDIR)/deps/ledger-zxlib/fuzzing format
+
+.PHONY: fuzz_fmt_check
+fuzz_fmt_check:
+	@echo "🔍 Checking Python file formatting in fuzzing infrastructure..."
+	@$(MAKE) -C $(CURDIR)/deps/ledger-zxlib/fuzzing check
 
 .PHONY: format
 format:
