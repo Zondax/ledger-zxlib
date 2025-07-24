@@ -103,7 +103,7 @@ class CrashAnalyzer:
                 print(f"📝 Details saved to: {log_file}")
                 return result.returncode
             else:
-                print(f"✅ No crash (return code: 0)")
+                print("✅ No crash (return code: 0)")
                 return 0
 
         except subprocess.TimeoutExpired:
@@ -191,7 +191,7 @@ class CrashAnalyzer:
             print(f"Crashes reproduced: {reproduced}")
 
         # Overall summary
-        print(f"\n🔍 Overall Analysis Summary:")
+        print("\n🔍 Overall Analysis Summary:")
         print(f"Total crash files: {total_crashes}")
         print(f"Total crashes reproduced: {total_reproduced}")
         print(f"Logs saved to: {self.logs_dir}")

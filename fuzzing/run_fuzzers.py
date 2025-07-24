@@ -16,10 +16,8 @@ import shlex
 import subprocess
 import argparse
 import datetime
-import signal
 import time
-import contextlib
-from typing import List, Tuple, Optional
+from typing import List
 
 # System resource management constants
 SYSTEM_RESERVED_CPU_CORES = 2  # Number of CPU cores reserved for system stability
@@ -187,14 +185,14 @@ class FuzzRunner:
             f"-mutate_depth={self.mutate_depth}",
             f"-artifact_prefix={artifact_dir}/",
             # Core coverage options (stable)
-            f"-print_pcs=1",
-            f"-print_funcs=1",
-            f"-print_final_stats=1",
+            "-print_pcs=1",
+            "-print_funcs=1",
+            "-print_final_stats=1",
             # Safe input optimizations
-            f"-shrink=1",
-            f"-reduce_inputs=1",
+            "-shrink=1",
+            "-reduce_inputs=1",
             # Advanced profiling (stable)
-            f"-use_value_profile=1",
+            "-use_value_profile=1",
             corpus_dir,
         ]
 
@@ -308,11 +306,11 @@ class FuzzRunner:
                 print(f"❌ Insufficient disk space: {free_space_gb:.1f}GB available, need at least 1GB")
                 return False
             print(f"✅ Disk space: {free_space_gb:.1f}GB available")
-        except:
+        except (OSError, AttributeError):
             print("⚠️ Could not check disk space")
 
         # System resources detected
-        print(f"🖥️ System resources detected:")
+        print("🖥️ System resources detected:")
         print(f"   • Total RAM: {self.total_ram_mb}MB")
         print(f"   • CPU cores: {self.cpu_count}")
 
@@ -337,7 +335,7 @@ class FuzzRunner:
         available_cores = self.cpu_count - SYSTEM_RESERVED_CPU_CORES
         unused_cores = available_cores - self.jobs
 
-        print(f"🎯 Fuzzer resource allocation:")
+        print("🎯 Fuzzer resource allocation:")
         print(f"   • Jobs configured: {self.jobs}")
         print(
             f"   • Available cores: {available_cores} (total: {self.cpu_count}, system reserved: {SYSTEM_RESERVED_CPU_CORES})"
@@ -365,7 +363,7 @@ class FuzzRunner:
         # Show the actual calculations used
         optimal_jobs = min(MAX_JOBS_LIMIT, max(1, self.cpu_count - SYSTEM_RESERVED_CPU_CORES))
 
-        print(f"📊 Resource calculation details:")
+        print("📊 Resource calculation details:")
         print(f"   • Total fuzzer budget: {self.total_ram_mb}MB × {MAX_FUZZER_MEMORY_PERCENT}% = {budget_mb}MB")
         print(f"   • Configured jobs: {self.jobs}")
         print(
@@ -382,15 +380,15 @@ class FuzzRunner:
 
         # Warnings and suggestions for resource optimization
         if self.total_ram_mb < 2048:
-            print(f"⚠️ Low system RAM detected, fuzzing may be slower")
+            print("⚠️ Low system RAM detected, fuzzing may be slower")
 
         if self.cpu_count < 2:
-            print(f"⚠️ Low CPU cores detected, consider increasing --jobs if system allows")
+            print("⚠️ Low CPU cores detected, consider increasing --jobs if system allows")
 
         if total_fuzzer_memory > (self.total_ram_mb * 0.75):
             print(f"❌ CRITICAL: High memory usage: {(total_fuzzer_memory/self.total_ram_mb)*100:.1f}% of total RAM")
-            print(f"   Aborting to prevent system instability")
-            print(f"   Please reduce FUZZER_JOBS or MAX_FUZZER_MEMORY_PERCENT")
+            print("   Aborting to prevent system instability")
+            print("   Please reduce FUZZER_JOBS or MAX_FUZZER_MEMORY_PERCENT")
             return False
 
         if unused_cores >= 3:
@@ -398,7 +396,7 @@ class FuzzRunner:
             print(f"💡 Performance suggestion: {unused_cores} cores unused ({efficiency_loss:.1f}% of available cores)")
             print(f"   Consider increasing FUZZER_JOBS to {min(available_cores, 8)} for better performance")
 
-        print(f"✅ ASAN configured for embedded apps: heap detection disabled, stack bounds enabled")
+        print("✅ ASAN configured for embedded apps: heap detection disabled, stack bounds enabled")
         return True
 
     def run_fuzzers(self, configs: List[FuzzConfig]) -> bool:
