@@ -26,8 +26,8 @@
 
 uint32_t bech32_polymod_step(uint32_t pre) {
     uint8_t b = pre >> 25u;
-    return ((pre & 0x1FFFFFFu) << 5u) ^ (-((b >> 0u) & 1u) & 0x3b6a57b2UL) ^ (-((b >> 1u) & 1u) & 0x26508e6dUL) ^
-           (-((b >> 2u) & 1u) & 0x1ea119faUL) ^ (-((b >> 3u) & 1u) & 0x3d4233ddUL) ^ (-((b >> 4u) & 1u) & 0x2a1462b3UL);
+    return ((pre & 0x1FFFFFFu) << 5u) ^ (((b >> 0u) & 1u) ? 0x3b6a57b2UL : 0) ^ (((b >> 1u) & 1u) ? 0x26508e6dUL : 0) ^
+           (((b >> 2u) & 1u) ? 0x1ea119faUL : 0) ^ (((b >> 3u) & 1u) ? 0x3d4233ddUL : 0) ^ (((b >> 4u) & 1u) ? 0x2a1462b3UL : 0);
 }
 
 static uint32_t bech32_final_constant(bech32_encoding enc) {
@@ -145,24 +145,39 @@ bech32_encoding bech32_decode(char *hrp, uint8_t *data, size_t *data_len, const 
 }
 
 int convert_bits(uint8_t *out, size_t *outlen, int outBits, const uint8_t *in, size_t inLen, int inBits, int pad) {
-    uint32_t val = 0;
+    uint32_t acc = 0;
     int bits = 0;
-    uint32_t maxv = (((uint32_t)1u) << outBits) - 1u;
-    while (inLen--) {
-        val = (val << inBits) | *(in++);
+    const uint32_t maxv = (((uint32_t)1u) << outBits) - 1u;
+    const uint32_t max_acc = (((uint32_t)1u) << (inBits + outBits - 1)) - 1u;
+    
+    while (inLen > 0) {
+        uint8_t input_byte = *(in++);
+        inLen--;
+        
+        // Validate input doesn't exceed the expected range for inBits
+        if (input_byte >= (((uint32_t)1u) << inBits)) {
+            return 0;
+        }
+        
+        // Bitcoin Core approach: mask accumulator to prevent overflow
+        acc = ((acc << inBits) | input_byte) & max_acc;
         bits += inBits;
+        
+        // Extract output bits when we have enough
         while (bits >= outBits) {
             bits -= outBits;
-            out[(*outlen)++] = (val >> bits) & maxv;
+            out[(*outlen)++] = (acc >> bits) & maxv;
         }
     }
+    
     if (pad) {
         if (bits) {
-            out[(*outlen)++] = (val << (outBits - bits)) & maxv;
+            out[(*outlen)++] = (acc << (outBits - bits)) & maxv;
         }
-    } else if (((val << (outBits - bits)) & maxv) || bits >= inBits) {
+    } else if (bits >= inBits || ((acc << (outBits - bits)) & maxv)) {
         return 0;
     }
+    
     return 1;
 }
 
