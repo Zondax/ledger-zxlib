@@ -107,7 +107,7 @@ namespace {
         uint8_t s[] = {0xFA, 0x5D, 0x34, 0x87};
         char data[10];
 
-        auto length = array_to_hexstr(data, sizeof(data), s, sizeof(s));
+        auto length = array_to_hexstr_uppercase(data, sizeof(data), s, sizeof(s));
 
         EXPECT_STREQ(data, "FA5D3487");
     }
