@@ -28,15 +28,12 @@ namespace {
         uint8_t data1[] = {1, 3, 5};
         uint8_t data2[] = {1, 3, 5, 7, 9, 11, 13};
 
+        // These should fail with pad=0 due to invalid conversion per BIP173 spec
         auto err = bech32EncodeFromBytes(addr_out, sizeof(addr_out), hrp, data1, sizeof(data1), 0, BECH32_ENCODING_BECH32);
-        ASSERT_EQ(err, zxerr_ok);
-        std::cout << addr_out << std::endl;
-        ASSERT_STREQ("zx1qypse825ac", addr_out);
+        ASSERT_EQ(err, zxerr_encoding_failed);
 
         err = bech32EncodeFromBytes(addr_out, sizeof(addr_out), hrp, data2, sizeof(data2), 0, BECH32_ENCODING_BECH32);
-        ASSERT_EQ(err, zxerr_ok);
-        std::cout << addr_out << std::endl;
-        ASSERT_STREQ("zx1qyps2pcfpvx20dk22", addr_out);
+        ASSERT_EQ(err, zxerr_encoding_failed);
 
         ///
         err = bech32EncodeFromBytes(addr_out, sizeof(addr_out), hrp, data1, sizeof(data1), 1,BECH32_ENCODING_BECH32);
@@ -90,15 +87,12 @@ namespace {
         uint8_t data1[] = {1, 3, 5};
         uint8_t data2[] = {1, 3, 5, 7, 9, 11, 13};
 
+        // These should fail with pad=0 due to invalid conversion per BIP173 spec
         auto err = bech32EncodeFromBytes(addr_out, sizeof(addr_out), hrp, data1, sizeof(data1), 0, BECH32_ENCODING_BECH32M);
-        ASSERT_EQ(err, zxerr_ok);
-        std::cout << addr_out << std::endl;
-        ASSERT_STREQ("zx1qypsvm6cc6", addr_out);
+        ASSERT_EQ(err, zxerr_encoding_failed);
 
         err = bech32EncodeFromBytes(addr_out, sizeof(addr_out), hrp, data2, sizeof(data2), 0, BECH32_ENCODING_BECH32M);
-        ASSERT_EQ(err, zxerr_ok);
-        std::cout << addr_out << std::endl;
-        ASSERT_STREQ("zx1qyps2pcfpvxlna60g", addr_out);
+        ASSERT_EQ(err, zxerr_encoding_failed);
 
         ///
         err = bech32EncodeFromBytes(addr_out, sizeof(addr_out), hrp, data1, sizeof(data1), 1,BECH32_ENCODING_BECH32M);
@@ -378,10 +372,10 @@ namespace {
         
         // Test case 4: Known pattern that we verified in existing tests
         {
+            // This should fail with pad=0 due to invalid conversion per BIP173 spec
             uint8_t data[] = {1, 3, 5};
             auto err = bech32EncodeFromBytes(addr_out, sizeof(addr_out), "zx", data, sizeof(data), 0, BECH32_ENCODING_BECH32);
-            ASSERT_EQ(err, zxerr_ok);
-            ASSERT_STREQ("zx1qypse825ac", addr_out);
+            ASSERT_EQ(err, zxerr_encoding_failed);
         }
     }
 
