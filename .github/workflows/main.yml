@@ -17,7 +17,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-      - run: cmake -DCMAKE_BUILD_TYPE=Debug . && make
+      - run: make build
+      - name: Run C++ tests
+        run: make test
 
   check_version:
     runs-on: ubuntu-latest
