@@ -119,22 +119,22 @@ class FuzzRunner:
         env["ASAN_OPTIONS"] = (
             "halt_on_error=1:"
             "print_stacktrace=1:"
-            "detect_stack_use_after_return=false:"  # Not relevant for static allocation
-            "detect_stack_use_after_scope=true:"  # Still useful for stack bounds
+            "detect_stack_use_after_return=false:"
+            "detect_stack_use_after_scope=true:"
             "symbolize=1:"
-            "print_module_map=1:"  # Reduced verbosity
+            "print_module_map=1:"
             "handle_segv=1:"
             "handle_sigbus=1:"
             "handle_abort=1:"
             "handle_sigfpe=1:"
             "allow_user_segv_handler=0:"
             "use_sigaltstack=1:"
-            "detect_odr_violation=0:"  # Not relevant for embedded apps
-            "fast_unwind_on_malloc=1:"  # Faster since no heap analysis needed
-            "detect_leaks=0:"  # No dynamic allocation = no leaks
-            "check_malloc_usable_size=0:"  # No malloc usage
-            "detect_heap_use_after_free=0:"  # No heap usage
-            "quarantine_size_mb=0"  # No quarantine needed
+            "detect_odr_violation=0:"
+            "fast_unwind_on_malloc=1:"
+            "detect_leaks=0:"
+            "check_malloc_usable_size=0:"
+            "detect_heap_use_after_free=0:"
+            "quarantine_size_mb=0"
         )
 
         # UBSAN configuration

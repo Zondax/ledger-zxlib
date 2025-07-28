@@ -35,19 +35,22 @@ class CrashAnalyzer:
         env["ASAN_OPTIONS"] = (
             "halt_on_error=1:"
             "print_stacktrace=1:"
-            "detect_stack_use_after_return=true:"
+            "detect_stack_use_after_return=false:" 
             "detect_stack_use_after_scope=true:"
             "symbolize=1:"
-            "print_module_map=2:"
+            "print_module_map=1:"
             "handle_segv=1:"
             "handle_sigbus=1:"
             "handle_abort=1:"
             "handle_sigfpe=1:"
             "allow_user_segv_handler=0:"
             "use_sigaltstack=1:"
-            "detect_odr_violation=1:"
-            "mmap_limit_mb=512:"
-            "fast_unwind_on_malloc=0"
+            "detect_odr_violation=0:"
+            "fast_unwind_on_malloc=1:"
+            "detect_leaks=0:"
+            "check_malloc_usable_size=0:"
+            "detect_heap_use_after_free=0:"
+            "quarantine_size_mb=0"
         )
 
         # UBSAN configuration for crash analysis
