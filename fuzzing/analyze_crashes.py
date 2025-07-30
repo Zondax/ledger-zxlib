@@ -16,14 +16,21 @@ from typing import List, Optional
 class CrashAnalyzer:
     """Common crash analyzer for fuzzing artifacts"""
 
-    def __init__(self, project_root: str, timeout: int = 30, build_dir: str = "fuzz/build"):
+    def __init__(
+        self,
+        project_root: str,
+        timeout: int = 30,
+        build_dir: str = "fuzz/build",
+        fuzz_dir: str = None,
+        logs_dir: str = None,
+    ):
         self.project_root = os.path.abspath(project_root)
         self.timeout = timeout
         self.build_dir = build_dir
 
-        # Setup directories within project root
-        self.fuzz_dir = os.path.join(self.project_root, "fuzz")
-        self.logs_dir = os.path.join(self.fuzz_dir, "logs")
+        # Setup directories - use provided paths or defaults
+        self.fuzz_dir = fuzz_dir or os.path.join(self.project_root, "fuzz")
+        self.logs_dir = logs_dir or os.path.join(self.fuzz_dir, "logs")
 
         # Ensure logs directory exists
         os.makedirs(self.logs_dir, exist_ok=True)
@@ -36,7 +43,7 @@ class CrashAnalyzer:
         env["ASAN_OPTIONS"] = (
             "halt_on_error=1:"
             "print_stacktrace=1:"
-            "detect_stack_use_after_return=false:" 
+            "detect_stack_use_after_return=false:"
             "detect_stack_use_after_scope=true:"
             "symbolize=1:"
             "print_module_map=1:"
@@ -217,11 +224,15 @@ def main():
         "--timeout", type=int, default=30, help="Timeout for each crash analysis in seconds (default: 30)"
     )
     parser.add_argument("--fuzzers", nargs="*", help="Specific fuzzers to analyze (default: analyze all found fuzzers)")
-    parser.add_argument("--build-dir", default="fuzz/build", help="Build directory path relative to project root (default: build)")
+    parser.add_argument(
+        "--build-dir", default="fuzz/build", help="Build directory path relative to project root (default: build)"
+    )
+    parser.add_argument("--fuzz-dir", help="Fuzz directory path (default: project_root/fuzz)")
+    parser.add_argument("--logs-dir", help="Logs directory path (default: fuzz_dir/logs)")
 
     args = parser.parse_args()
 
-    analyzer = CrashAnalyzer(args.project_root, args.timeout, args.build_dir)
+    analyzer = CrashAnalyzer(args.project_root, args.timeout, args.build_dir, args.fuzz_dir, args.logs_dir)
 
     if analyzer.analyze_all_crashes(args.fuzzers):
         return 0

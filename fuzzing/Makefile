@@ -1,50 +1,110 @@
-# Makefile for Python formatting in fuzzing infrastructure
-# This file provides standardized Python code formatting rules for Zondax Ledger applications
+# Makefile for ledger-zxlib fuzzing
+# This file contains both fuzzing targets and Python formatting rules
 
-# Configuration
+# === FUZZING CONFIGURATION ===
+FUZZ_TIME ?= 600
+FUZZ_JOBS ?= 4
+FUZZ_BUILD_DIR = fuzz_local/build
+FUZZ_DIR = fuzz_local
+
+# === PYTHON FORMATTING CONFIGURATION ===
 BLACK_LINE_LENGTH := 120
-# Only search in fuzzing-related directories (relative to this Makefile's location)
 FUZZING_DIR := .
-PROJECT_FUZZ_DIR := $(shell cd ../../../ && pwd)/fuzz
-
-# Validate that the project fuzz directory exists
-validate_fuzz_dir:
-	@if [ ! -d "$(PROJECT_FUZZ_DIR)" ]; then \
-		echo "⚠️  WARNING: Project fuzz directory not found: $(PROJECT_FUZZ_DIR)"; \
-		echo "   Only formatting files in the common fuzzing library directory."; \
-		echo "   To format project-specific files, please create the 'fuzz' directory."; \
-	fi
-
-# Find all Python files in fuzzing directories only  
-PYTHON_FILES := $(shell find $(FUZZING_DIR) -name "*.py" -type f -not -path "*/.*" 2>/dev/null) \
-                $(shell if [ -d "$(PROJECT_FUZZ_DIR)" ]; then find $(PROJECT_FUZZ_DIR) -name "*.py" -type f -not -path "*/.*" 2>/dev/null; fi)
 
 # Default target
 .PHONY: help
 help:
-	@echo "Python Formatting Rules for Zondax Ledger Fuzzing"
+	@echo "ledger-zxlib Fuzzing & Development Tools"
 	@echo ""
-	@echo "Available targets:"
-	@echo "  format     Format Python files in fuzzing directories with Black"
-	@echo "  check      Check if files need formatting (no changes)"
-	@echo "  install    Install Black formatter"
-	@echo "  clean      Remove __pycache__ directories from fuzzing dirs"
-	@echo "  list       List Python files in fuzzing directories"
+	@echo "=== FUZZING TARGETS ==="
+	@echo "  build_fuzz    Build fuzzer targets"
+	@echo "  fuzz          Run all fuzzers (default: 10 minutes)"
+	@echo "  fuzz_crash    Analyze any crashes found"
+	@echo "  fuzz_clean    Clean fuzzing artifacts"
 	@echo ""
-	@echo "Configuration:"
-	@echo "  Line length: $(BLACK_LINE_LENGTH)"
-	@echo "  Fuzzing directories: $(FUZZING_DIR) $(PROJECT_FUZZ_DIR)"
+	@echo "=== PYTHON FORMATTING ==="
+	@echo "  format        Format Python files with Black"
+	@echo "  check         Check if files need formatting"
+	@echo "  format_clean  Remove Python cache files"
+	@echo ""
+	@echo "Environment variables:"
+	@echo "  FUZZ_TIME     Fuzzing duration in seconds (default: 600)"
+	@echo "  FUZZ_JOBS     Number of parallel jobs (default: 4)"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make fuzz FUZZ_TIME=60    # Run for 1 minute"
+	@echo "  make fuzz FUZZ_JOBS=2     # Use 2 parallel jobs"
+
+# === FUZZING TARGETS ===
+
+# Check if clang is available
+.PHONY: check_clang
+check_clang:
+	@which clang >/dev/null 2>&1 || { \
+		echo "❌ Error: clang not found. Please install clang for fuzzing."; \
+		echo "On macOS: brew install llvm"; \
+		echo "On Ubuntu: apt install clang"; \
+		exit 1; \
+	}
+	@echo "✅ Clang found: $$(clang --version | head -n1)"
+
+# Build fuzzer targets
+.PHONY: build_fuzz
+build_fuzz: check_clang
+	@echo "🔨 Building fuzzer targets..."
+	@mkdir -p $(FUZZ_BUILD_DIR)
+	@cd $(FUZZ_BUILD_DIR) && \
+		cmake -DCMAKE_C_COMPILER=clang \
+			  -DCMAKE_CXX_COMPILER=clang++ \
+			  -DENABLE_FUZZING=ON \
+			  -DENABLE_SANITIZERS=ON \
+			  -DCMAKE_BUILD_TYPE=Debug \
+			  .. && \
+		make -j$(FUZZ_JOBS)
+	@echo "✅ Fuzzer build completed"
+
+# Run fuzzers
+.PHONY: fuzz
+fuzz: build_fuzz
+	@echo "🚀 Starting fuzzing session..."
+	@echo "   Duration: $(FUZZ_TIME) seconds"
+	@echo "   Jobs: $(FUZZ_JOBS)"
+	@python3 $(FUZZ_DIR)/run_local_fuzz.py \
+		--max-seconds $(FUZZ_TIME) \
+		--jobs $(FUZZ_JOBS)
+	@echo "🏁 Fuzzing session completed"
+
+# Analyze crashes
+.PHONY: fuzz_crash
+fuzz_crash:
+	@echo "🔍 Analyzing fuzzing crashes..."
+	@python3 $(FUZZ_DIR)/analyze_local_crashes.py
+
+# Clean fuzzing artifacts
+.PHONY: fuzz_clean
+fuzz_clean:
+	@echo "🧹 Cleaning fuzzing artifacts..."
+	@rm -rf $(FUZZ_BUILD_DIR)
+	@rm -rf $(FUZZ_DIR)/corpora
+	@rm -rf $(FUZZ_DIR)/logs
+	@rm -rf $(FUZZ_DIR)/coverage
+	@echo "✅ Fuzzing artifacts cleaned"
+
+# === PYTHON FORMATTING TARGETS ===
+
+# Find all Python files in fuzzing directories
+PYTHON_FILES := $(shell find $(FUZZING_DIR) -name "*.py" -type f -not -path "*/.*" 2>/dev/null)
 
 # Install Black if not present
-.PHONY: install
-install:
+.PHONY: format_install
+format_install:
 	@echo "🔧 Installing Black Python formatter..."
 	@pip3 install black || { echo "❌ Failed to install Black"; exit 1; }
 	@echo "✅ Black installed successfully"
 
-# Format all Python files (checks first, then formats only if needed)
+# Format all Python files
 .PHONY: format
-format: install validate_fuzz_dir
+format: format_install
 	@echo "🎨 Formatting Python files with Black..."
 	@if $(MAKE) check; then \
 		echo "✅ All Python files are already properly formatted - no changes needed"; \
@@ -61,44 +121,34 @@ format: install validate_fuzz_dir
 
 # Check formatting without making changes
 .PHONY: check
-check: install validate_fuzz_dir
+check: format_install
 	@echo "🔍 Checking Python file formatting..."
 	@if [ -z "$(PYTHON_FILES)" ]; then \
 		echo "⚠️  No Python files found"; \
 	else \
-		echo "📁 Checking $(shell echo $(PYTHON_FILES) | wc -w) Python files:"; \
-		for file in $(PYTHON_FILES); do \
-			echo "   • $$(basename $$file)"; \
-		done; \
-		echo ""; \
+		echo "📁 Checking $(shell echo $(PYTHON_FILES) | wc -w) Python files"; \
 		black --check --line-length $(BLACK_LINE_LENGTH) $(PYTHON_FILES) && \
 		echo "✅ All Python files are properly formatted" || \
 		{ echo "❌ Some files need formatting - run 'make format'"; exit 1; }; \
 	fi
 
-# List all Python files that would be formatted
-.PHONY: list
-list: validate_fuzz_dir
+# Clean Python cache files
+.PHONY: format_clean
+format_clean:
+	@echo "🧹 Cleaning Python cache files..."
+	@find $(FUZZING_DIR) -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	@find $(FUZZING_DIR) -name "*.pyc" -delete 2>/dev/null || true
+	@find $(FUZZING_DIR) -name "*.pyo" -delete 2>/dev/null || true
+	@echo "✅ Python cache files cleaned"
+
+# List Python files
+.PHONY: format_list
+format_list:
 	@echo "Python files in fuzzing directories:"
 	@if [ -z "$(PYTHON_FILES)" ]; then \
-		echo "  No Python files found in: $(FUZZING_DIR) $(PROJECT_FUZZ_DIR)"; \
+		echo "  No Python files found in: $(FUZZING_DIR)"; \
 	else \
 		for file in $(PYTHON_FILES); do \
 			echo "  $$file"; \
 		done; \
 	fi
-
-# Clean Python cache files
-.PHONY: clean
-clean:
-	@echo "🧹 Cleaning Python cache files..."
-	@find $(PYTHON_DIRS) -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	@find $(PYTHON_DIRS) -name "*.pyc" -delete 2>/dev/null || true
-	@find $(PYTHON_DIRS) -name "*.pyo" -delete 2>/dev/null || true
-	@echo "✅ Python cache files cleaned"
-
-# Verify Black installation
-.PHONY: version
-version:
-	@echo "🔧 Black version information:"
-	@black --version 2>/dev/null || echo "❌ Black not installed - run 'make install'"
