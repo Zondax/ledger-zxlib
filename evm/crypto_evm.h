@@ -22,11 +22,11 @@ extern "C" {
 
 #include <sigutils.h>
 #include <stdbool.h>
+#include "coin_evm.h"
 
-#include "coin.h"
 #include "zxerror.h"
 extern uint8_t evm_chain_code;
-extern uint32_t hdPathEth[HDPATH_LEN_DEFAULT];
+extern uint32_t hdPathEth[HDPATH_EVM_LEN_DEFAULT];
 extern uint32_t hdPathEth_len;
 
 zxerr_t crypto_fillEthAddress(uint8_t *buffer, uint16_t buffer_len, uint16_t *addrLen);

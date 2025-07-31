@@ -15,6 +15,7 @@
  ********************************************************************************/
 
 #include "evm_erc20.h"
+#include "evm_utils.h"
 
 #include "zxformat.h"
 
@@ -25,17 +26,17 @@
 const uint8_t ERC20_TRANSFER_PREFIX[] = {0xa9, 0x05, 0x9c, 0xbb};
 #define DECIMAL_BASE 10
 
-parser_error_t getERC20Token(const eth_tx_t *ethObj, char tokenSymbol[MAX_SYMBOL_LEN], uint8_t *decimals) {
+parser_evm_error_t getERC20Token(const eth_tx_t *ethObj, char tokenSymbol[MAX_SYMBOL_LEN], uint8_t *decimals) {
     if (ethObj == NULL || tokenSymbol == NULL || decimals == NULL || ethObj->tx.data.rlpLen != ERC20_DATA_LENGTH ||
         MEMCMP(ethObj->tx.data.ptr, ERC20_TRANSFER_PREFIX, EVM_SELECTOR_LENGTH) != 0) {
-        return parser_unexpected_value;
+        return parser_evm_unexpected_value;
     }
 
     // Verify address contract: first 12 bytes must be 0
     const uint8_t *addressPtr = ethObj->tx.data.ptr + 4;
     for (uint8_t i = 0; i < ERC20_ADDRESS_PADDING_LENGTH; i++) {
         if (*(addressPtr++) != 0) {
-            return parser_unexpected_value;
+            return parser_evm_unexpected_value;
         }
     }
 
@@ -45,49 +46,49 @@ parser_error_t getERC20Token(const eth_tx_t *ethObj, char tokenSymbol[MAX_SYMBOL
             // Set symbol and decimals
             snprintf(tokenSymbol, MAX_SYMBOL_LEN, "%s", (char *)PIC(supportedTokens[i].symbol));
             *decimals = supportedTokens[i].decimals;
-            return parser_ok;
+            return parser_evm_ok;
         }
     }
 
     snprintf(tokenSymbol, MAX_SYMBOL_LEN, "?? ");
     *decimals = 0;
-    return parser_ok;
+    return parser_evm_ok;
 }
 
-parser_error_t printERC20Value(const eth_tx_t *ethObj, char *outVal, uint16_t outValLen, uint8_t pageIdx,
+parser_evm_error_t printERC20Value(const eth_tx_t *ethObj, char *outVal, uint16_t outValLen, uint8_t pageIdx,
                                uint8_t *pageCount) {
     if (ethObj == NULL || outVal == NULL || pageCount == NULL) {
-        return parser_unexpected_error;
+        return parser_evm_unexpected_error;
     }
 
     // [identifier (4) | token contract (12 + 20) | value (32)]
     char tokenSymbol[MAX_SYMBOL_LEN] = {0};
     uint8_t decimals = 0;
-    CHECK_ERROR(getERC20Token(ethObj, tokenSymbol, &decimals))
+    CHECK_EVM_ERROR(getERC20Token(ethObj, tokenSymbol, &decimals));
 
     uint256_t value = {0};
     const uint8_t *valuePtr = ethObj->tx.data.ptr + SELECTOR_LENGTH + BIGINT_LENGTH;
-    parser_context_t tmpCtx = {.buffer = valuePtr, .bufferLen = BIGINT_LENGTH, .offset = 0};
-    CHECK_ERROR(readu256BE(&tmpCtx, &value));
+    parser_evm_context_t tmpCtx = {.buffer = valuePtr, .bufferLen = BIGINT_LENGTH, .offset = 0};
+    CHECK_EVM_ERROR(readu256BE(&tmpCtx, &value));
 
     char bufferUI[100] = {0};
     if (!tostring256(&value, DECIMAL_BASE, bufferUI, sizeof(bufferUI))) {
-        return parser_unexpected_error;
+        return parser_evm_unexpected_error;
     }
 
     // Add symbol, add decimals, page number
     if (intstr_to_fpstr_inplace(bufferUI, sizeof(bufferUI), decimals) == 0) {
-        return parser_unexpected_value;
+        return parser_evm_unexpected_value;
     }
 
     if (z_str3join(bufferUI, sizeof(bufferUI), tokenSymbol, NULL) != zxerr_ok) {
-        return parser_unexpected_buffer_end;
+        return parser_evm_unexpected_buffer_end;
     }
 
     number_inplace_trimming(bufferUI, 1);
     pageString(outVal, outValLen, bufferUI, pageIdx, pageCount);
 
-    return parser_ok;
+    return parser_evm_ok;
 }
 
 bool validateERC20(eth_tx_t *ethObj) {

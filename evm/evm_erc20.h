@@ -18,7 +18,7 @@
 #include <stdint.h>
 
 #include "coin_evm.h"
-#include "parser_common.h"
+#include "evm_def.h"
 #include "parser_impl_evm.h"
 #include "rlp.h"
 
@@ -40,8 +40,8 @@ extern const erc20_tokens_t supportedTokens[];
 extern const uint8_t supportedTokensSize;
 
 bool validateERC20(eth_tx_t *ethObj);
-parser_error_t getERC20Token(const eth_tx_t *ethObj, char tokenSymbol[MAX_SYMBOL_LEN], uint8_t *decimals);
-parser_error_t printERC20Value(const eth_tx_t *ethObj, char *outVal, uint16_t outValLen, uint8_t pageIdx,
+parser_evm_error_t getERC20Token(const eth_tx_t *ethObj, char tokenSymbol[MAX_SYMBOL_LEN], uint8_t *decimals);
+parser_evm_error_t printERC20Value(const eth_tx_t *ethObj, char *outVal, uint16_t outValLen, uint8_t pageIdx,
                                uint8_t *pageCount);
 
 #ifdef __cplusplus

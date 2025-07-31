@@ -23,7 +23,7 @@
 #include "zxmacros.h"
 
 uint8_t evm_chain_code;
-uint32_t hdPathEth[HDPATH_LEN_DEFAULT];
+uint32_t hdPathEth[HDPATH_EVM_LEN_DEFAULT];
 uint32_t hdPathEth_len;
 
 #define KECCAK_256_SIZE 32

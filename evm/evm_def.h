@@ -1,5 +1,5 @@
 /*******************************************************************************
- *   (c) 2018 - 2024 ZondaX AG
+ *   (c) 2018 - 2025 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,26 +14,37 @@
  *  limitations under the License.
  ********************************************************************************/
 
-#pragma once
-#ifndef _RPL_H_
-#define _RPL_H_
+ #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
 
-#include "rlp_def.h"
-#include "uint256.h"
+#include <stdint.h>
+typedef enum {
+    // Evm errors
+    parser_evm_ok = 0,
+    parser_evm_no_data,
+    parser_evm_init_context_empty,
+    parser_evm_display_idx_out_of_range,
+    parser_evm_display_page_out_of_range,
+    parser_evm_unexpected_error,
+    parser_evm_unexpected_type,
+    parser_evm_unexpected_buffer_end,
+    parser_evm_unexpected_value,
+    parser_evm_value_out_of_range,
+    parser_evm_unsupported_tx,
+    parser_evm_invalid_chain_id,
+    parser_evm_invalid_rs_values,
+    parser_evm_blindsign_mode_required,
+} parser_evm_error_t;
 
-parser_evm_error_t rlp_parseStream(parser_evm_context_t *ctx, rlp_t *rlp, uint16_t *fields, uint16_t maxFields);
-parser_evm_error_t rlp_read(parser_evm_context_t *ctx, rlp_t *rlp);
-parser_evm_error_t rlp_readList(const rlp_t *list, rlp_t *fields, uint16_t *listFields, uint16_t maxFields);
-parser_evm_error_t rlp_readUInt256(const rlp_t *rlp, uint256_t *value);
-
-parser_evm_error_t rlpNumberToString(rlp_t *num, char *symbol, uint8_t decimals, char *outVal, uint16_t outValLen,
-                                 uint8_t pageIdx, uint8_t *pageCount);
+typedef struct {
+    const uint8_t *buffer;
+    uint16_t bufferLen;
+    uint16_t offset;
+} parser_evm_context_t;
 
 #ifdef __cplusplus
 }
-#endif
 #endif

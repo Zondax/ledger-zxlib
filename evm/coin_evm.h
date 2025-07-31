@@ -21,6 +21,8 @@ extern "C" {
 
 #define CLA_ETH 0xE0
 
+#define HDPATH_EVM_LEN_DEFAULT 5
+
 #define HDPATH_ETH_0_DEFAULT (0x80000000u | 0x2cu)
 #define HDPATH_ETH_1_DEFAULT (0x80000000u | 0x3cu)
 
