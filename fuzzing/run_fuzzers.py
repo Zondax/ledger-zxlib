@@ -38,8 +38,9 @@ class FuzzConfig:
 class FuzzRunner:
     """Common fuzzing runner"""
 
-    def __init__(self, project_root: str, max_seconds: int = 600, jobs: int = None):
+    def __init__(self, project_root: str, max_seconds: int = 600, jobs: int = None, build_dir: str = "fuzz/build"):
         self.project_root = os.path.abspath(project_root)
+        self.build_dir = build_dir
         self.max_seconds = max_seconds
         self.cpu_count = os.cpu_count() or 4
         # Ensure we never get negative jobs and always have at least 1 job
@@ -157,7 +158,7 @@ class FuzzRunner:
         # Setup paths
         artifact_dir = os.path.join(self.fuzz_dir, "corpora", f"{config.name}-artifacts")
         corpus_dir = os.path.join(self.fuzz_dir, "corpora", config.name)
-        fuzz_path = os.path.join(self.project_root, "build", f"fuzz-{config.name}")
+        fuzz_path = os.path.join(self.project_root, self.build_dir, f"fuzz-{config.name}")
 
         # Create directories
         os.makedirs(artifact_dir, exist_ok=True)
@@ -436,6 +437,7 @@ def main():
     parser.add_argument("--max-seconds", type=int, default=600, help="Maximum seconds per fuzzer run (default: 600)")
     parser.add_argument("--jobs", type=int, help="Number of parallel jobs (default: from fuzz_config.py or 16)")
     parser.add_argument("--fuzzers", nargs="*", help="Specific fuzzers to run (default: run all configured fuzzers)")
+    parser.add_argument("--build-dir", default="fuzz/build", help="Build directory path relative to project root (default: build)")
 
     args = parser.parse_args()
 
@@ -471,7 +473,7 @@ def main():
 
     # Use command line jobs argument if provided, otherwise use config value
     final_jobs = args.jobs if args.jobs is not None else fuzzer_jobs
-    runner = FuzzRunner(args.project_root, args.max_seconds, final_jobs)
+    runner = FuzzRunner(args.project_root, args.max_seconds, final_jobs, args.build_dir)
 
     if runner.run_fuzzers(configs):
         print("All fuzzers completed successfully!")

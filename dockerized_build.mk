@@ -373,12 +373,12 @@ cpp_test:
 
 .PHONY: fuzz_build
 fuzz_build:
-	cmake -B build -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -DENABLE_FUZZING=1 -DENABLE_SANITIZERS=1 .
-	make -C build
+	cmake -B fuzz/build -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -DENABLE_FUZZING=1 -DENABLE_SANITIZERS=1 .
+	make -C fuzz/build
 
 .PHONY: fuzz_clean
 fuzz_clean:
-	rm -rf fuzz/corpora fuzz/coverage fuzz/logs build
+	rm -rf fuzz/corpora fuzz/coverage fuzz/logs fuzz/build
 
 .PHONY: fuzz
 fuzz: fuzz_build
@@ -396,7 +396,7 @@ fuzz_report:
 		exit 1; \
 	fi
 	llvm-profdata merge -sparse $(FUZZ_COVERAGE_DIR)/*.profraw -o $(FUZZ_COVERAGE_DIR)/coverage.profdata
-	llvm-cov report build/fuzz-parser_parse -instr-profile=$(FUZZ_COVERAGE_DIR)/coverage.profdata
+	llvm-cov report fuzz/build/fuzz-parser_parse -instr-profile=$(FUZZ_COVERAGE_DIR)/coverage.profdata
 
 .PHONY: fuzz_report_html
 fuzz_report_html:
@@ -405,7 +405,7 @@ fuzz_report_html:
 		exit 1; \
 	fi
 	llvm-profdata merge -sparse $(FUZZ_COVERAGE_DIR)/*.profraw -o $(FUZZ_COVERAGE_DIR)/coverage.profdata
-	llvm-cov show build/fuzz-parser_parse -instr-profile=$(FUZZ_COVERAGE_DIR)/coverage.profdata -format=html -output-dir=$(FUZZ_COVERAGE_DIR)/report_html
+	llvm-cov show fuzz/build/fuzz-parser_parse -instr-profile=$(FUZZ_COVERAGE_DIR)/coverage.profdata -format=html -output-dir=$(FUZZ_COVERAGE_DIR)/report_html
 	open $(FUZZ_COVERAGE_DIR)/report_html/index.html
 
 .PHONY: fuzz_fmt

@@ -16,9 +16,10 @@ from typing import List, Optional
 class CrashAnalyzer:
     """Common crash analyzer for fuzzing artifacts"""
 
-    def __init__(self, project_root: str, timeout: int = 30):
+    def __init__(self, project_root: str, timeout: int = 30, build_dir: str = "fuzz/build"):
         self.project_root = os.path.abspath(project_root)
         self.timeout = timeout
+        self.build_dir = build_dir
 
         # Setup directories within project root
         self.fuzz_dir = os.path.join(self.project_root, "fuzz")
@@ -127,7 +128,7 @@ class CrashAnalyzer:
         print(f"\n######## Analyzing crashes for {fuzzer_name} ########")
 
         artifact_dir = os.path.join(self.fuzz_dir, "corpora", f"{fuzzer_name}-artifacts")
-        fuzz_path = os.path.join(self.project_root, "build", f"fuzz-{fuzzer_name}")
+        fuzz_path = os.path.join(self.project_root, self.build_dir, f"fuzz-{fuzzer_name}")
 
         # Check if directories and binaries exist
         if not os.path.exists(artifact_dir):
@@ -216,10 +217,11 @@ def main():
         "--timeout", type=int, default=30, help="Timeout for each crash analysis in seconds (default: 30)"
     )
     parser.add_argument("--fuzzers", nargs="*", help="Specific fuzzers to analyze (default: analyze all found fuzzers)")
+    parser.add_argument("--build-dir", default="fuzz/build", help="Build directory path relative to project root (default: build)")
 
     args = parser.parse_args()
 
-    analyzer = CrashAnalyzer(args.project_root, args.timeout)
+    analyzer = CrashAnalyzer(args.project_root, args.timeout, args.build_dir)
 
     if analyzer.analyze_all_crashes(args.fuzzers):
         return 0

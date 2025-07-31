@@ -51,7 +51,7 @@
      CHECK_ERROR(rlp_read(ctx, chainId));
      uint64_t tmpChainId = 0;
      if (chainId->rlpLen > 1) {
-         CHECK_ERROR(be_bytes_to_u64(chainId->ptr, chainId->rlpLen, &tmpChainId))
+         CHECK_ERROR(be_bytes_to_u64(chainId->ptr, (uint8_t)chainId->rlpLen, &tmpChainId))
      } else if (chainId->kind == RLP_KIND_BYTE) {
          // case were the prefix is the byte itself
          tmpChainId = chainId->ptr[0];
