@@ -22,6 +22,8 @@
 #include "buffering.h"
 #include "parser_evm.h"
 #include "zxmacros.h"
+#include "tx.h"
+#include "evm_utils.h"
 
 static parser_evm_context_t ctx_parsed_tx;
 

@@ -16,6 +16,7 @@
  ********************************************************************************/
 #include "apdu_handler_evm.h"
 
+#include "actions.h"
 #include "app_main.h"
 #include "app_mode.h"
 #include "coin_evm.h"
