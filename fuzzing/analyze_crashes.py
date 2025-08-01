@@ -11,26 +11,22 @@ import subprocess
 import time
 import argparse
 from typing import List, Optional
-
+from fuzz_paths import FuzzPaths
 
 class CrashAnalyzer:
     """Common crash analyzer for fuzzing artifacts"""
 
     def __init__(
         self,
-        project_root: str,
+        fuzz_dir: str,
         timeout: int = 30,
-        build_dir: str = "fuzz/build",
-        fuzz_dir: str = None,
-        logs_dir: str = None,
     ):
-        self.project_root = os.path.abspath(project_root)
+        self.fuzz_dir = os.path.abspath(fuzz_dir)
         self.timeout = timeout
-        self.build_dir = build_dir
 
-        # Setup directories - use provided paths or defaults
-        self.fuzz_dir = fuzz_dir or os.path.join(self.project_root, "fuzz")
-        self.logs_dir = logs_dir or os.path.join(self.fuzz_dir, "logs")
+        # Setup directories within fuzz_dir
+        self.build_dir = os.path.join(self.fuzz_dir, FuzzPaths.BUILD_DIR)
+        self.logs_dir = os.path.join(self.fuzz_dir, FuzzPaths.LOGS_DIR)
 
         # Ensure logs directory exists
         os.makedirs(self.logs_dir, exist_ok=True)
@@ -134,8 +130,8 @@ class CrashAnalyzer:
         """
         print(f"\n######## Analyzing crashes for {fuzzer_name} ########")
 
-        artifact_dir = os.path.join(self.fuzz_dir, "corpora", f"{fuzzer_name}-artifacts")
-        fuzz_path = os.path.join(self.project_root, self.build_dir, f"fuzz-{fuzzer_name}")
+        artifact_dir = os.path.join(self.fuzz_dir, FuzzPaths.CORPORA_DIR, f"{fuzzer_name}-artifacts")
+        fuzz_path = os.path.join(self.build_dir, f"fuzz-{fuzzer_name}")
 
         # Check if directories and binaries exist
         if not os.path.exists(artifact_dir):
@@ -180,7 +176,7 @@ class CrashAnalyzer:
 
         # Auto-discover fuzzers if none specified
         if fuzzer_names is None:
-            corpora_dir = os.path.join(self.fuzz_dir, "corpora")
+            corpora_dir = os.path.join(self.fuzz_dir, FuzzPaths.CORPORA_DIR)
             if os.path.exists(corpora_dir):
                 fuzzer_names = []
                 for item in os.listdir(corpora_dir):
@@ -217,22 +213,15 @@ class CrashAnalyzer:
 
 def main():
     parser = argparse.ArgumentParser(description="Analyze fuzzer crashes for Zondax Ledger applications")
-    parser.add_argument(
-        "--project-root", default=".", help="Root directory of the project (default: current directory)"
-    )
+    parser.add_argument("--fuzz-dir", required=True, help="Fuzz directory path (mandatory)")
     parser.add_argument(
         "--timeout", type=int, default=30, help="Timeout for each crash analysis in seconds (default: 30)"
     )
     parser.add_argument("--fuzzers", nargs="*", help="Specific fuzzers to analyze (default: analyze all found fuzzers)")
-    parser.add_argument(
-        "--build-dir", default="fuzz/build", help="Build directory path relative to project root (default: build)"
-    )
-    parser.add_argument("--fuzz-dir", help="Fuzz directory path (default: project_root/fuzz)")
-    parser.add_argument("--logs-dir", help="Logs directory path (default: fuzz_dir/logs)")
 
     args = parser.parse_args()
 
-    analyzer = CrashAnalyzer(args.project_root, args.timeout, args.build_dir, args.fuzz_dir, args.logs_dir)
+    analyzer = CrashAnalyzer(args.fuzz_dir, args.timeout)
 
     if analyzer.analyze_all_crashes(args.fuzzers):
         return 0

@@ -20,7 +20,6 @@ def main():
     # Get paths - now we're in fuzzing/fuzz_local
     script_dir = os.path.dirname(os.path.abspath(__file__))
     fuzzing_dir = os.path.dirname(script_dir)  # fuzzing directory
-    project_root = os.path.dirname(fuzzing_dir)  # project root
 
     # Set environment to use correct working directory for logs
     env = os.environ.copy()
@@ -32,17 +31,7 @@ def main():
     cmd = [
         sys.executable,
         os.path.join(fuzzing_dir, "run_fuzzers.py"),
-        "--project-root",
-        project_root,
-        "--build-dir",
-        os.path.join(script_dir, "build"),
         "--fuzz-dir",
-        script_dir,
-        "--logs-dir",
-        os.path.join(script_dir, "logs"),
-        "--coverage-dir",
-        os.path.join(script_dir, "coverage"),
-        "--config-dir",
         script_dir,
         "--max-seconds",
         str(args.max_seconds),
@@ -52,7 +41,6 @@ def main():
 
     print(f"🚀 Starting ledger-zxlib fuzzing...")
     print(f"Working directory: {script_dir}")
-    print(f"Project root: {project_root}")
     print(f"Duration: {args.max_seconds}s, Jobs: {args.jobs}")
 
     return subprocess.call(cmd, env=env)
