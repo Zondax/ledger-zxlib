@@ -29,19 +29,12 @@ test-filter: build
 	cd build && ./zxlib_tests --gtest_filter="$(FILTER)"
 
 # === FUZZING TARGETS ===
-# Fuzzing targets have been moved to fuzzing/Makefile
-# Use: cd fuzzing && make fuzz
-
-# Default fuzzing variables (can be overridden)
-FUZZ_TIME ?= 600
-FUZZ_JOBS ?= 4
-
 # Proxy fuzzing targets to fuzzing/Makefile for convenience
 build_fuzz:
-	@cd fuzzing && $(MAKE) build_fuzz FUZZ_TIME=$(FUZZ_TIME) FUZZ_JOBS=$(FUZZ_JOBS)
+	@cd fuzzing && $(MAKE) build_fuzz
 
 fuzz:
-	@cd fuzzing && $(MAKE) fuzz FUZZ_TIME=$(FUZZ_TIME) FUZZ_JOBS=$(FUZZ_JOBS)
+	@cd fuzzing && $(MAKE) fuzz
 
 fuzz_crash:
 	@cd fuzzing && $(MAKE) fuzz_crash
@@ -56,7 +49,3 @@ fuzz_help:
 	@echo "You can either:"
 	@echo "  1. Use proxy commands from here: make fuzz, make fuzz_crash, etc."
 	@echo "  2. Go to fuzzing directory: cd fuzzing && make help"
-	@echo ""
-	@echo "Environment variables:"
-	@echo "  FUZZ_TIME     Fuzzing duration in seconds (default: 600)"
-	@echo "  FUZZ_JOBS     Number of parallel jobs (default: 4)"

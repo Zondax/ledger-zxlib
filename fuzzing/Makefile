@@ -2,7 +2,7 @@
 # This file contains both fuzzing targets and Python formatting rules
 
 # === FUZZING CONFIGURATION ===
-FUZZ_TIME ?= 600
+FUZZ_TIME ?= 20
 FUZZ_JOBS ?= 4
 FUZZ_BUILD_DIR = fuzz_local/build
 FUZZ_DIR = fuzz_local

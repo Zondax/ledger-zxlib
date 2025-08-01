@@ -5,6 +5,11 @@ project(zxlib_fuzz)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Suppress duplicate library warnings on macOS
+if(APPLE)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-no_warn_duplicate_libraries")
+endif()
+
 # Include the common fuzzing configuration
 include(../FuzzingCommon.cmake)
 
@@ -37,3 +42,51 @@ target_include_directories(zxlib_bech32 PUBLIC
 
 # Add fuzz target for bech32
 add_fuzz_target(bech32 bech32_fuzzer.cpp zxlib_bech32)
+
+# Find source files for base58
+file(GLOB BASE58_SOURCES
+    "${ZXLIB_SRC_DIR}/base58.c"
+)
+
+# Create library for base58
+add_library(zxlib_base58 STATIC ${BASE58_SOURCES})
+target_include_directories(zxlib_base58 PUBLIC 
+    ${ZXLIB_INCLUDE_DIR}
+    ${ZXLIB_SRC_DIR}
+)
+
+# Add fuzz target for base58
+add_fuzz_target(base58 base58_fuzzer.cpp zxlib_base58)
+
+# Find source files for base64
+file(GLOB BASE64_SOURCES
+    "${ZXLIB_SRC_DIR}/base64.c"
+)
+
+# Create library for base64
+add_library(zxlib_base64 STATIC ${BASE64_SOURCES})
+target_include_directories(zxlib_base64 PUBLIC 
+    ${ZXLIB_INCLUDE_DIR}
+    ${ZXLIB_SRC_DIR}
+)
+
+# Add fuzz target for base64
+add_fuzz_target(base64 base64_fuzzer.cpp zxlib_base64)
+
+# Find source files for hexutils
+file(GLOB HEXUTILS_SOURCES
+    "${ZXLIB_SRC_DIR}/hexutils.c"
+)
+
+# Create library for hexutils
+add_library(zxlib_hexutils STATIC ${HEXUTILS_SOURCES})
+target_include_directories(zxlib_hexutils PUBLIC 
+    ${ZXLIB_INCLUDE_DIR}
+    ${ZXLIB_SRC_DIR}
+)
+
+# Add fuzz target for hexutils
+add_fuzz_target(hexutils hexutils_fuzzer.cpp zxlib_hexutils)
+
+# Create library for segwit_addr (reuse existing bech32 sources)
+add_fuzz_target(segwit_addr segwit_addr_fuzzer.cpp zxlib_bech32)
