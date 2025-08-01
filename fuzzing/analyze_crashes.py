@@ -13,6 +13,7 @@ import argparse
 from typing import List, Optional
 from fuzz_paths import FuzzPaths
 
+
 class CrashAnalyzer:
     """Common crash analyzer for fuzzing artifacts"""
 

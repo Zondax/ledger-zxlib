@@ -472,9 +472,7 @@ def main():
 
     # Use command line jobs argument if provided, otherwise use config value
     final_jobs = args.jobs if args.jobs is not None else fuzzer_jobs
-    runner = FuzzRunner(
-       args.fuzz_dir, args.max_seconds, final_jobs
-    )
+    runner = FuzzRunner(args.fuzz_dir, args.max_seconds, final_jobs)
 
     if runner.run_fuzzers(configs):
         print("All fuzzers completed successfully!")
