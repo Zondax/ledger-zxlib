@@ -35,4 +35,4 @@ zxerr_t tx_getItemEth(int8_t displayIdx, char *outKey, uint16_t outKeyLen, char 
 
 zxerr_t tx_compute_eth_v(unsigned int info, uint8_t *v, bool is_personal_message);
 
-#endif // EVM_TX_EVM_H
+#endif  // EVM_TX_EVM_H

@@ -120,10 +120,8 @@ void view_blindsign_error_show();
 void view_review_init(viewfunc_getItem_t viewfuncGetItem, viewfunc_getNumItems_t viewfuncGetNumItems,
                       viewfunc_accept_t viewfuncAccept);
 
-void view_review_init_progressive(
-    viewfunc_getItem_t viewfuncGetItem,
-    viewfunc_getNumItems_t viewfuncGetNumItems,
-    viewfunc_accept_t viewfuncAccept);
+void view_review_init_progressive(viewfunc_getItem_t viewfuncGetItem, viewfunc_getNumItems_t viewfuncGetNumItems,
+                                  viewfunc_accept_t viewfuncAccept);
 
 void view_inspect_init(viewfunc_getInnerItem_t view_funcGetInnerItem, viewfunc_getNumItems_t view_funcGetInnerNumItems,
                        viewfunc_canInspectItem_t view_funcCanInspectItem);
@@ -150,4 +148,4 @@ typedef enum {
 } settings_list_e;
 
 void view_set_switch_subtext(settings_list_e switch_id, const char *subtext);
-#endif // TARGET_STAX || TARGET_FLEX
+#endif  // TARGET_STAX || TARGET_FLEX

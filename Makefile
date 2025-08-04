@@ -1,7 +1,7 @@
 # Simple Makefile for zxlib tests
 # Wrapper around CMake build system
 
-.PHONY: all build test clean test-verbose test-filter
+.PHONY: all build test clean test-verbose test-filter format
 
 # Default target
 all: build
@@ -27,3 +27,6 @@ test-verbose: build
 # Run specific test
 test-filter: build
 	cd build && ./zxlib_tests --gtest_filter="$(FILTER)"
+
+format:
+	find src evm tests include app \( -iname '*.h' -o -iname '*.c' -o -iname '*.cpp' -o -iname '*.hpp' \) | xargs clang-format -i

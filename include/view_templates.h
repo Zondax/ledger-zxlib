@@ -49,7 +49,7 @@
             0,              /* font_id  */                 \
             0               /* icon_id  */                 \
         },                                                 \
-        NULL, /* text             */                       \
+            NULL, /* text             */                   \
     }
 
 #define UI_LabelLine(id, x, y, w, h, fgcolor, bgcolor, text) \
@@ -69,7 +69,7 @@
             UI_CENTER11PX, /* font_id  */                    \
             0              /* icon_id  */                    \
         },                                                   \
-        text, /* text             */                         \
+            text, /* text             */                     \
     }
 
 #define UI_LabelLineScrolling(id, x, y, w, h, fgcolor, bgcolor, text)   \
@@ -89,7 +89,7 @@
             UI_CENTER11PX,                /* font_id  */                \
             50                            /* icon_id / scroll speed  */ \
         },                                                              \
-        text, /* text             */                                    \
+            text, /* text             */                                \
     }
 
 #if defined(TARGET_NANOX) || defined(TARGET_NANOS2)
@@ -101,30 +101,30 @@
 #define BAGL_GLYPH_ICON_CROSS ((const char *)&C_icon_crossmark)
 #define BAGL_GLYPH_ICON_CHECK ((const char *)&C_icon_validate)
 
-#define UI_Icon(id, x, y, w, h, icon) \
-    {                                 \
-        {                             \
-            BAGL_ICON, /* type     */ \
-            id,        /* usedid   */ \
-            x,         /* x        */ \
-            y,         /* y        */ \
-            w,         /* width    */ \
-            h,         /* height   */ \
-            0,         /* stroke   */ \
-            0,         /* radius   */ \
-            0,         /* fill     */ \
-            UI_WHITE,  /* fgcolor  */ \
-            UI_BLACK,  /* bgcolor  */ \
-            0,         /* font_id  */ \
-            0          /* icon_id  */ \
-        },                            \
-        icon, /* text             */  \
-        0,    /* touch_area_brim  */  \
-        0,    /* overfgcolor      */  \
-        0,    /* overbgcolor      */  \
-        NULL, /* tap              */  \
-        NULL, /* out              */  \
-        NULL, /* over             */  \
+#define UI_Icon(id, x, y, w, h, icon)    \
+    {                                    \
+        {                                \
+            BAGL_ICON, /* type     */    \
+            id,        /* usedid   */    \
+            x,         /* x        */    \
+            y,         /* y        */    \
+            w,         /* width    */    \
+            h,         /* height   */    \
+            0,         /* stroke   */    \
+            0,         /* radius   */    \
+            0,         /* fill     */    \
+            UI_WHITE,  /* fgcolor  */    \
+            UI_BLACK,  /* bgcolor  */    \
+            0,         /* font_id  */    \
+            0          /* icon_id  */    \
+        },                               \
+            icon, /* text             */ \
+            0,    /* touch_area_brim  */ \
+            0,    /* overfgcolor      */ \
+            0,    /* overbgcolor      */ \
+            NULL, /* tap              */ \
+            NULL, /* out              */ \
+            NULL, /* over             */ \
     }
 
 #define UI_BACKGROUND UI_FillRectangle(0, 0, 0, UI_SCREEN_WIDTH, UI_SCREEN_HEIGHT, 0x000000, 0xFFFFFF)
@@ -137,24 +137,24 @@
 #define UI_SCREEN_WIDTH 128
 #define UI_SCREEN_HEIGHT 32
 
-#define UI_Icon(id, x, y, w, h, icon) \
-    {                                 \
-        {                             \
-            BAGL_ICON, /* type     */ \
-            id,        /* usedid   */ \
-            x,         /* x        */ \
-            y,         /* y        */ \
-            w,         /* width    */ \
-            h,         /* height   */ \
-            0,         /* stroke   */ \
-            0,         /* radius   */ \
-            0,         /* fill     */ \
-            UI_WHITE,  /* fgcolor  */ \
-            UI_BLACK,  /* bgcolor  */ \
-            0,         /* font_id  */ \
-            icon       /* icon_id  */ \
-        },                            \
-        NULL, /* text             */  \
+#define UI_Icon(id, x, y, w, h, icon)    \
+    {                                    \
+        {                                \
+            BAGL_ICON, /* type     */    \
+            id,        /* usedid   */    \
+            x,         /* x        */    \
+            y,         /* y        */    \
+            w,         /* width    */    \
+            h,         /* height   */    \
+            0,         /* stroke   */    \
+            0,         /* radius   */    \
+            0,         /* fill     */    \
+            UI_WHITE,  /* fgcolor  */    \
+            UI_BLACK,  /* bgcolor  */    \
+            0,         /* font_id  */    \
+            icon       /* icon_id  */    \
+        },                               \
+            NULL, /* text             */ \
     }
 
 #define UI_BACKGROUND UI_FillRectangle(0, 0, 0, UI_SCREEN_WIDTH, UI_SCREEN_HEIGHT, 0x000000, 0xFFFFFF)

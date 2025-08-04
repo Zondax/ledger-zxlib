@@ -28,7 +28,8 @@ void handle_stack_overflow() {
     defined(TARGET_FLEX)
     io_seproxyhal_se_reset();
 #else
-    while (1);
+    while (1)
+        ;
 #endif
 }
 
