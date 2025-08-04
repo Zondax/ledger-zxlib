@@ -31,150 +31,114 @@ TEST(FORMAT, array_to_hexstr) {
 
 TEST(FORMAT, fpuint64_to_str) {
     char output[100];
-    printf("\n");
 
     fpuint64_to_str(output, sizeof(output), 123, 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "0.00123");
 
     fpuint64_to_str(output, sizeof(output), 1234, 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "0.01234");
 
     fpuint64_to_str(output, sizeof(output), 12345, 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "0.12345");
 
     fpuint64_to_str(output, sizeof(output), 123456, 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "1.23456");
 
     fpuint64_to_str(output, sizeof(output), 1234567, 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "12.34567");
 }
 
 TEST(FORMAT, fpstr_to_str) {
     char output[100];
-    printf("\n");
 
     fpstr_to_str(output, sizeof(output), "", 0);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "0");
 
     fpstr_to_str(output, sizeof(output), "1", 0);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "1");
 
     fpstr_to_str(output, sizeof(output), "123", 0);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "123");
 
     fpstr_to_str(output, sizeof(output), "", 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "0.00000");
 
     fpstr_to_str(output, sizeof(output), "0", 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "0.00000");
 
     fpstr_to_str(output, sizeof(output), "123", 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "0.00123");
 
     fpstr_to_str(output, sizeof(output), "1234", 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "0.01234");
 
     fpstr_to_str(output, sizeof(output), "12345", 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "0.12345");
 
     fpstr_to_str(output, sizeof(output), "123456", 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "1.23456");
 
     fpstr_to_str(output, sizeof(output), "1234567", 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "12.34567");
 }
 
 TEST(FORMAT, fpstr_to_str_BAD_zeros) {
     char output[8];
-    printf("\n");
 
     fpstr_to_str(output, sizeof(output), "", 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "0.00000");
 
     fpstr_to_str(output, sizeof(output), "", 6);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "ERR");
 
     fpstr_to_str(output, sizeof(output), "", 7);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "ERR");
 
     fpstr_to_str(output, sizeof(output), "", 8);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "ERR");
 }
 
 TEST(FORMAT, fpstr_to_str_BAD_short) {
     char output[8];
-    printf("\n");
 
     fpstr_to_str(output, sizeof(output), "123", 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "0.00123");
 
     fpstr_to_str(output, sizeof(output), "123", 6);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "ERR");
 
     fpstr_to_str(output, sizeof(output), "123", 7);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "ERR");
 
     fpstr_to_str(output, sizeof(output), "123", 8);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "ERR");
 }
 
 TEST(FORMAT, fpstr_to_str_BAD_long) {
     char output[8];
-    printf("\n");
 
     fpstr_to_str(output, sizeof(output), "123456", 5);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "1.23456");
 
     fpstr_to_str(output, sizeof(output), "123456", 6);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "ERR");
 
     fpstr_to_str(output, sizeof(output), "123456", 7);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "ERR");
 
     fpstr_to_str(output, sizeof(output), "12345", 7);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "ERR");
 
     fpstr_to_str(output, sizeof(output), "12345", 2);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "123.45");
 
     fpstr_to_str(output, sizeof(output), "123456", 2);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "1234.56");
 
     fpstr_to_str(output, sizeof(output), "1234567", 2);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "ERR");
 
     fpstr_to_str(output, sizeof(output), "12345678", 2);
-    printf("%10s\n", output);
     EXPECT_EQ(std::string(output), "ERR");
 
     fpstr_to_str(output, sizeof(output), "1234567890", 0);
@@ -186,22 +150,17 @@ TEST(FORMAT, fpstr_to_str_BAD_long) {
 
 TEST(FORMAT, fpuint64_to_str_zeros) {
     char output[100];
-    printf("\n");
 
     fpuint64_to_str(output, sizeof(output), 0, 9);
-    printf("%11s\n", output);
     EXPECT_EQ(std::string(output), "0.000000000");
 
     fpuint64_to_str(output, sizeof(output), 0, 1);
-    printf("%11s\n", output);
     EXPECT_EQ(std::string(output), "0.0");
 
     fpuint64_to_str(output, sizeof(output), 1, 1);
-    printf("%11s\n", output);
     EXPECT_EQ(std::string(output), "0.1");
 
     fpuint64_to_str(output, sizeof(output), 10, 1);
-    printf("%11s\n", output);
     EXPECT_EQ(std::string(output), "1.0");
 }
 
@@ -243,7 +202,6 @@ TEST(FORMAT, number_trimming) {
 
 TEST(FORMAT, intstr_to_fpstr_inplace_trimming_leading) {
     char number[100];
-    printf("\n");
 
     snprintf(number, sizeof(number), "0");
     intstr_to_fpstr_inplace(number, sizeof(number), 0);
@@ -272,7 +230,6 @@ TEST(FORMAT, intstr_to_fpstr_inplace_trimming_leading) {
 
 TEST(FORMAT, intstr_to_fpstr_inplace_empty) {
     char number[100];
-    printf("\n");
 
     MEMZERO(number, sizeof(number));
     intstr_to_fpstr_inplace(number, sizeof(number), 0);
@@ -289,7 +246,6 @@ TEST(FORMAT, intstr_to_fpstr_inplace_empty) {
 
 TEST(FORMAT, intstr_to_fpstr_inplace) {
     char number[100];
-    printf("\n");
 
     snprintf(number, sizeof(number), "1");
     intstr_to_fpstr_inplace(number, sizeof(number), 0);
