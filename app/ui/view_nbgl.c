@@ -132,7 +132,6 @@ static void reviewMessageChoice(bool confirm) {
     }
 }
 
-
 static void reviewGenericChoice(bool confirm) {
     const char *msg = "Operation rejected";
     bool isSuccess = false;
@@ -177,12 +176,9 @@ void view_custom_error_show(const char *upper, const char *lower) {
 }
 
 void view_blindsign_error_show() {
-    nbgl_useCaseChoice(&C_Warning_64px,
-                       "This transaction cannot\nbe clear-signed",
-                       "Enable blind signing in the\nsettings to sign this\ntransaction.",
-                       "Go to settings",
-                       "Reject Transaction",
-                       goto_settings);
+    nbgl_useCaseChoice(&C_Warning_64px, "This transaction cannot\nbe clear-signed",
+                       "Enable blind signing in the\nsettings to sign this\ntransaction.", "Go to settings",
+                       "Reject Transaction", goto_settings);
 }
 
 void view_error_show_impl() {
@@ -190,13 +186,11 @@ void view_error_show_impl() {
 }
 
 void view_settings_show_impl() {
-    nbgl_useCaseHomeAndSettings(MENU_MAIN_APP_LINE1, &C_icon_stax_64, HOME_TEXT, 0, &settingContents,
-                                &infoList, NULL, app_quit);
+    nbgl_useCaseHomeAndSettings(MENU_MAIN_APP_LINE1, &C_icon_stax_64, HOME_TEXT, 0, &settingContents, &infoList, NULL,
+                                app_quit);
 }
 
-void view_spinner_impl(const char *text) {
-    nbgl_useCaseSpinner(text);
-}
+void view_spinner_impl(const char *text) { nbgl_useCaseSpinner(text); }
 
 static uint8_t get_pair_number() {
     uint8_t numItems = 0;
@@ -472,12 +466,13 @@ static void config_useCaseReview(nbgl_operationType_t type) {
     pairList.startIndex = 0;
     if (app_mode_blindsign_required()) {
         nbgl_useCaseReviewBlindSigning(type, &pairList, &C_icon_stax_64,
-                                       (intro_message == NULL ? "Review transaction" : intro_message), (intro_submessage == NULL ? NULL : intro_submessage),
+                                       (intro_message == NULL ? "Review transaction" : intro_message),
+                                       (intro_submessage == NULL ? NULL : intro_submessage),
                                        "Accept risk and sign transaction ?", NULL, reviewTransactionChoice);
     } else {
-        nbgl_useCaseReview(type, &pairList, &C_icon_stax_64,
-                           (intro_message == NULL ? "Review transaction" : intro_message), (intro_submessage == NULL ? NULL : intro_submessage), APPROVE_LABEL_NBGL,
-                           reviewTransactionChoice);
+        nbgl_useCaseReview(
+            type, &pairList, &C_icon_stax_64, (intro_message == NULL ? "Review transaction" : intro_message),
+            (intro_submessage == NULL ? NULL : intro_submessage), APPROVE_LABEL_NBGL, reviewTransactionChoice);
     }
 }
 
@@ -534,7 +529,7 @@ void view_review_show_impl(unsigned int requireReply, const char *title, const c
     // Retrieve intro text for transaction
     if (viewdata.viewfuncGetItem != NULL) {
         viewdata.viewfuncGetItem(0xFF, intro_msg_buf, MAX_CHARS_PER_KEY_LINE, intro_submsg_buf,
-                                                     MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount);
+                                 MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount);
         if (strlen(intro_msg_buf) > strlen(" ")) {
             intro_message = intro_msg_buf;
         }

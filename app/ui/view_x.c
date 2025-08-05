@@ -103,18 +103,13 @@ UX_STEP_NOCB(ux_idle_flow_3_step, bn,
                  APPVERSION_LINE2,
              });
 
-UX_STEP_NOCB_INIT(
-    ux_review_skip_step,
-    nn,
-    {
-        // This will execute during initialization without requiring validation
-        custom_callback_active = true;
-        set_button_callback(stack_slot);
-    },
-    {
-      "Press right to read",
-      "Double-press to skip"
-    });
+UX_STEP_NOCB_INIT(ux_review_skip_step, nn,
+                  {
+                      // This will execute during initialization without requiring validation
+                      custom_callback_active = true;
+                      set_button_callback(stack_slot);
+                  },
+                  {"Press right to read", "Double-press to skip"});
 
 #ifdef APP_SECRET_MODE_ENABLED
 UX_STEP_CB(ux_idle_flow_4_step, bn, h_secret_click(),
@@ -376,22 +371,19 @@ void h_review_loop_end() {
                 // If we're at the end of current item and there's more to show
                 if (viewdata.with_confirmation &&
                     (review_type == REVIEW_TXN || review_type == REVIEW_GROUP_TXN || review_type == REVIEW_MSG) &&
-                    viewdata.pageIdx == viewdata.pageCount - 1               &&
+                    viewdata.pageIdx == viewdata.pageCount - 1 &&
                     // Ensure that at least the first item is displayed.
                     // The UI design may vary between applications. For example, item 0 might
                     // serve as a title for the transaction type rather than a regular item.
                     // In this implementation, we check if there is more than one item (>1).
                     // If so, we treat item 0 as a title and display the skip menu after it.
                     // This approach allows for flexible UI designs while maintaining essential functionality.
-                    viewdata.itemIdx > 1                                     &&
-                    viewdata.itemIdx < viewdata.itemCount - 1) {
-
+                    viewdata.itemIdx > 1 && viewdata.itemIdx < viewdata.itemCount - 1) {
                     // Show skip screen and enable button handler
                     uint8_t index = 0;
 
                     ux_review_flow[index++] = &ux_review_skip_step;
                     ux_review_flow[index++] = FLOW_END_STEP;
-
 
                     unsigned int current_slot = G_ux.stack_count - 1;
                     ux_flow_init(current_slot, ux_review_flow, NULL);
@@ -608,7 +600,7 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t *const st
 #endif
             if (reviewType == REVIEW_GROUP_TXN) {
                 viewdata.viewfuncGetItem(0xFF, intro_msg_buf, MAX_CHARS_PER_KEY_LINE, intro_submsg_buf,
-                                                            MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount);
+                                         MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount);
                 ux_review_flow[index++] = &ux_review_flow_1_review_group_title;
             } else {
                 ux_review_flow[index++] = &ux_review_flow_1_review_title;
