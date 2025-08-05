@@ -25,13 +25,13 @@ extern "C" {
 #include "rlp_def.h"
 #include "uint256.h"
 
-parser_error_t rlp_parseStream(parser_context_t *ctx, rlp_t *rlp, uint16_t *fields, uint16_t maxFields);
-parser_error_t rlp_read(parser_context_t *ctx, rlp_t *rlp);
-parser_error_t rlp_readList(const rlp_t *list, rlp_t *fields, uint16_t *listFields, uint16_t maxFields);
-parser_error_t rlp_readUInt256(const rlp_t *rlp, uint256_t *value);
+parser_evm_error_t rlp_parseStream(parser_evm_context_t *ctx, rlp_t *rlp, uint16_t *fields, uint16_t maxFields);
+parser_evm_error_t rlp_read(parser_evm_context_t *ctx, rlp_t *rlp);
+parser_evm_error_t rlp_readList(const rlp_t *list, rlp_t *fields, uint16_t *listFields, uint16_t maxFields);
+parser_evm_error_t rlp_readUInt256(const rlp_t *rlp, uint256_t *value);
 
-parser_error_t rlpNumberToString(rlp_t *num, char *symbol, uint8_t decimals, char *outVal, uint16_t outValLen,
-                                 uint8_t pageIdx, uint8_t *pageCount);
+parser_evm_error_t rlpNumberToString(rlp_t *num, char *symbol, uint8_t decimals, char *outVal, uint16_t outValLen,
+                                     uint8_t pageIdx, uint8_t *pageCount);
 
 #ifdef __cplusplus
 }

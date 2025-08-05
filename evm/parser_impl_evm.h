@@ -19,7 +19,7 @@
 extern "C" {
 #endif
 
-#include "parser_common.h"
+#include "evm_def.h"
 #include "rlp.h"
 
 #define ETH_ADDRESS_LEN 20
@@ -69,22 +69,22 @@ extern const uint8_t supported_networks_evm_len;
 
 extern eth_tx_t eth_tx_obj;
 
-parser_error_t _readEth(parser_context_t *ctx, eth_tx_t *eth_tx_obj);
+parser_evm_error_t _readEth(parser_evm_context_t *ctx, eth_tx_t *eth_tx_obj);
 
-parser_error_t _getItemEth(const parser_context_t *ctx, uint8_t displayIdx, char *outKey, uint16_t outKeyLen,
-                           char *outVal, uint16_t outValLen, uint8_t pageIdx, uint8_t *pageCount);
+parser_evm_error_t _getItemEth(const parser_evm_context_t *ctx, uint8_t displayIdx, char *outKey, uint16_t outKeyLen,
+                               char *outVal, uint16_t outValLen, uint8_t pageIdx, uint8_t *pageCount);
 
-parser_error_t printEthHash(const parser_context_t *ctx, char *outKey, uint16_t outKeyLen, char *outVal,
-                            uint16_t outValLen, uint8_t pageIdx, uint8_t *pageCount);
+parser_evm_error_t printEthHash(const parser_evm_context_t *ctx, char *outKey, uint16_t outKeyLen, char *outVal,
+                                uint16_t outValLen, uint8_t pageIdx, uint8_t *pageCount);
 // returns the number of items to display on the screen.
 // Note: we might need to add a transaction state object,
 // Defined with one parameter for now.
-parser_error_t _getNumItemsEth(uint8_t *numItems);
+parser_evm_error_t _getNumItemsEth(uint8_t *numItems);
 
-parser_error_t _validateTxEth();
+parser_evm_error_t _validateTxEth();
 
-parser_error_t _computeV(parser_context_t *ctx, eth_tx_t *tx_obj, unsigned int info, uint8_t *v,
-                         bool is_personal_message);
+parser_evm_error_t _computeV(parser_evm_context_t *ctx, eth_tx_t *tx_obj, unsigned int info, uint8_t *v,
+                             bool is_personal_message);
 
 #ifdef __cplusplus
 }

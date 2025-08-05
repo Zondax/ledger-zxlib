@@ -24,7 +24,6 @@
 #include "evm_addr.h"
 #include "evm_eip191.h"
 #include "evm_utils.h"
-#include "parser.h"
 #include "tx_evm.h"
 #include "view.h"
 #include "view_internal.h"
@@ -37,7 +36,7 @@ void extract_eth_path(uint32_t rx, uint32_t offset) {
 
     const uint8_t path_len = *(G_io_apdu_buffer + offset);
 
-    if (path_len > HDPATH_LEN_DEFAULT || path_len < 3) THROW(APDU_CODE_WRONG_LENGTH);
+    if (path_len > HDPATH_EVM_LEN_DEFAULT || path_len < 3) THROW(APDU_CODE_WRONG_LENGTH);
 
     if ((rx - offset - 1) < sizeof(uint32_t) * path_len) {
         THROW(APDU_CODE_WRONG_LENGTH);
@@ -282,7 +281,7 @@ void handleSignEth(volatile uint32_t *flags, volatile uint32_t *tx, uint32_t rx)
         MEMCPY(G_io_apdu_buffer, error_msg, error_msg_length);
         *tx += (error_msg_length);
 
-        if (error_code == parser_blindsign_mode_required) {
+        if (error_code == parser_evm_blindsign_mode_required) {
             *flags |= IO_ASYNCH_REPLY;
             view_blindsign_error_show();
         }
@@ -307,7 +306,7 @@ void handleSignEip191(volatile uint32_t *flags, volatile uint32_t *tx, uint32_t 
 
     CHECK_APP_CANARY()
     if (!eip191_msg_parse()) {
-        const char *error_msg = parser_getErrorDescription(parser_blindsign_mode_required);
+        const char *error_msg = parser_getEvmErrorDescription(parser_evm_blindsign_mode_required);
         const int error_msg_length = strnlen(error_msg, sizeof(G_io_apdu_buffer));
         MEMCPY(G_io_apdu_buffer, error_msg, error_msg_length);
         *tx += (error_msg_length);

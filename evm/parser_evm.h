@@ -21,26 +21,26 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+#include <stddef.h>
 
-#include "parser_impl.h"
-
-const char *parser_getErrorDescription(parser_error_t err);
-const char *parser_getMsgPackTypeDescription(uint8_t type);
+#include "evm_def.h"
 
 //// parses a tx buffer
-parser_error_t parser_parse_eth(parser_context_t *ctx, const uint8_t *data, size_t dataLen);
+parser_evm_error_t parser_parse_eth(parser_evm_context_t *ctx, const uint8_t *data, size_t dataLen);
 
 //// verifies tx fields
-parser_error_t parser_validate_eth(parser_context_t *ctx);
+parser_evm_error_t parser_validate_eth(parser_evm_context_t *ctx);
 
 //// returns the number of items in the current parsing context
-parser_error_t parser_getNumItemsEth(const parser_context_t *ctx, uint8_t *num_items);
+parser_evm_error_t parser_getNumItemsEth(const parser_evm_context_t *ctx, uint8_t *num_items);
 
 // retrieves a readable output for each field / page
-parser_error_t parser_getItemEth(const parser_context_t *ctx, uint8_t displayIdx, char *outKey, uint16_t outKeyLen,
-                                 char *outVal, uint16_t outValLen, uint8_t pageIdx, uint8_t *pageCount);
+parser_evm_error_t parser_getItemEth(const parser_evm_context_t *ctx, uint8_t displayIdx, char *outKey,
+                                     uint16_t outKeyLen, char *outVal, uint16_t outValLen, uint8_t pageIdx,
+                                     uint8_t *pageCount);
 
-parser_error_t parser_compute_eth_v(parser_context_t *ctx, unsigned int info, uint8_t *v, bool is_personal_message);
+parser_evm_error_t parser_compute_eth_v(parser_evm_context_t *ctx, unsigned int info, uint8_t *v,
+                                        bool is_personal_message);
 #ifdef __cplusplus
 }
 #endif

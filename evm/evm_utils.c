@@ -34,6 +34,40 @@
         if (buff_len < rlp_len) return rlp_no_data; \
     }
 
+const char *parser_getEvmErrorDescription(parser_evm_error_t err) {
+    switch (err) {
+        // General errors
+        case parser_evm_ok:
+            return "No EVM error";
+        case parser_evm_no_data:
+            return "No EVM data";
+        case parser_evm_display_idx_out_of_range:
+            return "EVM display idx out of range";
+        case parser_evm_display_page_out_of_range:
+            return "EVM display page out of range";
+        case parser_evm_unexpected_error:
+            return "EVM unexpected error";
+        case parser_evm_unexpected_type:
+            return "EVM unexpected type";
+        case parser_evm_unexpected_buffer_end:
+            return "EVM unexpected buffer end";
+        case parser_evm_unexpected_value:
+            return "EVM unexpected value";
+        case parser_evm_value_out_of_range:
+            return "EVM value out of range";
+        case parser_evm_unsupported_tx:
+            return "EVM unsupported tx";
+        case parser_evm_invalid_chain_id:
+            return "EVM invalid chain id";
+        case parser_evm_invalid_rs_values:
+            return "EVM invalid rs values";
+        case parser_evm_blindsign_mode_required:
+            return "EVM blindsign mode required";
+        default:
+            return "Unrecognized error code";
+    }
+}
+
 uint64_t saturating_add(uint64_t a, uint64_t b) {
     uint64_t num = a + b;
     if (num < a || num < b) return UINT64_MAX;
@@ -49,9 +83,9 @@ uint32_t saturating_add_u32(uint32_t a, uint32_t b) {
     return num;
 }
 
-parser_error_t be_bytes_to_u64(const uint8_t *bytes, uint8_t len, uint64_t *num) {
+parser_evm_error_t be_bytes_to_u64(const uint8_t *bytes, uint8_t len, uint64_t *num) {
     if (bytes == NULL || num == NULL || len == 0 || len > sizeof(uint64_t)) {
-        return parser_unexpected_error;
+        return parser_evm_unexpected_error;
     }
 
     *num = 0;
@@ -68,7 +102,7 @@ parser_error_t be_bytes_to_u64(const uint8_t *bytes, uint8_t len, uint64_t *num)
         num_ptr++;
     }
 
-    return parser_ok;
+    return parser_evm_ok;
 }
 
 rlp_error_t get_tx_rlp_len(const uint8_t *buffer, uint32_t len, uint64_t *read, uint64_t *to_read) {
@@ -125,25 +159,26 @@ rlp_error_t get_tx_rlp_len(const uint8_t *buffer, uint32_t len, uint64_t *read, 
     return rlp_invalid_data;
 }
 
-parser_error_t printRLPNumber(const rlp_t *num, char *outVal, uint16_t outValLen, uint8_t pageIdx, uint8_t *pageCount) {
+parser_evm_error_t printRLPNumber(const rlp_t *num, char *outVal, uint16_t outValLen, uint8_t pageIdx,
+                                  uint8_t *pageCount) {
     if (num == NULL || outVal == NULL || pageCount == NULL) {
-        return parser_unexpected_error;
+        return parser_evm_unexpected_error;
     }
 
     uint256_t tmpUint256 = {0};
     char tmpBuffer[100] = {0};
 
-    CHECK_ERROR(rlp_readUInt256(num, &tmpUint256));
+    CHECK_EVM_ERROR(rlp_readUInt256(num, &tmpUint256));
     if (!tostring256(&tmpUint256, 10, tmpBuffer, sizeof(tmpBuffer))) {
-        return parser_unexpected_error;
+        return parser_evm_unexpected_error;
     }
     pageString(outVal, outValLen, tmpBuffer, pageIdx, pageCount);
 
-    return parser_ok;
+    return parser_evm_ok;
 }
 
 #define LESS_THAN_64_DIGIT(num_digit) \
-    if (num_digit > 64) return parser_value_out_of_range;
+    if (num_digit > 64) return parser_evm_value_out_of_range;
 
 __Z_INLINE bool format_quantity(const uint8_t *num, uint16_t num_len, uint8_t *bcd, uint16_t bcdSize, char *bignum,
                                 uint16_t bignumSize) {
@@ -151,10 +186,10 @@ __Z_INLINE bool format_quantity(const uint8_t *num, uint16_t num_len, uint8_t *b
     return bignumBigEndian_bcdprint(bignum, bignumSize, bcd, bcdSize);
 }
 
-parser_error_t printBigIntFixedPoint(const uint8_t *number, uint16_t number_len, char *outVal, uint16_t outValLen,
-                                     uint8_t pageIdx, uint8_t *pageCount, uint16_t decimals) {
+parser_evm_error_t printBigIntFixedPoint(const uint8_t *number, uint16_t number_len, char *outVal, uint16_t outValLen,
+                                         uint8_t pageIdx, uint8_t *pageCount, uint16_t decimals) {
     if (number == NULL || outVal == NULL || pageCount == NULL) {
-        return parser_unexpected_error;
+        return parser_evm_unexpected_error;
     }
 
     LESS_THAN_64_DIGIT(number_len);
@@ -169,32 +204,32 @@ parser_error_t printBigIntFixedPoint(const uint8_t *number, uint16_t number_len,
     MEMZERO(&overlapped, sizeof(overlapped));
 
     if (!format_quantity(number, number_len, overlapped.bcd, sizeof(overlapped.bcd), bignum, sizeof(bignum))) {
-        return parser_unexpected_value;
+        return parser_evm_unexpected_value;
     }
 
     if (fpstr_to_str(overlapped.output, sizeof(overlapped.output), bignum, decimals)) {
-        return parser_unexpected_value;
+        return parser_evm_unexpected_value;
     }
 
     number_inplace_trimming(overlapped.output, 1);
     pageString(outVal, outValLen, overlapped.output, pageIdx, pageCount);
-    return parser_ok;
+    return parser_evm_ok;
 }
 
-parser_error_t printEVMAddress(const rlp_t *address, char *outVal, uint16_t outValLen, uint8_t pageIdx,
-                               uint8_t *pageCount) {
+parser_evm_error_t printEVMAddress(const rlp_t *address, char *outVal, uint16_t outValLen, uint8_t pageIdx,
+                                   uint8_t *pageCount) {
     if (address == NULL || outVal == NULL || address->ptr == NULL || pageCount == NULL ||
         address->rlpLen != ETH_ADDR_LEN) {
-        return parser_unexpected_error;
+        return parser_evm_unexpected_error;
     }
 
     char tmpBuffer[67] = {0};
     tmpBuffer[0] = '0';
     tmpBuffer[1] = 'x';
     if (!array_to_hexstr(tmpBuffer + 2, sizeof(tmpBuffer) - 2, address->ptr, address->rlpLen)) {
-        return parser_unexpected_error;
+        return parser_evm_unexpected_error;
     }
     pageString(outVal, outValLen, tmpBuffer, pageIdx, pageCount);
 
-    return parser_ok;
+    return parser_evm_ok;
 }

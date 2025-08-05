@@ -19,18 +19,27 @@
 #include <stdio.h>
 #include <zxmacros.h>
 
-#include "parser_common.h"
+#include "evm_def.h"
 #include "rlp.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#define CHECK_EVM_ERROR(__CALL)                   \
+    {                                             \
+        parser_evm_error_t __err = __CALL;        \
+        CHECK_APP_CANARY()                        \
+        if (__err != parser_evm_ok) return __err; \
+    }
+
 typedef enum RlpError {
     rlp_ok = 0,
     rlp_no_data,
     rlp_invalid_data,
 } rlp_error_t;
+
+const char *parser_getEvmErrorDescription(parser_evm_error_t err);
 
 // Add two numbers returning UINT64_MAX if overflows
 uint64_t saturating_add(uint64_t a, uint64_t b);
@@ -51,15 +60,16 @@ rlp_error_t parse_rlp_item(const uint8_t *data, uint32_t dataLen, uint32_t *read
 
 // converts a big endian stream of bytes to an u64 number.
 // returns 0 on success, a negative number otherwise
-parser_error_t be_bytes_to_u64(const uint8_t *bytes, uint8_t len, uint64_t *num);
+parser_evm_error_t be_bytes_to_u64(const uint8_t *bytes, uint8_t len, uint64_t *num);
 
-parser_error_t printRLPNumber(const rlp_t *num, char *outVal, uint16_t outValLen, uint8_t pageIdx, uint8_t *pageCount);
+parser_evm_error_t printRLPNumber(const rlp_t *num, char *outVal, uint16_t outValLen, uint8_t pageIdx,
+                                  uint8_t *pageCount);
 
-parser_error_t printEVMAddress(const rlp_t *address, char *outVal, uint16_t outValLen, uint8_t pageIdx,
-                               uint8_t *pageCount);
+parser_evm_error_t printEVMAddress(const rlp_t *address, char *outVal, uint16_t outValLen, uint8_t pageIdx,
+                                   uint8_t *pageCount);
 
-parser_error_t printBigIntFixedPoint(const uint8_t *number, uint16_t number_len, char *outVal, uint16_t outValLen,
-                                     uint8_t pageIdx, uint8_t *pageCount, uint16_t decimals);
+parser_evm_error_t printBigIntFixedPoint(const uint8_t *number, uint16_t number_len, char *outVal, uint16_t outValLen,
+                                         uint8_t pageIdx, uint8_t *pageCount, uint16_t decimals);
 
 #ifdef __cplusplus
 }

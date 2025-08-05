@@ -23,7 +23,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "parser_common.h"
+#include "evm_def.h"
 #include "zxmacros.h"
 
 #ifdef __cplusplus
@@ -43,8 +43,8 @@ typedef struct uint256_t {
 #define UPPER(x) x.elements[0]
 #define LOWER(x) x.elements[1]
 
-parser_error_t readu256BE(parser_context_t *ctx, uint256_t *bigInt);
-parser_error_t readu128BE(parser_context_t *ctx, uint128_t *value);
+parser_evm_error_t readu256BE(parser_evm_context_t *ctx, uint256_t *bigInt);
+parser_evm_error_t readu128BE(parser_evm_context_t *ctx, uint128_t *value);
 
 bool zero128(uint128_t *number);
 bool zero256(uint256_t *number);

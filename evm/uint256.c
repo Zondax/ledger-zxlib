@@ -23,11 +23,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "evm_utils.h"
+
 static const char HEXDIGITS[] = "0123456789abcdef";
 
-static parser_error_t readUint64BE(parser_context_t *ctx, uint64_t *value) {
+static parser_evm_error_t readUint64BE(parser_evm_context_t *ctx, uint64_t *value) {
     if (ctx == NULL || (ctx->bufferLen - ctx->offset) < 8 || value == NULL) {
-        return parser_unexpected_error;
+        return parser_evm_unexpected_error;
     }
 
     *value = 0;
@@ -35,29 +37,29 @@ static parser_error_t readUint64BE(parser_context_t *ctx, uint64_t *value) {
         *value = (*value << 8) + *(ctx->buffer + ctx->offset);
         ctx->offset++;
     }
-    return parser_ok;
+    return parser_evm_ok;
 }
 
-parser_error_t readu128BE(parser_context_t *ctx, uint128_t *value) {
+parser_evm_error_t readu128BE(parser_evm_context_t *ctx, uint128_t *value) {
     if (ctx == NULL || value == NULL) {
-        return parser_unexpected_error;
+        return parser_evm_unexpected_error;
     }
 
-    CHECK_ERROR(readUint64BE(ctx, &UPPER_P(value)));
-    CHECK_ERROR(readUint64BE(ctx, &LOWER_P(value)));
+    CHECK_EVM_ERROR(readUint64BE(ctx, &UPPER_P(value)));
+    CHECK_EVM_ERROR(readUint64BE(ctx, &LOWER_P(value)));
 
-    return parser_ok;
+    return parser_evm_ok;
 }
 
-parser_error_t readu256BE(parser_context_t *ctx, uint256_t *bigInt) {
+parser_evm_error_t readu256BE(parser_evm_context_t *ctx, uint256_t *bigInt) {
     if (ctx == NULL || bigInt == NULL) {
-        return parser_unexpected_error;
+        return parser_evm_unexpected_error;
     }
 
-    CHECK_ERROR(readu128BE(ctx, &UPPER_P(bigInt)));
-    CHECK_ERROR(readu128BE(ctx, &LOWER_P(bigInt)));
+    CHECK_EVM_ERROR(readu128BE(ctx, &UPPER_P(bigInt)));
+    CHECK_EVM_ERROR(readu128BE(ctx, &LOWER_P(bigInt)));
 
-    return parser_ok;
+    return parser_evm_ok;
 }
 
 bool zero128(uint128_t *number) { return ((LOWER_P(number) == 0) && (UPPER_P(number) == 0)); }

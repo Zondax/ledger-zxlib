@@ -22,39 +22,54 @@
 #include <zxtypes.h>
 
 #include "evm_utils.h"
-#include "parser.h"
-#include "parser_common.h"
 #include "parser_impl_evm.h"
 
-parser_error_t parser_parse_eth(parser_context_t *ctx, const uint8_t *data, size_t dataLen) {
-    CHECK_ERROR(parser_init_context(ctx, data, dataLen))
+static parser_evm_error_t parser_evm_init_context(parser_evm_context_t *ctx, const uint8_t *buffer,
+                                                  uint16_t bufferSize) {
+    ctx->offset = 0;
+    ctx->buffer = NULL;
+    ctx->bufferLen = 0;
+
+    if (bufferSize == 0 || buffer == NULL) {
+        // Not available, use defaults
+        return parser_evm_init_context_empty;
+    }
+
+    ctx->buffer = buffer;
+    ctx->bufferLen = bufferSize;
+
+    return parser_evm_ok;
+}
+
+parser_evm_error_t parser_parse_eth(parser_evm_context_t *ctx, const uint8_t *data, size_t dataLen) {
+    CHECK_EVM_ERROR(parser_evm_init_context(ctx, data, dataLen))
     return _readEth(ctx, &eth_tx_obj);
 }
 
-parser_error_t parser_validate_eth(parser_context_t *ctx) {
-    CHECK_ERROR(_validateTxEth())
+parser_evm_error_t parser_validate_eth(parser_evm_context_t *ctx) {
+    CHECK_EVM_ERROR(_validateTxEth())
 
     // Iterate through all items to check that all can be shown and are valid
     uint8_t numItems = 0;
-    CHECK_ERROR(_getNumItemsEth(&numItems));
+    CHECK_EVM_ERROR(_getNumItemsEth(&numItems));
 
     char tmpKey[40] = {0};
     char tmpVal[40] = {0};
 
     for (uint8_t idx = 0; idx < numItems; idx++) {
         uint8_t pageCount = 0;
-        CHECK_ERROR(parser_getItemEth(ctx, idx, tmpKey, sizeof(tmpKey), tmpVal, sizeof(tmpVal), 0, &pageCount))
+        CHECK_EVM_ERROR(parser_getItemEth(ctx, idx, tmpKey, sizeof(tmpKey), tmpVal, sizeof(tmpVal), 0, &pageCount))
     }
-    return parser_ok;
+    return parser_evm_ok;
 }
 
-parser_error_t parser_getNumItemsEth(const parser_context_t *ctx, uint8_t *num_items) {
+parser_evm_error_t parser_getNumItemsEth(const parser_evm_context_t *ctx, uint8_t *num_items) {
     UNUSED(ctx);
-    CHECK_ERROR(_getNumItemsEth(num_items));
+    CHECK_EVM_ERROR(_getNumItemsEth(num_items));
     if (*num_items == 0) {
-        return parser_unexpected_buffer_end;
+        return parser_evm_unexpected_buffer_end;
     }
-    return parser_ok;
+    return parser_evm_ok;
 }
 
 static void cleanOutputEth(char *outKey, uint16_t outKeyLen, char *outVal, uint16_t outValLen) {
@@ -64,25 +79,27 @@ static void cleanOutputEth(char *outKey, uint16_t outKeyLen, char *outVal, uint1
     snprintf(outVal, outValLen, " ");
 }
 
-static parser_error_t checkSanityEth(uint8_t numItems, uint8_t displayIdx) {
+static parser_evm_error_t checkSanityEth(uint8_t numItems, uint8_t displayIdx) {
     if (displayIdx >= numItems) {
-        return parser_display_idx_out_of_range;
+        return parser_evm_display_idx_out_of_range;
     }
-    return parser_ok;
+    return parser_evm_ok;
 }
 
-parser_error_t parser_getItemEth(const parser_context_t *ctx, uint8_t displayIdx, char *outKey, uint16_t outKeyLen,
-                                 char *outVal, uint16_t outValLen, uint8_t pageIdx, uint8_t *pageCount) {
+parser_evm_error_t parser_getItemEth(const parser_evm_context_t *ctx, uint8_t displayIdx, char *outKey,
+                                     uint16_t outKeyLen, char *outVal, uint16_t outValLen, uint8_t pageIdx,
+                                     uint8_t *pageCount) {
     uint8_t numItems = 0;
-    CHECK_ERROR(parser_getNumItemsEth(ctx, &numItems))
+    CHECK_EVM_ERROR(parser_getNumItemsEth(ctx, &numItems))
     CHECK_APP_CANARY()
 
-    CHECK_ERROR(checkSanityEth(numItems, displayIdx))
+    CHECK_EVM_ERROR(checkSanityEth(numItems, displayIdx))
     cleanOutputEth(outKey, outKeyLen, outVal, outValLen);
 
     return _getItemEth(ctx, displayIdx, outKey, outKeyLen, outVal, outValLen, pageIdx, pageCount);
 }
 
-parser_error_t parser_compute_eth_v(parser_context_t *ctx, unsigned int info, uint8_t *v, bool is_personal_message) {
+parser_evm_error_t parser_compute_eth_v(parser_evm_context_t *ctx, unsigned int info, uint8_t *v,
+                                        bool is_personal_message) {
     return _computeV(ctx, &eth_tx_obj, info, v, is_personal_message);
 }

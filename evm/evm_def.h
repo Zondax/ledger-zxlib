@@ -1,5 +1,5 @@
 /*******************************************************************************
- *   (c) 2018 - 2024 Zondax AG
+ *   (c) 2018 - 2025 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,20 +20,31 @@
 extern "C" {
 #endif
 
-#include <sigutils.h>
-#include <stdbool.h>
+#include <stdint.h>
+typedef enum {
+    // Evm errors
+    parser_evm_ok = 0,
+    parser_evm_no_data,
+    parser_evm_init_context_empty,
+    parser_evm_display_idx_out_of_range,
+    parser_evm_display_page_out_of_range,
+    parser_evm_unexpected_error,
+    parser_evm_unexpected_type,
+    parser_evm_unexpected_buffer_end,
+    parser_evm_unexpected_value,
+    parser_evm_value_out_of_range,
+    parser_evm_unsupported_tx,
+    parser_evm_invalid_chain_id,
+    parser_evm_invalid_rs_values,
+    parser_evm_blindsign_mode_required,
+} parser_evm_error_t;
 
-#include "coin_evm.h"
-#include "zxerror.h"
-extern uint8_t evm_chain_code;
-extern uint32_t hdPathEth[HDPATH_EVM_LEN_DEFAULT];
-extern uint32_t hdPathEth_len;
+typedef struct {
+    const uint8_t *buffer;
+    uint16_t bufferLen;
+    uint16_t offset;
+} parser_evm_context_t;
 
-zxerr_t crypto_fillEthAddress(uint8_t *buffer, uint16_t buffer_len, uint16_t *addrLen);
-zxerr_t crypto_sign_eth(uint8_t *buffer, uint16_t signatureMaxlen, const uint8_t *message, uint16_t messageLen,
-                        uint16_t *sigSize, bool hash);
-
-zxerr_t keccak_digest(const unsigned char *in, unsigned int inLen, unsigned char *out, unsigned int outLen);
 #ifdef __cplusplus
 }
 #endif

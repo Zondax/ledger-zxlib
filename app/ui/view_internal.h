@@ -19,7 +19,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "coin.h"
 #include "view.h"
 #include "zxerror.h"
 

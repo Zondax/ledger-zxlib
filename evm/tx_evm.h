@@ -17,8 +17,9 @@
 #ifndef EVM_TX_EVM_H
 #define EVM_TX_EVM_H
 
-#include "coin.h"
-#include "os.h"
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "zxerror.h"
 
 /// Parse message stored in transaction buffer
