@@ -582,7 +582,7 @@ void view_review_show_with_intent_impl(unsigned int requireReply, const char *in
         // Show everything on a single line for NBGL
         const char *review_text = (review_type == REVIEW_MSG) ? "Review message" : "Review transaction";
         int ret = snprintf(intro_msg_buf, sizeof(intro_msg_buf), "%s to %s", review_text, intent);
-        
+
         // Check if truncation occurred and add ellipsis if needed
         if (ret >= (int)sizeof(intro_msg_buf)) {
             const size_t buf_len = sizeof(intro_msg_buf);

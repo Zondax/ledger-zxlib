@@ -575,12 +575,11 @@ void view_review_show_with_intent_impl(unsigned int requireReply, const char *in
         // Put "Review transaction" or "Review message" on first line
         const char *first_line = (review_type == REVIEW_MSG) ? "Review message" : "Review transaction";
         snprintf(intro_msg_buf, sizeof(intro_msg_buf), "%s", first_line);
-        
+
         // Put "to {intent}" on second line
-        const size_t max_intent_len = sizeof(intro_submsg_buf) - 4; // "to " + null terminator
-        int ret = snprintf(intro_submsg_buf, sizeof(intro_submsg_buf), "to %.*s", 
-                          (int)max_intent_len, intent);
-        
+        const size_t max_intent_len = sizeof(intro_submsg_buf) - 4;  // "to " + null terminator
+        int ret = snprintf(intro_submsg_buf, sizeof(intro_submsg_buf), "to %.*s", (int)max_intent_len, intent);
+
         // Check if truncation occurred and add ellipsis if needed
         if (ret >= (int)sizeof(intro_submsg_buf)) {
             const size_t buf_len = sizeof(intro_submsg_buf);
