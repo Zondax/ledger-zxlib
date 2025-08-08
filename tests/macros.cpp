@@ -436,6 +436,30 @@ TEST(STR_TO_INT8, DummyData_Negative) {
     EXPECT_EQ(1, error);
 }
 
+TEST(STR_TO_INT8, EmptyString) {
+    const char* empty = "";
+    char error = 0;
+    int8_t result = str_to_int8(empty, empty, &error);
+    EXPECT_EQ(0, result);
+    EXPECT_EQ(1, error);  // Should set error flag for empty string
+}
+
+TEST(STR_TO_INT8, JustMinusSign) {
+    const char* just_minus = "-";
+    char error = 0;
+    int8_t result = str_to_int8(just_minus, just_minus + 1, &error);
+    EXPECT_EQ(0, result);
+    EXPECT_EQ(1, error);  // Should set error flag for just minus sign
+}
+
+TEST(STR_TO_INT8, NoDigits) {
+    const char* no_digits = "abc";
+    char error = 0;
+    int8_t result = str_to_int8(no_digits, no_digits + 3, &error);
+    EXPECT_EQ(0, result);
+    EXPECT_EQ(1, error);  // Should set error flag for non-digit characters
+}
+
 TEST(STR_TO_INT64, Min) {
     char numberStr[] = "-9223372036854775808";
     char error = 0;
@@ -516,6 +540,30 @@ TEST(STR_TO_INT64, MixedInvalidCharacters) {
     char error = 0;
     str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
     EXPECT_EQ(1, error);
+}
+
+TEST(STR_TO_INT64, EmptyString) {
+    const char* empty = "";
+    char error = 0;
+    int64_t result = str_to_int64(empty, empty, &error);
+    EXPECT_EQ(0, result);
+    EXPECT_EQ(1, error);  // Should set error flag for empty string
+}
+
+TEST(STR_TO_INT64, JustMinusSign) {
+    const char* just_minus = "-";
+    char error = 0;
+    int64_t result = str_to_int64(just_minus, just_minus + 1, &error);
+    EXPECT_EQ(0, result);
+    EXPECT_EQ(1, error);  // Should set error flag for just minus sign
+}
+
+TEST(STR_TO_INT64, ErrorParameterInitialization) {
+    char numberStr[] = "42";
+    char error = 99;  // Initialize with non-zero value
+    int64_t result = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(42, result);
+    EXPECT_EQ(0, error);  // Error should be initialized to 0 for valid input
 }
 
 TEST(CASE_CONVERSION, ToUppercase) {
