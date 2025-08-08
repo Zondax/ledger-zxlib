@@ -608,4 +608,11 @@ static unsigned int view_skip_button(unsigned int button_mask, __Z_UNUSED unsign
     return 0;
 }
 
+void view_review_show_with_intent_impl(unsigned int requireReply, const char *intent) {
+    // For Nano S, we don't have space to display the intent in the title
+    // Just use the normal review flow
+    UNUSED(intent);
+    view_review_show_impl(requireReply, NULL, NULL);
+}
+
 #endif

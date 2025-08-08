@@ -54,6 +54,9 @@ const char *intro_submessage = NULL;
 char intro_msg_buf[MAX_CHARS_PER_VALUE1_LINE];
 char intro_submsg_buf[MAX_CHARS_SUBMSG_LINE];
 
+#define REVIEW_STANDALONE_SIZE 22
+#define REVIEW_MESSAGE_SIZE 18
+
 static nbgl_layoutTagValue_t pairs[NB_MAX_DISPLAYED_PAIRS_IN_REVIEW];
 
 static nbgl_layoutTagValue_t pair;
@@ -464,6 +467,7 @@ static void config_useCaseReview(nbgl_operationType_t type) {
     pairList.pairs = NULL;  // to indicate that callback should be used
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
+
     if (app_mode_blindsign_required()) {
         nbgl_useCaseReviewBlindSigning(type, &pairList, &C_icon_stax_64,
                                        (intro_message == NULL ? "Review transaction" : intro_message),
@@ -552,6 +556,50 @@ void view_review_show_impl(unsigned int requireReply, const char *title, const c
             config_useCaseReviewLight(title, validate);
             break;
         }
+        case REVIEW_MSG: {
+            config_useCaseMessageReview();
+            break;
+        }
+        case REVIEW_TXN:
+        default:
+            config_useCaseReview(TYPE_TRANSACTION);
+            break;
+    }
+}
+
+void view_review_show_with_intent_impl(unsigned int requireReply, const char *intent) {
+    review_type = (review_type_e)requireReply;
+
+    intro_message = NULL;
+    intro_submessage = NULL;
+    intro_msg_buf[0] = '\0';
+    intro_submsg_buf[0] = '\0';
+    viewdata.key = viewdata.keys[0];
+    viewdata.value = viewdata.values[0];
+
+    // Format the intro message based on the intent
+    if (intent != NULL && strlen(intent) > 0) {
+        // Show everything on a single line for NBGL
+        const char *review_text = (review_type == REVIEW_MSG) ? "Review message" : "Review transaction";
+        int ret = snprintf(intro_msg_buf, sizeof(intro_msg_buf), "%s to %s", review_text, intent);
+        
+        // Check if truncation occurred and add ellipsis if needed
+        if (ret >= (int)sizeof(intro_msg_buf)) {
+            const size_t buf_len = sizeof(intro_msg_buf);
+            if (buf_len >= 4) {
+                intro_msg_buf[buf_len - 4] = '.';
+                intro_msg_buf[buf_len - 3] = '.';
+                intro_msg_buf[buf_len - 2] = '.';
+                intro_msg_buf[buf_len - 1] = '\0';
+            }
+        }
+        intro_message = intro_msg_buf;
+        intro_submessage = NULL;  // No second line for NBGL
+    }
+
+    h_paging_init();
+
+    switch (review_type) {
         case REVIEW_MSG: {
             config_useCaseMessageReview();
             break;
