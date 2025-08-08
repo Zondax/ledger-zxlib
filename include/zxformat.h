@@ -125,24 +125,41 @@ __Z_INLINE int8_t str_to_int8(const char *start, const char *end, char *error) {
         start++;
     }
 
-    int64_t value = 0;
-    int multiplier = 1;
-    for (const char *s = end - 1; s >= start; s--) {
-        int delta = (*s - '0');
-        if (delta >= 0 && delta <= 9) {
-            value += (delta * multiplier);
-            multiplier *= 10;
+    uint64_t value = 0;
+    const uint64_t limit = (sign < 0) ? ((uint64_t)INT64_MAX + 1u) : (uint64_t)INT64_MAX;
+
+    for (const char *s = start; s < end; s++) {
+        uint64_t delta = (uint64_t)(*s - '0');
+        if (delta <= 9u) {
+            // Check for overflow before multiplication and addition
+            if (value > (limit - delta) / 10u) {
+                if (error != NULL) {
+                    *error = 1;
+                }
+                return 0;
+            }
+            value = value * 10u + delta;
         } else {
             if (error != NULL) {
                 *error = 1;
-                return 0;
             }
+            return 0;
         }
     }
 
-    value *= sign;
-    if (value >= INT8_MIN && value <= INT8_MAX) {
-        return (int8_t)value;
+    int64_t signed_value;
+    if (sign < 0) {
+        if (value == ((uint64_t)INT64_MAX + 1u)) {
+            signed_value = INT64_MIN;
+        } else {
+            signed_value = -(int64_t)value;
+        }
+    } else {
+        signed_value = (int64_t)value;
+    }
+
+    if (signed_value >= INT8_MIN && signed_value <= INT8_MAX) {
+        return (int8_t)signed_value;
     }
     if (error != NULL) {
         *error = 1;
@@ -157,22 +174,35 @@ __Z_INLINE int64_t str_to_int64(const char *start, const char *end, char *error)
         start++;
     }
 
-    int64_t value = 0;
-    int64_t multiplier = 1;
-    for (const char *s = end - 1; s >= start; s--) {
-        int64_t delta = (*s - '0');
-        if (delta >= 0 && delta <= 9) {
-            value += delta * multiplier;
-            multiplier *= 10;
+    uint64_t value = 0;
+    const uint64_t limit = (sign < 0) ? ((uint64_t)INT64_MAX + 1u) : (uint64_t)INT64_MAX;
+
+    for (const char *s = start; s < end; s++) {
+        uint64_t delta = (uint64_t)(*s - '0');
+        if (delta <= 9u) {
+            // Check for overflow before multiplication and addition
+            if (value > (limit - delta) / 10u) {
+                if (error != NULL) {
+                    *error = 1;
+                }
+                return 0;
+            }
+            value = value * 10u + delta;
         } else {
             if (error != NULL) {
                 *error = 1;
-                return 0;
             }
+            return 0;
         }
     }
 
-    return value * sign;
+    if (sign < 0) {
+        if (value == ((uint64_t)INT64_MAX + 1u)) {
+            return INT64_MIN;
+        }
+        return -(int64_t)value;
+    }
+    return (int64_t)value;
 }
 
 uint8_t intstr_to_fpstr_inplace(char *number, size_t number_max_size, uint8_t decimalPlaces);
@@ -367,7 +397,7 @@ __Z_INLINE zxerr_t array_to_lowercase(uint8_t *input, uint16_t inputLen) {
     }
 
     for (uint16_t i = 0; i < inputLen; i++) {
-        to_uppercase(input + i);
+        to_lowercase(input + i);
     }
     return zxerr_ok;
 }
