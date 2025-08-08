@@ -9,3 +9,9 @@ __pycache__/
 *.pyo
 
 build/*
+
+fuzzing/fuzz_local/build/
+fuzzing/fuzz_local/corpora/
+fuzzing/fuzz_local/logs/
+fuzzing/fuzz_local/coverage/
+

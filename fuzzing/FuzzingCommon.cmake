@@ -48,13 +48,13 @@ endif()
 if(ENABLE_COVERAGE)
     message(STATUS "Coverage enabled")
     
-    # Create coverage directory in project fuzz folder
-    file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/fuzz/coverage")
+    # Create coverage directory in project folder
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/coverage")
     
     # Add coverage instrumentation
-    string(APPEND CMAKE_C_FLAGS " -fprofile-instr-generate=${CMAKE_CURRENT_SOURCE_DIR}/fuzz/coverage/%p.profraw -fcoverage-mapping")
-    string(APPEND CMAKE_CXX_FLAGS " -fprofile-instr-generate=${CMAKE_CURRENT_SOURCE_DIR}/fuzz/coverage/%p.profraw -fcoverage-mapping")
-    string(APPEND CMAKE_LINKER_FLAGS " -fprofile-instr-generate=${CMAKE_CURRENT_SOURCE_DIR}/fuzz/coverage/%p.profraw -fcoverage-mapping")
+    string(APPEND CMAKE_C_FLAGS " -fprofile-instr-generate=${CMAKE_CURRENT_SOURCE_DIR}/coverage/%p.profraw -fcoverage-mapping")
+    string(APPEND CMAKE_CXX_FLAGS " -fprofile-instr-generate=${CMAKE_CURRENT_SOURCE_DIR}/coverage/%p.profraw -fcoverage-mapping")
+    string(APPEND CMAKE_LINKER_FLAGS " -fprofile-instr-generate=${CMAKE_CURRENT_SOURCE_DIR}/coverage/%p.profraw -fcoverage-mapping")
 endif()
 
 # Sanitizers configuration

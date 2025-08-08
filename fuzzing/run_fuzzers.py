@@ -18,6 +18,7 @@ import argparse
 import datetime
 import time
 from typing import List
+from fuzz_paths import FuzzPaths
 
 # System resource management constants
 SYSTEM_RESERVED_CPU_CORES = 2  # Number of CPU cores reserved for system stability
@@ -38,9 +39,13 @@ class FuzzConfig:
 class FuzzRunner:
     """Common fuzzing runner"""
 
-    def __init__(self, project_root: str, max_seconds: int = 600, jobs: int = None, build_dir: str = "fuzz/build"):
-        self.project_root = os.path.abspath(project_root)
-        self.build_dir = build_dir
+    def __init__(
+        self,
+        fuzz_dir: str,
+        max_seconds: int = 600,
+        jobs: int = None,
+    ):
+        self.fuzz_dir = os.path.abspath(fuzz_dir)
         self.max_seconds = max_seconds
         self.cpu_count = os.cpu_count() or 4
         # Ensure we never get negative jobs and always have at least 1 job
@@ -48,10 +53,10 @@ class FuzzRunner:
         self.jobs = jobs or min(MAX_JOBS_LIMIT, available_cores)
         self.mutate_depth = random.randint(1, 20)
 
-        # Create directories within project root
-        self.fuzz_dir = os.path.join(self.project_root, "fuzz")
-        self.coverage_dir = os.path.join(self.fuzz_dir, "coverage")
-        self.logs_dir = os.path.join(self.fuzz_dir, "logs")
+        # Create directories within fuzz_dir
+        self.build_dir = os.path.join(self.fuzz_dir, FuzzPaths.BUILD_DIR)
+        self.coverage_dir = os.path.join(self.fuzz_dir, FuzzPaths.COVERAGE_DIR)
+        self.logs_dir = os.path.join(self.fuzz_dir, FuzzPaths.LOGS_DIR)
 
         # Ensure directories exist
         os.makedirs(self.coverage_dir, exist_ok=True)
@@ -156,9 +161,9 @@ class FuzzRunner:
         max_time = self.max_seconds
 
         # Setup paths
-        artifact_dir = os.path.join(self.fuzz_dir, "corpora", f"{config.name}-artifacts")
-        corpus_dir = os.path.join(self.fuzz_dir, "corpora", config.name)
-        fuzz_path = os.path.join(self.project_root, self.build_dir, f"fuzz-{config.name}")
+        artifact_dir = os.path.join(self.fuzz_dir, FuzzPaths.CORPORA_DIR, f"{config.name}-artifacts")
+        corpus_dir = os.path.join(self.fuzz_dir, FuzzPaths.CORPORA_DIR, config.name)
+        fuzz_path = os.path.join(self.build_dir, f"fuzz-{config.name}")
 
         # Create directories
         os.makedirs(artifact_dir, exist_ok=True)
@@ -431,28 +436,22 @@ class FuzzRunner:
 
 def main():
     parser = argparse.ArgumentParser(description="Run fuzzers for Zondax Ledger applications")
-    parser.add_argument(
-        "--project-root", default=".", help="Root directory of the project (default: current directory)"
-    )
+    parser.add_argument("--fuzz-dir", required=True, help="Fuzz directory path (mandatory)")
     parser.add_argument("--max-seconds", type=int, default=600, help="Maximum seconds per fuzzer run (default: 600)")
     parser.add_argument("--jobs", type=int, help="Number of parallel jobs (default: from fuzz_config.py or 16)")
     parser.add_argument("--fuzzers", nargs="*", help="Specific fuzzers to run (default: run all configured fuzzers)")
-    parser.add_argument("--build-dir", default="fuzz/build", help="Build directory path relative to project root (default: build)")
+    parser.add_argument("--config-dir", help="Directory containing fuzz_config.py (default: fuzz_dir)")
 
     args = parser.parse_args()
 
-    # This function should be overridden by the specific project
-    # For now, provide a default configuration
-    default_configs = [FuzzConfig("parser_parse", max_len=17000)]
-
     # Check if project has its own fuzzer configuration
-    project_fuzz_config = os.path.join(args.project_root, "fuzz", "fuzz_config.py")
-    configs = default_configs
+    config_dir = args.config_dir or args.fuzz_dir
+    project_fuzz_config = os.path.join(config_dir, "fuzz_config.py")
     fuzzer_jobs = 16  # Default value
 
     if os.path.exists(project_fuzz_config):
         # Load project-specific configuration
-        sys.path.insert(0, os.path.dirname(project_fuzz_config))
+        sys.path.insert(0, config_dir)
         try:
             import fuzz_config
 
@@ -473,7 +472,7 @@ def main():
 
     # Use command line jobs argument if provided, otherwise use config value
     final_jobs = args.jobs if args.jobs is not None else fuzzer_jobs
-    runner = FuzzRunner(args.project_root, args.max_seconds, final_jobs, args.build_dir)
+    runner = FuzzRunner(args.fuzz_dir, args.max_seconds, final_jobs)
 
     if runner.run_fuzzers(configs):
         print("All fuzzers completed successfully!")
