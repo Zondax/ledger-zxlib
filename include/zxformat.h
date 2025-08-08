@@ -20,6 +20,7 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+
 #include "zxerror.h"
 #include "zxmacros.h"
 
@@ -123,7 +124,7 @@ __Z_INLINE uint64_t parse_digits_to_uint64(const char *start, const char *end, u
     if (error != NULL) {
         *error = 0;
     }
-    
+
     uint64_t value = 0;
     bool has_digits = false;
 
@@ -167,7 +168,7 @@ __Z_INLINE int8_t str_to_int8(const char *start, const char *end, char *error) {
 
     const uint64_t limit = (sign < 0) ? ((uint64_t)INT64_MAX + 1u) : (uint64_t)INT64_MAX;
     uint64_t value = parse_digits_to_uint64(start, end, limit, error);
-    
+
     // If parsing failed, error is already set by the helper function
     if (error != NULL && *error != 0) {
         return 0;
@@ -202,7 +203,7 @@ __Z_INLINE int64_t str_to_int64(const char *start, const char *end, char *error)
 
     const uint64_t limit = (sign < 0) ? ((uint64_t)INT64_MAX + 1u) : (uint64_t)INT64_MAX;
     uint64_t value = parse_digits_to_uint64(start, end, limit, error);
-    
+
     // If parsing failed, error is already set by the helper function
     if (error != NULL && *error != 0) {
         return 0;
