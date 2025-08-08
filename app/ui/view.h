@@ -128,6 +128,8 @@ void view_inspect_init(viewfunc_getInnerItem_t view_funcGetInnerItem, viewfunc_g
 
 void view_review_show(review_type_e reviewKind);
 
+void view_review_show_with_intent(review_type_e reviewKind, const char *intent);
+
 void view_spinner_show(const char *text);
 
 void view_review_show_generic(review_type_e reviewKind, const char *title, const char *validate);

@@ -282,7 +282,6 @@ UX_FLOW_DEF_NOCB(ux_review_flow_4_review_title, pbb,
                      REVIEW_MSG_TITLE,
                      REVIEW_MSG_VALUE,
                  });
-
 UX_STEP_INIT(ux_review_flow_2_start_step, NULL, NULL, { h_review_loop_start(); });
 #ifdef HAVE_INSPECT
 UX_STEP_CB_INIT(ux_review_flow_2_step, bnnn_paging, h_review_loop_inside(), inspect_init(),
@@ -565,6 +564,76 @@ void view_review_show_impl(unsigned int requireReply, const char *title, const c
 }
 
 void run_root_txn_flow() { run_ux_review_flow(review_type, &ux_review_flow_2_start_step); }
+
+void view_review_show_with_intent_impl(unsigned int requireReply, const char *intent) {
+    review_type = requireReply;
+    h_paging_init();
+    h_paging_decrease();
+
+    // Format the intro message based on the intent
+    if (intent != NULL && strlen(intent) > 0) {
+        // Put "Review transaction" or "Review message" on first line
+        const char *first_line = (review_type == REVIEW_MSG) ? "Review message" : "Review transaction";
+        snprintf(intro_msg_buf, sizeof(intro_msg_buf), "%s", first_line);
+
+        // Put "to {intent}" on second line
+        const size_t max_intent_len = sizeof(intro_submsg_buf) - 4;  // Reserve 4 bytes: "to " (3) + null terminator (1)
+        int ret = snprintf(intro_submsg_buf, sizeof(intro_submsg_buf), "to %.*s", (int)max_intent_len, intent);
+
+        // Check if truncation occurred and add ellipsis if needed
+        if (ret >= (int)sizeof(intro_submsg_buf)) {
+            const size_t buf_len = sizeof(intro_submsg_buf);
+            if (buf_len >= 4) {
+                intro_submsg_buf[buf_len - 4] = '.';
+                intro_submsg_buf[buf_len - 3] = '.';
+                intro_submsg_buf[buf_len - 2] = '.';
+                intro_submsg_buf[buf_len - 1] = '\0';
+            }
+        }
+
+        // Use the dynamic review flow for transactions and messages with intent
+        if (review_type == REVIEW_TXN) {
+            flow_inside_loop = 0;
+            if (G_ux.stack_count == 0) {
+                ux_stack_push();
+            }
+            // Build flow with dynamic title for transaction
+            uint8_t index = 0;
+            ux_review_flow[index++] = &ux_review_flow_1_review_group_title;
+            ux_review_flow[index++] = &ux_review_flow_2_start_step;
+            ux_review_flow[index++] = &ux_review_flow_2_step;
+            ux_review_flow[index++] = &ux_review_flow_2_end_step;
+            ux_review_flow[index++] = &ux_review_flow_3_step;
+            ux_review_flow[index++] = FLOW_END_STEP;
+            ux_flow_init(0, ux_review_flow, NULL);
+            return;
+        } else if (review_type == REVIEW_MSG) {
+            // Create custom flow for message with intent
+            flow_inside_loop = 0;
+            if (G_ux.stack_count == 0) {
+                ux_stack_push();
+            }
+            // Build flow with dynamic title for message
+            uint8_t index = 0;
+            // Use the group title flow which displays intro_msg_buf
+            ux_review_flow[index++] = &ux_review_flow_1_review_group_title;
+            ux_review_flow[index++] = &ux_review_flow_2_start_step;
+            ux_review_flow[index++] = &ux_review_flow_2_step;
+            ux_review_flow[index++] = &ux_review_flow_2_end_step;
+            ux_review_flow[index++] = &ux_review_flow_6_step;
+            ux_review_flow[index++] = FLOW_END_STEP;
+            ux_flow_init(0, ux_review_flow, NULL);
+            return;
+        }
+    }
+
+    // Fallback to normal review flow if no intent or other review types
+    flow_inside_loop = 0;
+    if (G_ux.stack_count == 0) {
+        ux_stack_push();
+    }
+    run_ux_review_flow((review_type_e)review_type, NULL);
+}
 
 // Build review UX flow and run it
 void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t *const start_step) {

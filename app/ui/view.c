@@ -78,6 +78,11 @@ void view_review_show(review_type_e reviewKind) {
     view_review_show_impl((unsigned int)reviewKind, NULL, NULL);
 }
 
+void view_review_show_with_intent(review_type_e reviewKind, const char *intent) {
+    // New function that explicitly handles intent
+    view_review_show_with_intent_impl((unsigned int)reviewKind, intent);
+}
+
 void view_review_show_generic(review_type_e reviewKind, const char *title, const char *validate) {
     view_review_show_impl((unsigned int)reviewKind, title, validate);
 }

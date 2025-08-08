@@ -230,6 +230,8 @@ void h_inspect_init();
 
 void view_review_show_impl(unsigned int requireReply, const char *title, const char *validate);
 
+void view_review_show_with_intent_impl(unsigned int requireReply, const char *intent);
+
 void view_inspect_show_impl();
 
 void view_initialize_show_impl(uint8_t item_idx, const char *statusString);
