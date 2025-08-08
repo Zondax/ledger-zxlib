@@ -577,7 +577,7 @@ void view_review_show_with_intent_impl(unsigned int requireReply, const char *in
         snprintf(intro_msg_buf, sizeof(intro_msg_buf), "%s", first_line);
 
         // Put "to {intent}" on second line
-        const size_t max_intent_len = sizeof(intro_submsg_buf) - 4;  // "to " + null terminator
+        const size_t max_intent_len = sizeof(intro_submsg_buf) - 4;  // Reserve 4 bytes: "to " (3) + null terminator (1)
         int ret = snprintf(intro_submsg_buf, sizeof(intro_submsg_buf), "to %.*s", (int)max_intent_len, intent);
 
         // Check if truncation occurred and add ellipsis if needed
