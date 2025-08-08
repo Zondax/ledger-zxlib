@@ -437,7 +437,7 @@ TEST(STR_TO_INT8, DummyData_Negative) {
 }
 
 TEST(STR_TO_INT8, EmptyString) {
-    const char* empty = "";
+    const char *empty = "";
     char error = 0;
     int8_t result = str_to_int8(empty, empty, &error);
     EXPECT_EQ(0, result);
@@ -445,7 +445,7 @@ TEST(STR_TO_INT8, EmptyString) {
 }
 
 TEST(STR_TO_INT8, JustMinusSign) {
-    const char* just_minus = "-";
+    const char *just_minus = "-";
     char error = 0;
     int8_t result = str_to_int8(just_minus, just_minus + 1, &error);
     EXPECT_EQ(0, result);
@@ -453,7 +453,7 @@ TEST(STR_TO_INT8, JustMinusSign) {
 }
 
 TEST(STR_TO_INT8, NoDigits) {
-    const char* no_digits = "abc";
+    const char *no_digits = "abc";
     char error = 0;
     int8_t result = str_to_int8(no_digits, no_digits + 3, &error);
     EXPECT_EQ(0, result);
@@ -543,7 +543,7 @@ TEST(STR_TO_INT64, MixedInvalidCharacters) {
 }
 
 TEST(STR_TO_INT64, EmptyString) {
-    const char* empty = "";
+    const char *empty = "";
     char error = 0;
     int64_t result = str_to_int64(empty, empty, &error);
     EXPECT_EQ(0, result);
@@ -551,7 +551,7 @@ TEST(STR_TO_INT64, EmptyString) {
 }
 
 TEST(STR_TO_INT64, JustMinusSign) {
-    const char* just_minus = "-";
+    const char *just_minus = "-";
     char error = 0;
     int64_t result = str_to_int64(just_minus, just_minus + 1, &error);
     EXPECT_EQ(0, result);
