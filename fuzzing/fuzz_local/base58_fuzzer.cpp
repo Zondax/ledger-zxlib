@@ -1,8 +1,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-
-#include <iostream>
+#include <vector>
 
 extern "C" {
 #include "base58.h"

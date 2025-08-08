@@ -19,6 +19,7 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
 #include "zxerror.h"
 #include "zxmacros.h"
 
@@ -118,19 +119,18 @@ __Z_INLINE void bip32_to_str(char *s, uint32_t max, const uint32_t *path, uint8_
 
 __Z_INLINE void bip44_to_str(char *s, uint32_t max, const uint32_t path[5]) { bip32_to_str(s, max, path, 5); }
 
-__Z_INLINE int8_t str_to_int8(const char *start, const char *end, char *error) {
-    int sign = 1;
-    if (*start == '-') {
-        sign = -1;
-        start++;
+__Z_INLINE uint64_t parse_digits_to_uint64(const char *start, const char *end, uint64_t limit, char *error) {
+    if (error != NULL) {
+        *error = 0;
     }
-
+    
     uint64_t value = 0;
-    const uint64_t limit = (sign < 0) ? ((uint64_t)INT64_MAX + 1u) : (uint64_t)INT64_MAX;
+    bool has_digits = false;
 
     for (const char *s = start; s < end; s++) {
         uint64_t delta = (uint64_t)(*s - '0');
         if (delta <= 9u) {
+            has_digits = true;
             // Check for overflow before multiplication and addition
             if (value > (limit - delta) / 10u) {
                 if (error != NULL) {
@@ -145,6 +145,32 @@ __Z_INLINE int8_t str_to_int8(const char *start, const char *end, char *error) {
             }
             return 0;
         }
+    }
+
+    // Check if no digits were processed
+    if (!has_digits) {
+        if (error != NULL) {
+            *error = 1;
+        }
+        return 0;
+    }
+
+    return value;
+}
+
+__Z_INLINE int8_t str_to_int8(const char *start, const char *end, char *error) {
+    int sign = 1;
+    if (*start == '-') {
+        sign = -1;
+        start++;
+    }
+
+    const uint64_t limit = (sign < 0) ? ((uint64_t)INT64_MAX + 1u) : (uint64_t)INT64_MAX;
+    uint64_t value = parse_digits_to_uint64(start, end, limit, error);
+    
+    // If parsing failed, error is already set by the helper function
+    if (error != NULL && *error != 0) {
+        return 0;
     }
 
     int64_t signed_value;
@@ -174,26 +200,12 @@ __Z_INLINE int64_t str_to_int64(const char *start, const char *end, char *error)
         start++;
     }
 
-    uint64_t value = 0;
     const uint64_t limit = (sign < 0) ? ((uint64_t)INT64_MAX + 1u) : (uint64_t)INT64_MAX;
-
-    for (const char *s = start; s < end; s++) {
-        uint64_t delta = (uint64_t)(*s - '0');
-        if (delta <= 9u) {
-            // Check for overflow before multiplication and addition
-            if (value > (limit - delta) / 10u) {
-                if (error != NULL) {
-                    *error = 1;
-                }
-                return 0;
-            }
-            value = value * 10u + delta;
-        } else {
-            if (error != NULL) {
-                *error = 1;
-            }
-            return 0;
-        }
+    uint64_t value = parse_digits_to_uint64(start, end, limit, error);
+    
+    // If parsing failed, error is already set by the helper function
+    if (error != NULL && *error != 0) {
+        return 0;
     }
 
     if (sign < 0) {

@@ -152,21 +152,24 @@ fuzz_report_html:
 	@echo "Generating unified coverage report for all fuzzers..."
 	@rm -rf $(FUZZ_COVERAGE_DIR)/report_html_unified
 	@# Generate HTML report with all fuzzer binaries
-	@llvm-cov show \
-		$(FUZZ_BUILD_DIR)/fuzz-base58 \
-		-object $(FUZZ_BUILD_DIR)/fuzz-base64 \
-		-object $(FUZZ_BUILD_DIR)/fuzz-bech32 \
-		-object $(FUZZ_BUILD_DIR)/fuzz-hexutils \
-		-object $(FUZZ_BUILD_DIR)/fuzz-segwit_addr \
-		-object $(FUZZ_BUILD_DIR)/fuzz-bignum \
-		-object $(FUZZ_BUILD_DIR)/fuzz-zxformat \
-		-object $(FUZZ_BUILD_DIR)/fuzz-timeutils \
-		-instr-profile=$(FUZZ_COVERAGE_DIR)/coverage.profdata \
-		-format=html \
-		-output-dir=$(FUZZ_COVERAGE_DIR)/report_html_unified \
-		-show-line-counts-or-regions \
-		-show-instantiations \
-		-show-expansions
+	@FUZZ_BINARIES=($(FUZZ_BUILD_DIR)/fuzz-*); \
+	if [ -e "$${FUZZ_BINARIES[0]}" ]; then \
+		FIRST_BINARY="$${FUZZ_BINARIES[0]}"; \
+		OBJECT_FLAGS=""; \
+		for bin in "$${FUZZ_BINARIES[@]:1}"; do \
+			OBJECT_FLAGS="$$OBJECT_FLAGS -object $$bin"; \
+		done; \
+		llvm-cov show $$FIRST_BINARY $$OBJECT_FLAGS \
+			-instr-profile=$(FUZZ_COVERAGE_DIR)/coverage.profdata \
+			-format=html \
+			-output-dir=$(FUZZ_COVERAGE_DIR)/report_html_unified \
+			-show-line-counts-or-regions \
+			-show-instantiations \
+			-show-expansions; \
+	else \
+		echo "No fuzz binaries found in $(FUZZ_BUILD_DIR)"; \
+		exit 1; \
+	fi
 	@echo "Unified HTML coverage report generated in $(FUZZ_COVERAGE_DIR)/report_html_unified"
 	@# Open report in default browser (cross-platform)
 	@open $(FUZZ_COVERAGE_DIR)/report_html_unified/index.html 2>/dev/null || \
