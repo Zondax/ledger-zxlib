@@ -436,11 +436,35 @@ TEST(STR_TO_INT8, DummyData_Negative) {
     EXPECT_EQ(1, error);
 }
 
+TEST(STR_TO_INT8, EmptyString) {
+    const char *empty = "";
+    char error = 0;
+    int8_t result = str_to_int8(empty, empty, &error);
+    EXPECT_EQ(0, result);
+    EXPECT_EQ(1, error);  // Should set error flag for empty string
+}
+
+TEST(STR_TO_INT8, JustMinusSign) {
+    const char *just_minus = "-";
+    char error = 0;
+    int8_t result = str_to_int8(just_minus, just_minus + 1, &error);
+    EXPECT_EQ(0, result);
+    EXPECT_EQ(1, error);  // Should set error flag for just minus sign
+}
+
+TEST(STR_TO_INT8, NoDigits) {
+    const char *no_digits = "abc";
+    char error = 0;
+    int8_t result = str_to_int8(no_digits, no_digits + 3, &error);
+    EXPECT_EQ(0, result);
+    EXPECT_EQ(1, error);  // Should set error flag for non-digit characters
+}
+
 TEST(STR_TO_INT64, Min) {
-    char numberStr[] = "-9223372036854775807";
+    char numberStr[] = "-9223372036854775808";
     char error = 0;
     int64_t number = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
-    EXPECT_EQ(-9223372036854775807, number);
+    EXPECT_EQ(INT64_MIN, number);
     EXPECT_EQ(0, error);
 }
 
@@ -488,5 +512,139 @@ TEST(STR_TO_INT64, DummyData_Negative) {
     char error = 0;
     str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
     EXPECT_EQ(1, error);
+}
+
+TEST(STR_TO_INT64, OutsideBoundsPositive) {
+    char numberStr[] = "9223372036854775808";  // INT64_MAX + 1
+    char error = 0;
+    str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(1, error);
+}
+
+TEST(STR_TO_INT64, OutsideBoundsNegative) {
+    char numberStr[] = "-9223372036854775809";  // INT64_MIN - 1
+    char error = 0;
+    str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(1, error);
+}
+
+TEST(STR_TO_INT64, InvalidCharacters) {
+    char numberStr[] = "abc";
+    char error = 0;
+    str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(1, error);
+}
+
+TEST(STR_TO_INT64, MixedInvalidCharacters) {
+    char numberStr[] = "12a34";
+    char error = 0;
+    str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(1, error);
+}
+
+TEST(STR_TO_INT64, EmptyString) {
+    const char *empty = "";
+    char error = 0;
+    int64_t result = str_to_int64(empty, empty, &error);
+    EXPECT_EQ(0, result);
+    EXPECT_EQ(1, error);  // Should set error flag for empty string
+}
+
+TEST(STR_TO_INT64, JustMinusSign) {
+    const char *just_minus = "-";
+    char error = 0;
+    int64_t result = str_to_int64(just_minus, just_minus + 1, &error);
+    EXPECT_EQ(0, result);
+    EXPECT_EQ(1, error);  // Should set error flag for just minus sign
+}
+
+TEST(STR_TO_INT64, ErrorParameterInitialization) {
+    char numberStr[] = "42";
+    char error = 99;  // Initialize with non-zero value
+    int64_t result = str_to_int64(numberStr, numberStr + strlen(numberStr), &error);
+    EXPECT_EQ(42, result);
+    EXPECT_EQ(0, error);  // Error should be initialized to 0 for valid input
+}
+
+TEST(CASE_CONVERSION, ToUppercase) {
+    uint8_t letter = 'a';
+    zxerr_t result = to_uppercase(&letter);
+    EXPECT_EQ(zxerr_ok, result);
+    EXPECT_EQ('A', letter);
+
+    letter = 'z';
+    result = to_uppercase(&letter);
+    EXPECT_EQ(zxerr_ok, result);
+    EXPECT_EQ('Z', letter);
+
+    letter = 'A';
+    result = to_uppercase(&letter);
+    EXPECT_EQ(zxerr_ok, result);
+    EXPECT_EQ('A', letter);  // Already uppercase
+
+    letter = '1';
+    result = to_uppercase(&letter);
+    EXPECT_EQ(zxerr_ok, result);
+    EXPECT_EQ('1', letter);  // Not a letter
+}
+
+TEST(CASE_CONVERSION, ToLowercase) {
+    uint8_t letter = 'A';
+    zxerr_t result = to_lowercase(&letter);
+    EXPECT_EQ(zxerr_ok, result);
+    EXPECT_EQ('a', letter);
+
+    letter = 'Z';
+    result = to_lowercase(&letter);
+    EXPECT_EQ(zxerr_ok, result);
+    EXPECT_EQ('z', letter);
+
+    letter = 'a';
+    result = to_lowercase(&letter);
+    EXPECT_EQ(zxerr_ok, result);
+    EXPECT_EQ('a', letter);  // Already lowercase
+
+    letter = '1';
+    result = to_lowercase(&letter);
+    EXPECT_EQ(zxerr_ok, result);
+    EXPECT_EQ('1', letter);  // Not a letter
+}
+
+TEST(CASE_CONVERSION, ArrayToUppercase) {
+    uint8_t text[] = "Hello World 123!";
+    uint16_t len = strlen((char *)text);
+    zxerr_t result = array_to_uppercase(text, len);
+    EXPECT_EQ(zxerr_ok, result);
+    EXPECT_STREQ((char *)text, "HELLO WORLD 123!");
+
+    uint8_t empty[] = "";
+    result = array_to_uppercase(empty, 0);
+    EXPECT_EQ(zxerr_ok, result);
+
+    result = array_to_uppercase(nullptr, 0);
+    EXPECT_EQ(zxerr_no_data, result);
+}
+
+TEST(CASE_CONVERSION, ArrayToLowercase) {
+    uint8_t text[] = "Hello WORLD 123!";
+    uint16_t len = strlen((char *)text);
+    zxerr_t result = array_to_lowercase(text, len);
+    EXPECT_EQ(zxerr_ok, result);
+    EXPECT_STREQ((char *)text, "hello world 123!");
+
+    uint8_t allUpper[] = "ABCDEFG";
+    len = strlen((char *)allUpper);
+    result = array_to_lowercase(allUpper, len);
+    EXPECT_EQ(zxerr_ok, result);
+    EXPECT_STREQ((char *)allUpper, "abcdefg");
+
+    uint8_t mixed[] = "MiXeD CaSe";
+    len = strlen((char *)mixed);
+    result = array_to_lowercase(mixed, len);
+    EXPECT_EQ(zxerr_ok, result);
+    EXPECT_STREQ((char *)mixed, "mixed case");
+
+    result = array_to_lowercase(nullptr, 0);
+    EXPECT_EQ(zxerr_no_data, result);
 }
 }  // namespace

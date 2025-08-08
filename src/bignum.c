@@ -75,7 +75,7 @@ void bignumLittleEndian_to_bcd(uint8_t *bcdOut, uint16_t bcdOutLen, const uint8_
         // Shift bcd
         for (uint16_t j = 0; j < bcdOutLen; j++) {
             uint8_t carry2 = (uint8_t)(bcdOut[bcdOutLen - j - 1] > 127u);
-            bcdOut[bcdOutLen - j - 1] <<= 1u;
+            bcdOut[bcdOutLen - j - 1] = (uint8_t)(bcdOut[bcdOutLen - j - 1] << 1u);
             bcdOut[bcdOutLen - j - 1] += carry;
             carry = carry2;
         }
