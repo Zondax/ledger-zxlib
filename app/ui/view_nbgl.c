@@ -53,7 +53,7 @@ const char *intro_message = NULL;
 const char *intro_submessage = NULL;
 char intro_msg_buf[MAX_CHARS_PER_VALUE1_LINE];
 char intro_submsg_buf[MAX_CHARS_SUBMSG_LINE];
-static char approval_label_buf[64];
+char approval_label_buf[MAX_CHARS_SUBMSG_LINE];
 
 #define REVIEW_STANDALONE_SIZE 22
 #define REVIEW_MESSAGE_SIZE 18
@@ -530,6 +530,7 @@ void view_review_show_impl(unsigned int requireReply, const char *title, const c
     intro_submessage = NULL;
     intro_msg_buf[0] = '\0';
     intro_submsg_buf[0] = '\0';
+    approval_label_buf[0] = '\0';
     viewdata.key = viewdata.keys[0];
     viewdata.value = viewdata.values[0];
     // Retrieve intro text for transaction
@@ -576,6 +577,7 @@ void view_review_show_with_intent_impl(unsigned int requireReply, const char *in
     intro_submessage = NULL;
     intro_msg_buf[0] = '\0';
     intro_submsg_buf[0] = '\0';
+    approval_label_buf[0] = '\0';
     viewdata.key = viewdata.keys[0];
     viewdata.value = viewdata.values[0];
 
