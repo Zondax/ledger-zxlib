@@ -53,6 +53,7 @@ const char *intro_message = NULL;
 const char *intro_submessage = NULL;
 char intro_msg_buf[MAX_CHARS_PER_VALUE1_LINE];
 char intro_submsg_buf[MAX_CHARS_SUBMSG_LINE];
+static char approval_label_buf[64];
 
 #define REVIEW_STANDALONE_SIZE 22
 #define REVIEW_MESSAGE_SIZE 18
@@ -476,7 +477,8 @@ static void config_useCaseReview(nbgl_operationType_t type) {
     } else {
         nbgl_useCaseReview(
             type, &pairList, &C_icon_stax_64, (intro_message == NULL ? "Review transaction" : intro_message),
-            (intro_submessage == NULL ? NULL : intro_submessage), APPROVE_LABEL_NBGL, reviewTransactionChoice);
+            (intro_submessage == NULL ? NULL : intro_submessage),
+            (approval_label_buf[0] != '\0' ? approval_label_buf : APPROVE_LABEL_NBGL), reviewTransactionChoice);
     }
 }
 
@@ -497,9 +499,9 @@ static void config_useCaseMessageReview() {
                                        (intro_message == NULL ? "Review Message" : intro_message), NULL,
                                        "Accept risk and sign message ?", NULL, reviewMessageChoice);
     } else {
-        nbgl_useCaseReview(TYPE_MESSAGE, &pairList, &C_Review_64px,
-                           (intro_message == NULL ? "Review Message" : intro_message), NULL, APPROVE_LABEL_NBGL_MSG,
-                           reviewMessageChoice);
+        nbgl_useCaseReview(
+            TYPE_MESSAGE, &pairList, &C_Review_64px, (intro_message == NULL ? "Review Message" : intro_message), NULL,
+            (approval_label_buf[0] != '\0' ? approval_label_buf : APPROVE_LABEL_NBGL_MSG), reviewMessageChoice);
     }
 }
 
@@ -595,6 +597,25 @@ void view_review_show_with_intent_impl(unsigned int requireReply, const char *in
         }
         intro_message = intro_msg_buf;
         intro_submessage = NULL;  // No second line for NBGL
+
+        // Format the approval label with intent for the final approval screen
+        const char *sign_text = (review_type == REVIEW_MSG) ? "Sign message" : "Sign transaction";
+        ret = snprintf(approval_label_buf, sizeof(approval_label_buf), "%s to %s?", sign_text, intent);
+
+        // Check if truncation occurred and add ellipsis if needed
+        if (ret >= (int)sizeof(approval_label_buf)) {
+            const size_t buf_len = sizeof(approval_label_buf);
+            if (buf_len >= 4) {
+                approval_label_buf[buf_len - 4] = '.';
+                approval_label_buf[buf_len - 3] = '.';
+                approval_label_buf[buf_len - 2] = '.';
+                approval_label_buf[buf_len - 1] = '\0';
+            }
+        }
+    } else {
+        // Use default labels if no intent
+        snprintf(approval_label_buf, sizeof(approval_label_buf), "%s",
+                 (review_type == REVIEW_MSG) ? APPROVE_LABEL_NBGL_MSG : APPROVE_LABEL_NBGL);
     }
 
     h_paging_init();
