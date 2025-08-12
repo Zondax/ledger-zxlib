@@ -471,14 +471,13 @@ static void config_useCaseReview(nbgl_operationType_t type) {
 
     if (app_mode_blindsign_required()) {
         nbgl_useCaseReviewBlindSigning(type, &pairList, &C_icon_stax_64,
-                                       (intro_message == NULL ? "Review transaction" : intro_message),
-                                       intro_submessage,
+                                       (intro_message == NULL ? "Review transaction" : intro_message), intro_submessage,
                                        "Accept risk and sign transaction ?", NULL, reviewTransactionChoice);
     } else {
-        nbgl_useCaseReview(
-            type, &pairList, &C_icon_stax_64, (intro_message == NULL ? "Review transaction" : intro_message),
-            intro_submessage,
-            (approval_label_buf[0] != '\0' ? approval_label_buf : APPROVE_LABEL_NBGL), reviewTransactionChoice);
+        nbgl_useCaseReview(type, &pairList, &C_icon_stax_64,
+                           (intro_message == NULL ? "Review transaction" : intro_message), intro_submessage,
+                           (approval_label_buf[0] != '\0' ? approval_label_buf : APPROVE_LABEL_NBGL),
+                           reviewTransactionChoice);
     }
 }
 
