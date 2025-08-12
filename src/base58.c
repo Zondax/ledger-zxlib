@@ -51,7 +51,7 @@ int decode_base58(const char *in, size_t length, unsigned char *out, size_t *out
     }
     MEMMOVE(tmp, in, length);
     for (i = 0; i < length; i++) {
-        if (in[i] >= sizeof(BASE58TABLE)) {
+        if ((unsigned long)in[i] >= sizeof(BASE58TABLE)) {
             return -1;
         }
         tmp[i] = BASE58TABLE[(int)in[i]];
