@@ -1,7 +1,7 @@
 # Simple Makefile for zxlib tests
 # Wrapper around CMake build system
 
-.PHONY: all build test clean test-verbose test-filter fuzz fuzz_crash fuzz_clean build_fuzz format
+.PHONY: all build test clean test-verbose test-filter fuzz fuzz_crash fuzz_clean build_fuzz fuzz_report fuzz_report_html fuzz_help format
 
 # Default target
 all: build

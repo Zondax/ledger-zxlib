@@ -45,7 +45,7 @@ extern "C" {
             tmp = number % 10;                                                       \
             tmp = tmp < 0 ? -tmp : tmp;                                              \
             *(p++) = (char)('0' + tmp);                                              \
-            number /= 10u;                                                           \
+            number /= 10;                                                            \
         }                                                                            \
         while (p > data) {                                                           \
             p--;                                                                     \
@@ -160,6 +160,13 @@ __Z_INLINE uint64_t parse_digits_to_uint64(const char *start, const char *end, u
 }
 
 __Z_INLINE int8_t str_to_int8(const char *start, const char *end, char *error) {
+    if (start > end) {
+        if (error != NULL) {
+            *error = 1;
+        }
+        return 0;
+    }
+
     int sign = 1;
     if (*start == '-') {
         sign = -1;
@@ -195,6 +202,13 @@ __Z_INLINE int8_t str_to_int8(const char *start, const char *end, char *error) {
 }
 
 __Z_INLINE int64_t str_to_int64(const char *start, const char *end, char *error) {
+    if (start > end) {
+        if (error != NULL) {
+            *error = 1;
+        }
+        return 0;
+    }
+
     int sign = 1;
     if (*start == '-') {
         sign = -1;
@@ -485,7 +499,7 @@ __Z_INLINE zxerr_t formatBufferData(const uint8_t *ptr, uint64_t len, char *outV
                                     uint8_t pageIdx, uint8_t *pageCount) {
     char bufferUI[500 + 1];
     MEMZERO(bufferUI, sizeof(bufferUI));
-    MEMZERO(outValue, 0);
+    MEMZERO(outValue, outValueLen);
     CHECK_APP_CANARY()
 
     if (len >= sizeof(bufferUI)) {
