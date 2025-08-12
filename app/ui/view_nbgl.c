@@ -472,12 +472,12 @@ static void config_useCaseReview(nbgl_operationType_t type) {
     if (app_mode_blindsign_required()) {
         nbgl_useCaseReviewBlindSigning(type, &pairList, &C_icon_stax_64,
                                        (intro_message == NULL ? "Review transaction" : intro_message),
-                                       (intro_submessage == NULL ? NULL : intro_submessage),
+                                       intro_submessage,
                                        "Accept risk and sign transaction ?", NULL, reviewTransactionChoice);
     } else {
         nbgl_useCaseReview(
             type, &pairList, &C_icon_stax_64, (intro_message == NULL ? "Review transaction" : intro_message),
-            (intro_submessage == NULL ? NULL : intro_submessage),
+            intro_submessage,
             (approval_label_buf[0] != '\0' ? approval_label_buf : APPROVE_LABEL_NBGL), reviewTransactionChoice);
     }
 }
@@ -587,8 +587,14 @@ void view_review_show_with_intent_impl(unsigned int requireReply, const char *in
         const char *review_text = (review_type == REVIEW_MSG) ? "Review message" : "Review transaction";
         int ret = snprintf(intro_msg_buf, sizeof(intro_msg_buf), "%s to %s", review_text, intent);
 
+        // Check for snprintf error
+        if (ret < 0) {
+            // Handle encoding error - use a default message
+            strncpy(intro_msg_buf, review_text, sizeof(intro_msg_buf) - 1);
+            intro_msg_buf[sizeof(intro_msg_buf) - 1] = '\0';
+        }
         // Check if truncation occurred and add ellipsis if needed
-        if (ret >= (int)sizeof(intro_msg_buf)) {
+        else if ((size_t)ret >= sizeof(intro_msg_buf)) {
             const size_t buf_len = sizeof(intro_msg_buf);
             if (buf_len >= 4) {
                 intro_msg_buf[buf_len - 4] = '.';
@@ -604,8 +610,14 @@ void view_review_show_with_intent_impl(unsigned int requireReply, const char *in
         const char *sign_text = (review_type == REVIEW_MSG) ? "Sign message" : "Sign transaction";
         ret = snprintf(approval_label_buf, sizeof(approval_label_buf), "%s to %s?", sign_text, intent);
 
+        // Check for snprintf error
+        if (ret < 0) {
+            // Handle encoding error - use a default message
+            strncpy(approval_label_buf, sign_text, sizeof(approval_label_buf) - 1);
+            approval_label_buf[sizeof(approval_label_buf) - 1] = '\0';
+        }
         // Check if truncation occurred and add ellipsis if needed
-        if (ret >= (int)sizeof(approval_label_buf)) {
+        else if ((size_t)ret >= sizeof(approval_label_buf)) {
             const size_t buf_len = sizeof(approval_label_buf);
             if (buf_len >= 4) {
                 approval_label_buf[buf_len - 4] = '.';
