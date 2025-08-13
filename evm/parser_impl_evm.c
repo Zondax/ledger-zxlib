@@ -42,6 +42,8 @@ eth_tx_t eth_tx_obj;
 
 #define ETHEREUM_RECOVERY_OFFSET 27
 #define EIP155_V_BASE 35
+#define INVALID_CHAIN_ID_0 0
+#define INVALID_CHAIN_ID_1 1
 
 static parser_error_t readChainID(parser_context_t *ctx, rlp_t *chainId) {
     if (ctx == NULL || chainId == NULL) {
@@ -57,6 +59,12 @@ static parser_error_t readChainID(parser_context_t *ctx, rlp_t *chainId) {
         tmpChainId = chainId->ptr[0];
     } else {
         return parser_unexpected_error;
+    }
+
+    // According to Ledger's specifications, chain ID must not be 0 or 1
+    // when using an Ethereum derivation path
+    if (tmpChainId == INVALID_CHAIN_ID_0 || tmpChainId == INVALID_CHAIN_ID_1) {
+        return parser_invalid_chain_id;
     }
 
     if (supported_networks_evm_len == 0) {
