@@ -1,5 +1,7 @@
 name: "Main workflow"
 on: push
+permissions:
+  contents: read
 
 jobs:
   configure:
@@ -120,6 +122,8 @@ jobs:
 
   tag:
     runs-on: ${{ github.repository_owner == 'zondax' && 'zondax-runners' || 'ubuntu-latest' }}
+    permissions:
+      contents: write
     needs:
       - build
       - check_version
