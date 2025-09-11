@@ -46,10 +46,12 @@ zxerr_t account_enabled();
 #define C_IMPORTANT_CIRCLE_ICON C_Important_Circle_64px
 #define C_WARNING_ICON C_Warning_64px
 #define C_REVIEW_ICON C_Review_64px
+#define C_ICON C_icon_stax_64
 #elif defined(TARGET_APEX_P)
 #define C_IMPORTANT_CIRCLE_ICON C_Important_Circle_24px
 #define C_WARNING_ICON C_Warning_24px
 #define C_REVIEW_ICON C_Review_48px
+#define C_ICON C_icon_apex_p_48
 #endif
 
 static const char HOME_TEXT[] =
@@ -201,7 +203,7 @@ void view_error_show_impl() {
 }
 
 void view_settings_show_impl() {
-    nbgl_useCaseHomeAndSettings(MENU_MAIN_APP_LINE1, &C_icon_stax_64, HOME_TEXT, 0, &settingContents, &infoList, NULL,
+    nbgl_useCaseHomeAndSettings(MENU_MAIN_APP_LINE1, &C_ICON, HOME_TEXT, 0, &settingContents, &infoList, NULL,
                                 app_quit);
 }
 
@@ -384,7 +386,7 @@ void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, const char *statusString) 
     infoList.infoContents = INFO_VALUES_PAGE;
     infoList.infoTypes = INFO_KEYS_PAGE;
 
-    nbgl_useCaseHomeAndSettings(MENU_MAIN_APP_LINE1, &C_icon_stax_64, home_text, INIT_HOME_PAGE, &settingContents,
+    nbgl_useCaseHomeAndSettings(MENU_MAIN_APP_LINE1, &C_ICON, home_text, INIT_HOME_PAGE, &settingContents,
                                 &infoList, NULL, app_quit);
 }
 
@@ -451,7 +453,7 @@ static void config_useCaseAddressReview() {
 #else
     intro_message = ADDRESS_TEXT;
 #endif
-    nbgl_useCaseAddressReview(viewdata.value, extraPagesPtr, &C_icon_stax_64, intro_message, NULL, reviewAddressChoice);
+    nbgl_useCaseAddressReview(viewdata.value, extraPagesPtr, &C_ICON, intro_message, NULL, reviewAddressChoice);
 }
 
 static nbgl_layoutTagValue_t *update_item_callback(uint8_t index) {
@@ -481,11 +483,11 @@ static void config_useCaseReview(nbgl_operationType_t type) {
     pairList.startIndex = 0;
 
     if (app_mode_blindsign_required()) {
-        nbgl_useCaseReviewBlindSigning(type, &pairList, &C_icon_stax_64,
+        nbgl_useCaseReviewBlindSigning(type, &pairList, &C_ICON,
                                        (intro_message == NULL ? "Review transaction" : intro_message), intro_submessage,
                                        "Accept risk and sign transaction ?", NULL, reviewTransactionChoice);
     } else {
-        nbgl_useCaseReview(type, &pairList, &C_icon_stax_64,
+        nbgl_useCaseReview(type, &pairList, &C_ICON,
                            (intro_message == NULL ? "Review transaction" : intro_message), intro_submessage,
                            (approval_label_buf[0] != '\0' ? approval_label_buf : APPROVE_LABEL_NBGL),
                            reviewTransactionChoice);
@@ -529,7 +531,7 @@ static void config_useCaseReviewLight(const char *title, const char *validate) {
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
 
-    nbgl_useCaseReviewLight(TYPE_OPERATION, &pairList, &C_icon_stax_64,
+    nbgl_useCaseReviewLight(TYPE_OPERATION, &pairList, &C_ICON,
                             (title == NULL ? VERIFY_TITLE_LABEL_GENERIC : title), NULL,
                             (validate == NULL ? APPROVE_LABEL_NBGL_GENERIC : validate), reviewGenericChoice);
 }
@@ -559,7 +561,7 @@ void view_review_show_impl(unsigned int requireReply, const char *title, const c
 
     switch (review_type) {
         case REVIEW_UI:
-            nbgl_useCaseReviewStart(&C_icon_stax_64, "Review configuration", NULL, CANCEL_LABEL, review_configuration,
+            nbgl_useCaseReviewStart(&C_ICON, "Review configuration", NULL, CANCEL_LABEL, review_configuration,
                                     h_reject_internal);
             break;
         case REVIEW_ADDRESS: {
