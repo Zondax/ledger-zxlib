@@ -16,7 +16,7 @@
 
 #include "bolos_target.h"
 
-#if defined(TARGET_STAX) || defined(TARGET_FLEX)
+#if defined(TARGET_STAX) || defined(TARGET_FLEX) || defined(TARGET_APEX_P)
 
 #include "actions.h"
 #include "app_mode.h"
@@ -40,6 +40,18 @@ zxerr_t account_enabled();
 #define VERIFY_TITLE_LABEL_GENERIC "Verify operation"
 #define INFO_LIST_SIZE 4
 #define SETTING_CONTENTS_NB 1
+
+// Define icon variables based on target platform
+#if defined(TARGET_STAX) || defined(TARGET_FLEX)
+#define C_IMPORTANT_CIRCLE_ICON C_Important_Circle_64px
+#define C_WARNING_ICON C_Warning_64px
+#define C_REVIEW_ICON C_Review_64px
+#elif defined(TARGET_APEX_P)
+#define C_IMPORTANT_CIRCLE_ICON C_Important_Circle_24px
+#define C_WARNING_ICON C_Warning_24px
+#define C_REVIEW_ICON C_Review_48px
+#endif
+
 static const char HOME_TEXT[] =
     "This application enables\nsigning transactions on the\n" MENU_MAIN_APP_LINE1 " network";
 
@@ -83,7 +95,7 @@ static void h_approve_internal(void) { h_approve(review_type); }
 
 #ifdef TARGET_STAX
 #define MAX_INFO_LIST_ITEM_PER_PAGE 3
-#else  // TARGET_FLEX
+#else  // TARGET_FLEX || TARGET_APEX_P
 #define MAX_INFO_LIST_ITEM_PER_PAGE 2
 #endif
 
@@ -175,18 +187,17 @@ void view_custom_error_show(const char *upper, const char *lower) {
     MEMZERO(viewdata.value, MAX_CHARS_PER_VALUE1_LINE);
     snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", upper);
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", lower);
-
-    nbgl_useCaseChoice(&C_Important_Circle_64px, viewdata.key, viewdata.value, "Ok", "", confirm_error);
+    nbgl_useCaseChoice(&C_IMPORTANT_CIRCLE_ICON, viewdata.key, viewdata.value, "Ok", "", confirm_error);
 }
 
 void view_blindsign_error_show() {
-    nbgl_useCaseChoice(&C_Warning_64px, "This transaction cannot\nbe clear-signed",
+    nbgl_useCaseChoice(&C_WARNING_ICON, "This transaction cannot\nbe clear-signed",
                        "Enable blind signing in the\nsettings to sign this\ntransaction.", "Go to settings",
                        "Reject Transaction", goto_settings);
 }
 
 void view_error_show_impl() {
-    nbgl_useCaseChoice(&C_Important_Circle_64px, viewdata.key, viewdata.value, "Ok", NULL, confirm_setting);
+    nbgl_useCaseChoice(&C_IMPORTANT_CIRCLE_ICON, viewdata.key, viewdata.value, "Ok", NULL, confirm_setting);
 }
 
 void view_settings_show_impl() {
@@ -402,7 +413,7 @@ static void review_configuration() {
         view_error_show();
     }
 
-    nbgl_useCaseChoice(&C_Important_Circle_64px, viewdata.key, viewdata.value, "Accept", "Reject", confirm_setting);
+    nbgl_useCaseChoice(&C_IMPORTANT_CIRCLE_ICON, viewdata.key, viewdata.value, "Accept", "Reject", confirm_setting);
 }
 
 static void config_useCaseAddressReview() {
@@ -494,13 +505,14 @@ static void config_useCaseMessageReview() {
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
     if (app_mode_blindsign_required()) {
-        nbgl_useCaseReviewBlindSigning(TYPE_MESSAGE, &pairList, &C_Review_64px,
+        nbgl_useCaseReviewBlindSigning(TYPE_MESSAGE, &pairList, &C_REVIEW_ICON,
                                        (intro_message == NULL ? "Review Message" : intro_message), NULL,
                                        "Accept risk and sign message ?", NULL, reviewMessageChoice);
     } else {
-        nbgl_useCaseReview(
-            TYPE_MESSAGE, &pairList, &C_Review_64px, (intro_message == NULL ? "Review Message" : intro_message), NULL,
-            (approval_label_buf[0] != '\0' ? approval_label_buf : APPROVE_LABEL_NBGL_MSG), reviewMessageChoice);
+        nbgl_useCaseReview(TYPE_MESSAGE, &pairList, &C_REVIEW_ICON,
+                           (intro_message == NULL ? "Review Message" : intro_message), intro_submessage,
+                           (approval_label_buf[0] != '\0' ? approval_label_buf : APPROVE_LABEL_NBGL),
+                           reviewMessageChoice);
     }
 }
 
