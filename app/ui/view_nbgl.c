@@ -386,8 +386,8 @@ void view_idle_show_impl(__Z_UNUSED uint8_t item_idx, const char *statusString) 
     infoList.infoContents = INFO_VALUES_PAGE;
     infoList.infoTypes = INFO_KEYS_PAGE;
 
-    nbgl_useCaseHomeAndSettings(MENU_MAIN_APP_LINE1, &C_ICON, home_text, INIT_HOME_PAGE, &settingContents,
-                                &infoList, NULL, app_quit);
+    nbgl_useCaseHomeAndSettings(MENU_MAIN_APP_LINE1, &C_ICON, home_text, INIT_HOME_PAGE, &settingContents, &infoList,
+                                NULL, app_quit);
 }
 
 void view_message_impl(const char *title, const char *message) {
@@ -487,9 +487,8 @@ static void config_useCaseReview(nbgl_operationType_t type) {
                                        (intro_message == NULL ? "Review transaction" : intro_message), intro_submessage,
                                        "Accept risk and sign transaction ?", NULL, reviewTransactionChoice);
     } else {
-        nbgl_useCaseReview(type, &pairList, &C_ICON,
-                           (intro_message == NULL ? "Review transaction" : intro_message), intro_submessage,
-                           (approval_label_buf[0] != '\0' ? approval_label_buf : APPROVE_LABEL_NBGL),
+        nbgl_useCaseReview(type, &pairList, &C_ICON, (intro_message == NULL ? "Review transaction" : intro_message),
+                           intro_submessage, (approval_label_buf[0] != '\0' ? approval_label_buf : APPROVE_LABEL_NBGL),
                            reviewTransactionChoice);
     }
 }
@@ -531,9 +530,8 @@ static void config_useCaseReviewLight(const char *title, const char *validate) {
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
 
-    nbgl_useCaseReviewLight(TYPE_OPERATION, &pairList, &C_ICON,
-                            (title == NULL ? VERIFY_TITLE_LABEL_GENERIC : title), NULL,
-                            (validate == NULL ? APPROVE_LABEL_NBGL_GENERIC : validate), reviewGenericChoice);
+    nbgl_useCaseReviewLight(TYPE_OPERATION, &pairList, &C_ICON, (title == NULL ? VERIFY_TITLE_LABEL_GENERIC : title),
+                            NULL, (validate == NULL ? APPROVE_LABEL_NBGL_GENERIC : validate), reviewGenericChoice);
 }
 
 void view_review_show_impl(unsigned int requireReply, const char *title, const char *validate) {
