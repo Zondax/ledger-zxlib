@@ -34,7 +34,7 @@
 #endif
 #define MAX_CHARS_SUBMSG_LINE 2048
 #define MAX_CHARS_HEXMESSAGE 160
-#elif defined(TARGET_STAX) || defined(TARGET_FLEX)
+#elif defined(TARGET_STAX) || defined(TARGET_FLEX) || defined(TARGET_APEX_P)
 #include "nbgl_use_case.h"
 #define MAX_LINES_PER_PAGE_REVIEW NB_MAX_LINES_IN_REVIEW
 #define MAX_CHARS_PER_KEY_LINE 64
@@ -121,7 +121,7 @@ static const char *shortcut_value = SHORTCUT_VALUE;
 
 // FIXME: Wait to be fixed on SDK:
 // https://github.com/LedgerHQ/ledger-secure-sdk/blob/fe169b19c7445f2477c26035a827c22ba9f84964/lib_nbgl/include/nbgl_use_case.h#L59
-#if defined(TARGET_STAX) || defined(TARGET_FLEX)
+#if defined(TARGET_STAX) || defined(TARGET_FLEX) || defined(TARGET_APEX_P)
 #ifdef NB_MAX_DISPLAYED_PAIRS_IN_REVIEW
 #undef NB_MAX_DISPLAYED_PAIRS_IN_REVIEW
 #define NB_MAX_DISPLAYED_PAIRS_IN_REVIEW 6
@@ -130,7 +130,7 @@ static const char *shortcut_value = SHORTCUT_VALUE;
 
 typedef struct {
     struct {
-#if defined(TARGET_STAX) || defined(TARGET_FLEX)
+#if defined(TARGET_STAX) || defined(TARGET_FLEX) || defined(TARGET_APEX_P)
         char *key;
         char *value;
         char keys[NB_MAX_DISPLAYED_PAIRS_IN_REVIEW][MAX_CHARS_PER_KEY_LINE];

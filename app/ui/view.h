@@ -134,7 +134,7 @@ void view_spinner_show(const char *text);
 
 void view_review_show_generic(review_type_e reviewKind, const char *title, const char *validate);
 
-#if defined(TARGET_STAX) || defined(TARGET_FLEX)
+#if defined(TARGET_STAX) || defined(TARGET_FLEX) || defined(TARGET_APEX_P)
 typedef enum {
     EXPERT_MODE = 0,
 #ifdef APP_ACCOUNT_MODE_ENABLED
@@ -150,4 +150,4 @@ typedef enum {
 } settings_list_e;
 
 void view_set_switch_subtext(settings_list_e switch_id, const char *subtext);
-#endif  // TARGET_STAX || TARGET_FLEX
+#endif  // TARGET_STAX || TARGET_FLEX || TARGET_APEX_P

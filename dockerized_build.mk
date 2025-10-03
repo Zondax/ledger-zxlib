@@ -30,12 +30,14 @@ DOCKER_BOLOS_SDKX = NANOX_SDK
 DOCKER_BOLOS_SDKS2 = NANOSP_SDK
 DOCKER_BOLOS_SDKST = STAX_SDK
 DOCKER_BOLOS_SDKFL = FLEX_SDK
+DOCKER_BOLOS_SDKAP = APEX_P_SDK
 
 TARGET_S = nanos
 TARGET_X = nanox
 TARGET_S2 = nanos2
 TARGET_ST = stax
 TARGET_FL = flex
+TARGET_AP = apex_p
 
 # Note: This is not an SSH key, and being public represents no risk
 SCP_PUBKEY=049bc79d139c70c83a4b19e8922e5ee3e0080bb14a2e8b0752aa42cda90a1463f689b0fa68c1c0246845c2074787b649d0d8a6c0b97d4607065eee3057bdf16b83
@@ -50,7 +52,7 @@ $(info TESTS_ZEMU_DIR        : $(TESTS_ZEMU_DIR))
 $(info TESTS_JS_DIR          : $(TESTS_JS_DIR))
 $(info TESTS_JS_PACKAGE      : $(TESTS_JS_PACKAGE))
 
-DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:ledger-75354ba1678f81c283e4a7eca09c0524185c6281
+DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:ledger-ca5b0e8ca6730a7d8ba36bae8942a9a7bb6dc7fb
 DOCKER_IMAGE_LEDGER=ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
 
 ifdef INTERACTIVE
@@ -104,6 +106,7 @@ endif
 	@$(MAKE) buildS2
 	@$(MAKE) buildST
 	@$(MAKE) buildFL
+	@$(MAKE) buildAP
 
 .PHONY: check_python
 check_python:
@@ -143,6 +146,10 @@ build_rustST:
 build_rustFL:
 	$(call run_docker,$(DOCKER_BOLOS_SDKFL),$(TARGET_FL),make -j $(NPROC) rust)
 
+.PHONY: build_rustAP
+build_rustAP:
+	$(call run_docker,$(DOCKER_BOLOS_SDKAP),$(TARGET_AP),make -j $(NPROC) rust)
+
 .PHONY: convert_icon
 convert_icon:
 	@convert $(LEDGER_SRC)/tmp.gif -monochrome -size 16x16 -depth 1 $(LEDGER_SRC)/nanos_icon.gif
@@ -171,6 +178,10 @@ buildST:
 .PHONY: buildFL
 buildFL:
 	$(call run_docker,$(DOCKER_BOLOS_SDKFL),$(TARGET_FL),make -j $(NPROC))
+
+.PHONY: buildAP
+buildAP:
+	$(call run_docker,$(DOCKER_BOLOS_SDKAP),$(TARGET_AP),make -j $(NPROC))
 
 .PHONY: clean_output
 clean_output:
@@ -208,6 +219,10 @@ shellST:
 shellFL:
 	$(call run_docker,$(DOCKER_BOLOS_SDKFL) -t,$(TARGET_FL),bash)
 
+.PHONY: shellAP
+shellAP:
+	$(call run_docker,$(DOCKER_BOLOS_SDKAP) -t,$(TARGET_AP),bash)
+
 .PHONY: loadS
 loadS:
 	${LEDGER_SRC}/pkg/installer_s.sh load
@@ -236,9 +251,18 @@ deleteST:
 loadFL:
 	${LEDGER_SRC}/pkg/installer_flex.sh load
 
+.PHONY: loadAP
+loadAP:
+	${LEDGER_SRC}/pkg/installer_apex.sh load
+
 .PHONY: deleteFL
 deleteFL:
 	${LEDGER_SRC}/pkg/installer_flex.sh delete
+
+.PHONY: deleteAP
+deleteAP:
+	${LEDGER_SRC}/pkg/installer_apex.sh delete
+
 
 .PHONY: sizeS
 sizeS:
@@ -259,6 +283,10 @@ sizeST:
 .PHONY: sizeFL
 sizeFL:
 	$(CURDIR)/deps/ledger-zxlib/scripts/getSize.py flex
+
+.PHONY: sizeAP
+sizeAP:
+	$(CURDIR)/deps/ledger-zxlib/scripts/getSize.py apex
 
 .PHONY: show_info_recovery_mode
 show_info_recovery_mode:

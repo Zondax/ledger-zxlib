@@ -50,7 +50,7 @@ extern void explicit_bzero(void *s, size_t n) __THROW __nonnull((1));
 #endif
 
 #if defined(TARGET_NANOS) || defined(TARGET_NANOX) || defined(TARGET_NANOS2) || defined(TARGET_STAX) || \
-    defined(TARGET_FLEX)
+    defined(TARGET_FLEX) || defined(TARGET_APEX_P)
 #include "zxmacros_ledger.h"
 #else
 
@@ -60,7 +60,7 @@ extern void explicit_bzero(void *s, size_t n) __THROW __nonnull((1));
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define ZX_SWAP(v) \
-    (((v)&0x000000FFu) << 24u | ((v)&0x0000FF00u) << 8u | ((v)&0x00FF0000u) >> 8u | ((v)&0xFF000000u) >> 24u)
+    (((v) & 0x000000FFu) << 24u | ((v) & 0x0000FF00u) << 8u | ((v) & 0x00FF0000u) >> 8u | ((v) & 0xFF000000u) >> 24u)
 #define HtoNL(v) ZX_SWAP(v)
 #define NtoHL(v) ZX_SWAP(v)
 #else
@@ -100,7 +100,7 @@ void zemu_log_stack(const char *ctx);
     }
 
 #if (defined(TARGET_NANOS) || defined(TARGET_NANOX) || defined(TARGET_NANOS2) || defined(TARGET_STAX)) || \
-    defined(TARGET_FLEX)
+    defined(TARGET_FLEX) || defined(TARGET_APEX_P)
 #if defined(ZEMU_LOGGING)
 __Z_INLINE void zemu_log(const char *buf) {
     asm volatile(
