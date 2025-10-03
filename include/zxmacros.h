@@ -60,7 +60,7 @@ extern void explicit_bzero(void *s, size_t n) __THROW __nonnull((1));
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define ZX_SWAP(v) \
-    (((v)&0x000000FFu) << 24u | ((v)&0x0000FF00u) << 8u | ((v)&0x00FF0000u) >> 8u | ((v)&0xFF000000u) >> 24u)
+    (((v) & 0x000000FFu) << 24u | ((v) & 0x0000FF00u) << 8u | ((v) & 0x00FF0000u) >> 8u | ((v) & 0xFF000000u) >> 24u)
 #define HtoNL(v) ZX_SWAP(v)
 #define NtoHL(v) ZX_SWAP(v)
 #else
