@@ -512,7 +512,7 @@ static void config_useCaseMessageReview() {
     } else {
         nbgl_useCaseReview(TYPE_MESSAGE, &pairList, &C_REVIEW_ICON,
                            (intro_message == NULL ? "Review Message" : intro_message), intro_submessage,
-                           (approval_label_buf[0] != '\0' ? approval_label_buf : APPROVE_LABEL_NBGL),
+                           (approval_label_buf[0] != '\0' ? approval_label_buf : APPROVE_LABEL_NBGL_MSG),
                            reviewMessageChoice);
     }
 }
