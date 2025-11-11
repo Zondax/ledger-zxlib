@@ -79,6 +79,14 @@ static nbgl_layoutTagValueList_t pairList;
 
 static nbgl_layoutTagValueList_t *extraPagesPtr = NULL;
 
+// Cache for page counts to avoid re-parsing
+#define MAX_CACHED_ITEMS 200
+static struct {
+    bool valid;
+    uint8_t itemCount;
+    uint8_t pageCounts[MAX_CACHED_ITEMS];
+} pageCountCache = {.valid = false, .itemCount = 0};
+
 typedef enum {
     EXPERT_MODE_TOKEN = FIRST_USER_TOKEN,
     ACCOUNT_MODE_TOKEN,
@@ -209,14 +217,46 @@ void view_settings_show_impl() {
 
 void view_spinner_impl(const char *text) { nbgl_useCaseSpinner(text); }
 
+/**
+ * @brief Get the page count for a specific item, using cache when available
+ */
+static uint8_t get_item_page_count(uint8_t itemIdx) {
+    // Check if cache is valid and contains this item
+    if (pageCountCache.valid && itemIdx < pageCountCache.itemCount && itemIdx < MAX_CACHED_ITEMS) {
+        if (pageCountCache.pageCounts[itemIdx] > 0) {
+            return pageCountCache.pageCounts[itemIdx];
+        }
+    }
+
+    // Cache miss or invalid - need to query
+    uint8_t pageCount = 0;
+    if (viewdata.viewfuncGetItem(itemIdx, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
+                                 MAX_CHARS_PER_VALUE1_LINE, 0, &pageCount) == zxerr_ok) {
+        // Store in cache if valid
+        if (pageCount > 0 && itemIdx < MAX_CACHED_ITEMS) {
+            if (!pageCountCache.valid) {
+                MEMZERO(&pageCountCache, sizeof(pageCountCache));
+                pageCountCache.valid = true;
+            }
+            pageCountCache.pageCounts[itemIdx] = pageCount;
+            if (itemIdx >= pageCountCache.itemCount) {
+                pageCountCache.itemCount = itemIdx + 1;
+            }
+        }
+        return pageCount;
+    }
+    return 0;
+}
+
 static uint8_t get_pair_number() {
     uint8_t numItems = 0;
     uint8_t numPairs = 0;
     viewdata.viewfuncGetNumItems(&numItems);
+
+    // Use cached page counts to avoid re-parsing
     for (uint8_t i = 0; i < numItems; i++) {
-        viewdata.viewfuncGetItem(i, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value, MAX_CHARS_PER_VALUE1_LINE, 0,
-                                 &viewdata.pageCount);
-        numPairs += viewdata.pageCount;
+        uint8_t pageCount = get_item_page_count(i);
+        numPairs += pageCount;
     }
     return numPairs;
 }
@@ -244,8 +284,8 @@ zxerr_t h_review_update_data() {
 
     uint8_t accPages = 0;
     for (uint8_t i = 0; i < viewdata.itemCount; i++) {
-        CHECK_ZXERR(viewdata.viewfuncGetItem(i, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
-                                             MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount))
+        // Use cached page count to avoid unnecessary re-parsing
+        viewdata.pageCount = get_item_page_count(i);
         if (viewdata.pageCount == 0) {
             ZEMU_LOGF(50, "pageCount is 0!")
             return zxerr_no_data;
@@ -253,6 +293,7 @@ zxerr_t h_review_update_data() {
 
         if (accPages + viewdata.pageCount > viewdata.itemIdx) {
             const uint8_t innerIdx = viewdata.itemIdx - accPages;
+            // Only call viewfuncGetItem when we actually need to display this page
             CHECK_ZXERR(viewdata.viewfuncGetItem(i, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
                                                  MAX_CHARS_PER_VALUE1_LINE, innerIdx, &viewdata.pageCount))
             if (viewdata.pageCount > 1) {
@@ -557,6 +598,10 @@ void view_review_show_impl(unsigned int requireReply, const char *title, const c
     }
     h_paging_init();
 
+    // Invalidate page count cache for new review
+    pageCountCache.valid = false;
+    pageCountCache.itemCount = 0;
+
     switch (review_type) {
         case REVIEW_UI:
             nbgl_useCaseReviewStart(&C_ICON, "Review configuration", NULL, CANCEL_LABEL, review_configuration,
@@ -644,6 +689,10 @@ void view_review_show_with_intent_impl(unsigned int requireReply, const char *in
     }
 
     h_paging_init();
+
+    // Invalidate page count cache for new review
+    pageCountCache.valid = false;
+    pageCountCache.itemCount = 0;
 
     switch (review_type) {
         case REVIEW_MSG: {
