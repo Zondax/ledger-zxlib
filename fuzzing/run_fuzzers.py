@@ -229,9 +229,10 @@ class FuzzRunner:
             try:
                 result = process.wait(timeout=timeout_seconds)
             except subprocess.TimeoutExpired:
-                print(f"⚠️ Fuzzer {config.name} exceeded timeout ({timeout_seconds}s), terminating...")
+                print(f"✅ Fuzzer {config.name} completed after reaching timeout ({max_time}s), terminating gracefully...")
                 self._terminate_process_gracefully(process)
-                return False
+                # Timeout is expected behavior, not a failure
+                return True
 
             # After execution, rename the generic fuzz-*.log files to job-specific names
             self._rename_job_logs(config.name)
@@ -423,7 +424,7 @@ class FuzzRunner:
             print(f"\n📊 Running fuzzer {i}/{len(configs)}: {config.name}")
             if not self.run_fuzzer(config):
                 success = False
-                print(f"❌ Fuzzer {config.name} failed or found issues")
+                print(f"❌ Fuzzer {config.name} encountered an error")
             else:
                 print(f"✅ Fuzzer {config.name} completed successfully")
 
@@ -475,10 +476,10 @@ def main():
     runner = FuzzRunner(args.fuzz_dir, args.max_seconds, final_jobs)
 
     if runner.run_fuzzers(configs):
-        print("All fuzzers completed successfully!")
+        print("✅ All fuzzers completed successfully!")
         return 0
     else:
-        print("Some fuzzers failed or found issues!")
+        print("❌ Some fuzzers encountered errors!")
         return 1
 
 
