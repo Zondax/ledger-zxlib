@@ -23,7 +23,9 @@ TESTS_JS_DIR?=
 LEDGER_SRC=$(CURDIR)/app
 FUZZ_COVERAGE_DIR=$(CURDIR)/fuzz/coverage
 DOCKER_APP_SRC=/app
-DOCKER_APP_BIN=$(DOCKER_APP_SRC)/app/bin/app.elf
+# Note: BIN_DIR is now build/<TARGET>/bin, but this variable is kept for reference
+# The actual path varies by target: build/nanox/bin, build/nanos2/bin, etc.
+DOCKER_APP_BIN=$(DOCKER_APP_SRC)/app/build/$(TARGET)/bin/app.elf
 
 DOCKER_BOLOS_SDKS = NANOS_SDK
 DOCKER_BOLOS_SDKX = NANOX_SDK

@@ -1,6 +1,6 @@
 #*******************************************************************************
 #  Ledger App
-#  (c) 2018 - 2023 Zondax AG
+#  (c) 2018 - 2024 Zondax AG
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,6 +15,11 @@
 #  limitations under the License.
 #*******************************************************************************
 
+# BIN_DIR is defined by the SDK in Makefile.target (included via Makefile.standard_app)
+# Path structure: build/<TARGET>/bin (e.g., build/nanox/bin, build/stax/bin)
+# This fallback ensures compatibility if BIN_DIR is not yet defined
+BIN_DIR ?= $(CURDIR)/build/$(TARGET)/bin
+
 all: default
 	@echo "#!/usr/bin/env bash" > $(OUTPUT_INSTALLER)
 	@echo "APPNAME=\"${APPNAME}\"" >> $(OUTPUT_INSTALLER)
@@ -23,10 +28,10 @@ all: default
 	@echo "LOAD_PARAMS=($$(echo "${APP_LOAD_PARAMS}" | sed -e "s|"${APPNAME}"|\""${APPNAME}"\"|"))" >> $(OUTPUT_INSTALLER)
 	@echo "DELETE_PARAMS=($$(echo "${COMMON_DELETE_PARAMS}" | sed -e "s|"${APPNAME}"|\""${APPNAME}"\"|"))" >> $(OUTPUT_INSTALLER)
 	@echo "APPHEX=\"" >> $(OUTPUT_INSTALLER)
-	@cat $(CURDIR)/bin/app.hex >> $(OUTPUT_INSTALLER)
+	@cat $(BIN_DIR)/app.hex >> $(OUTPUT_INSTALLER)
 	@echo "\"" >> $(OUTPUT_INSTALLER)
 	@cat $(CURDIR)/../deps/ledger-zxlib/scripts/template.sh >> $(OUTPUT_INSTALLER)
 	@chmod +x $(OUTPUT_INSTALLER)
-	@cp $(CURDIR)/bin/* $(CURDIR)/output
+	@cp $(BIN_DIR)/* $(CURDIR)/output
 	@cp $(CURDIR)/output/app.elf ${OUTPUT_ELF}
 	@rm $(CURDIR)/output/app.elf
