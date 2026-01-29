@@ -24,7 +24,7 @@ case "${os_string}" in
 		;;
 	Darwin*)
 		brew install libusb
-		pip install -U ledgerblue ecpy
+		pip install --break-system-packages -U ledgerblue ecpy
 		;;
 	*)
 		echo "OS not recognized"
