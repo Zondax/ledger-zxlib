@@ -18,13 +18,13 @@
 os_string="$(uname -s)"
 case "${os_string}" in
 	Linux*)
-		sudo apt-get install libusb-1.0.0 libudev-dev
-		pip install -U setuptools
-		pip install -U --no-cache ledgerblue ecpy
+		sudo apt-get install -y libusb-1.0-0 libudev-dev
+		pip install --break-system-packages -U setuptools
+		pip install --break-system-packages -U --no-cache ledgerblue ecpy
 		;;
 	Darwin*)
 		brew install libusb
-		pip install -U ledgerblue ecpy
+		pip install --break-system-packages -U ledgerblue ecpy
 		;;
 	*)
 		echo "OS not recognized"

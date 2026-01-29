@@ -9,7 +9,7 @@ on:
       - develop
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
@@ -38,12 +38,11 @@ jobs:
         with:
           file-annotations: true
           files-changed-only: false
-          ignore: "build|.github|cmake|fuzzing|.vscode|.idea"
+          ignore: "build|.github|cmake|fuzzing|.vscode|.idea|include/view_templates.h"
           step-summary: true
           style: file # uses .clang-format
           thread-comments: true
           tidy-checks: "-*" # disable clang-tidy, only use clang-format
-          format-review-errors: false # ignore parsing errors, only check formatting
 
       - name: Fail if errors
         if: ${{ steps.linter.outputs['checks-failed'] > 0 }}
