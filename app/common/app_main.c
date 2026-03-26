@@ -212,7 +212,8 @@ void app_main() {
                 tx += 2;
             }
             FINALLY;
-            {}
+            {
+            }
         }
         END_TRY;
     }

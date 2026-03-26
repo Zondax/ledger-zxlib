@@ -125,7 +125,8 @@ __Z_INLINE void zemu_log(__Z_UNUSED const char *msg) { printf("%s\n", msg); }
     }
 #else
 #define ZEMU_LOGF(SIZE, ...) \
-    {}
+    {                        \
+    }
 #endif
 
 #ifdef __cplusplus
