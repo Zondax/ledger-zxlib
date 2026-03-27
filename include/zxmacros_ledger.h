@@ -62,7 +62,8 @@ extern unsigned int app_stack_canary;
     WAIT_EVENT()
 #else
 #define UX_WAIT() \
-    {}
+    {             \
+    }
 #endif
 
 // Macros for handling no-throw methods error check
