@@ -35,11 +35,15 @@ static bool tx_initialized = false;
 void extract_eth_path(uint32_t rx, uint32_t offset) {
     tx_initialized = false;
 
+    if (rx <= offset) {
+        THROW(APDU_CODE_WRONG_LENGTH);
+    }
+
     const uint8_t path_len = *(G_io_apdu_buffer + offset);
 
     if (path_len > HDPATH_LEN_DEFAULT || path_len < 3) THROW(APDU_CODE_WRONG_LENGTH);
 
-    if ((rx - offset - 1) < sizeof(uint32_t) * path_len) {
+    if ((rx - offset) < (uint32_t)1 + sizeof(uint32_t) * path_len) {
         THROW(APDU_CODE_WRONG_LENGTH);
     }
 
@@ -95,6 +99,10 @@ bool process_chunk_eip191(__Z_UNUSED volatile uint32_t *tx, uint32_t rx) {
             }
             data += path_len + 1;
             len -= path_len + 1;
+
+            if (len < sizeof(uint32_t)) {
+                THROW(APDU_CODE_WRONG_LENGTH);
+            }
 
             // now process the chunk
             bytes_to_read = U4BE(data, 0);
@@ -167,10 +175,10 @@ bool process_chunk_eth(__Z_UNUSED volatile uint32_t *tx, uint32_t rx) {
             uint32_t path_len = sizeof(uint32_t) * hdPathEth_len;
 
             // plus the first offset data containing the path len
-            data += path_len + 1;
-            if (len < path_len) {
+            if (len < path_len + 1) {
                 THROW(APDU_CODE_WRONG_LENGTH);
             }
+            data += path_len + 1;
 
             // now process the chunk
             len -= path_len + 1;
