@@ -85,10 +85,18 @@ rlp_error_t get_tx_rlp_len(const uint8_t *buffer, uint32_t len, uint64_t *read, 
 
     // skip version if present/recognized
     //  otherwise tx is probably legacy so no version, just rlp data
+    if (offset >= len) {
+        return rlp_no_data;
+    }
+
     uint8_t version = data[offset];
     if (version == 1 || version == 2) {
         offset += 1;
         *read += 1;
+    }
+
+    if (offset >= len) {
+        return rlp_no_data;
     }
 
     // get rlp marker
@@ -110,6 +118,10 @@ rlp_error_t get_tx_rlp_len(const uint8_t *buffer, uint32_t len, uint64_t *read, 
         // in the marker
         // And then the length is just the number BE encoded
         uint64_t num_bytes = (marker - RLP_MARKER_VAL_2);
+
+        if (num_bytes == 0 || (uint64_t)(len - offset) < num_bytes) {
+            return rlp_no_data;
+        }
 
         uint64_t num;
         if (be_bytes_to_u64(&data[offset], num_bytes, &num) != 0) return rlp_invalid_data;
