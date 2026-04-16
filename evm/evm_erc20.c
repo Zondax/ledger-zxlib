@@ -101,6 +101,15 @@ bool validateERC20(eth_tx_t *ethObj) {
         ethObj->is_erc20_transfer = false;
         return false;
     }
+    // ABI-encode pads the 20-byte address with 12 leading zero bytes; enforce the
+    // padding so the displayed recipient matches the signed calldata bit-for-bit.
+    const uint8_t *addressPtr = ethObj->tx.data.ptr + EVM_SELECTOR_LENGTH;
+    for (uint8_t i = 0; i < ERC20_ADDRESS_PADDING_LENGTH; i++) {
+        if (*(addressPtr++) != 0) {
+            ethObj->is_erc20_transfer = false;
+            return false;
+        }
+    }
     ethObj->is_erc20_transfer = true;
     return true;
 }
