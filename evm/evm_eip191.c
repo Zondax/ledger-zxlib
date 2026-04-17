@@ -116,17 +116,30 @@ zxerr_t eip191_hash_message(const uint8_t *message, uint16_t messageLen, uint8_t
 
 #if defined(LEDGER_SPECIFIC)
     cx_sha3_t sha3;
-    CHECK_CX_OK(cx_keccak_init_no_throw(&sha3, 256));
-    CHECK_CX_OK(cx_hash_no_throw((cx_hash_t *)&sha3, 0, (uint8_t *)SIGN_MAGIC, sizeof(SIGN_MAGIC) - 1, NULL, 0));
+    char len_str[12] = {0};
+
+    if (cx_keccak_init_no_throw(&sha3, 256) != CX_OK) {
+        MEMZERO(&sha3, sizeof(sha3));
+        return zxerr_unknown;
+    }
+    if (cx_hash_no_throw((cx_hash_t *)&sha3, 0, (uint8_t *)SIGN_MAGIC, sizeof(SIGN_MAGIC) - 1, NULL, 0) != CX_OK) {
+        MEMZERO(&sha3, sizeof(sha3));
+        return zxerr_unknown;
+    }
 
     uint32_t msg_len = U4BE(message, 0);
-    char len_str[12] = {0};
     uint32_to_str(len_str, sizeof(len_str), msg_len);
-    CHECK_CX_OK(cx_hash_no_throw((cx_hash_t *)&sha3, 0, (uint8_t *)len_str, strlen(len_str), NULL, 0));
+    if (cx_hash_no_throw((cx_hash_t *)&sha3, 0, (uint8_t *)len_str, strlen(len_str), NULL, 0) != CX_OK) {
+        MEMZERO(&sha3, sizeof(sha3));
+        return zxerr_unknown;
+    }
+    if (cx_hash_no_throw((cx_hash_t *)&sha3, CX_LAST, message + sizeof(uint32_t), messageLen - sizeof(uint32_t), hash,
+                         32) != CX_OK) {
+        MEMZERO(&sha3, sizeof(sha3));
+        return zxerr_unknown;
+    }
 
-    CHECK_CX_OK(cx_hash_no_throw((cx_hash_t *)&sha3, CX_LAST, message + sizeof(uint32_t), messageLen - sizeof(uint32_t),
-                                 hash, 32));
-
+    MEMZERO(&sha3, sizeof(sha3));
 #endif
 
     return zxerr_ok;

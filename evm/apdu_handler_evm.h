@@ -24,6 +24,11 @@ void handleGetAddrEth(volatile uint32_t *flags, volatile uint32_t *tx, uint32_t 
 void handleSignEth(volatile uint32_t *flags, volatile uint32_t *tx, uint32_t rx);
 void handleSignEip191(volatile uint32_t *flags, volatile uint32_t *tx, uint32_t rx);
 
+// Clears the chunk-reassembly state (tx_initialized, bytes_to_read).
+// Call from the consuming app's dispatcher on any non-OK exit so a partial
+// multi-chunk session can never carry over into the next APDU.
+void reset_evm_chunk_state(void);
+
 #ifdef __cplusplus
 }
 #endif

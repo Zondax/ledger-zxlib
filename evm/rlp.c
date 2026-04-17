@@ -53,7 +53,10 @@ parser_error_t rlp_read(parser_context_t *ctx, rlp_t *rlp) {
     if (prefix <= RLP_KIND_BYTE_PREFIX) {
         rlp->kind = RLP_KIND_BYTE;
         rlp->ptr = prefixPtr;
-        rlp->rlpLen = 0;
+        // Per the RLP spec, a single byte in [0x00, 0x7f] IS its own encoding, and the decoded
+        // payload is that 1 byte. Reporting rlpLen as 1 (not 0) matches go-ethereum's decoder
+        // and keeps R/S zero-checks in legacy tx parsing able to distinguish 0x00 from 0x01.
+        rlp->rlpLen = 1;
 
     } else if (prefix <= RLP_KIND_STRING_SHORT_MAX) {
         rlp->kind = RLP_KIND_STRING;
