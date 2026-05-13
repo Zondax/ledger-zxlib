@@ -20,6 +20,10 @@ TESTS_ZEMU_DIR?=$(CURDIR)/tests_zemu
 TESTS_JS_PACKAGE?=
 TESTS_JS_DIR?=
 
+# Single source of truth for the pnpm version used by all Zondax Ledger apps.
+# Bumping this value here propagates to every app via the next zxlib submodule update.
+PNPM_VERSION ?= 11.1.1
+
 LEDGER_SRC=$(CURDIR)/app
 FUZZ_COVERAGE_DIR=$(CURDIR)/fuzz/coverage
 DOCKER_APP_SRC=/app
@@ -348,18 +352,23 @@ dev_caFL: check_python
 dev_ca_deleteFL: check_python
 	@python -m ledgerblue.resetCustomCA --targetId 0x33200004
 
+.PHONY: pnpm_setup
+pnpm_setup:
+	@corepack enable 2>/dev/null || true
+	corepack prepare pnpm@$(PNPM_VERSION) --activate
+
 .PHONY: zemu_install_js_link
 ifeq ($(TESTS_JS_DIR),)
-zemu_install_js_link:
+zemu_install_js_link: pnpm_setup
 	@echo "No local package defined"
 else
-zemu_install_js_link:
+zemu_install_js_link: pnpm_setup
 	# First unlink everything
-	cd $(TESTS_JS_DIR) && yarn unlink || true
-	cd $(TESTS_ZEMU_DIR) && yarn unlink $(TESTS_JS_PACKAGE) || true
+	cd $(TESTS_JS_DIR) && pnpm unlink || true
+	cd $(TESTS_ZEMU_DIR) && pnpm unlink $(TESTS_JS_PACKAGE) || true
 	# Now build and link
-	cd $(TESTS_JS_DIR) && yarn install && yarn build && yarn link || true
-	cd $(TESTS_ZEMU_DIR) && yarn link $(TESTS_JS_PACKAGE) && yarn install || true
+	cd $(TESTS_JS_DIR) && pnpm install && pnpm build && pnpm link --global || true
+	cd $(TESTS_ZEMU_DIR) && pnpm link --global $(TESTS_JS_PACKAGE) && pnpm install || true
 	@echo
 	# List linked packages
 	@echo
@@ -370,7 +379,7 @@ endif
 .PHONY: zemu_install
 zemu_install: zemu_install_js_link
 	# and now install everything
-	cd $(TESTS_ZEMU_DIR) && yarn install
+	cd $(TESTS_ZEMU_DIR) && pnpm install
 
 .PHONY: zemu
 zemu:
@@ -387,8 +396,8 @@ zemu_debug:
 ########################## TEST Section ###############################
 
 .PHONY: zemu_test
-zemu_test:
-	cd $(TESTS_ZEMU_DIR) && yarn test$(COIN)
+zemu_test: pnpm_setup
+	cd $(TESTS_ZEMU_DIR) && pnpm run test$(COIN)
 
 .PHONY: rust_test
 rust_test:
