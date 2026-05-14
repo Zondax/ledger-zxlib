@@ -24,6 +24,11 @@ TESTS_JS_DIR?=
 # Bumping this value here propagates to every app via the next zxlib submodule update.
 PNPM_VERSION ?= 11.1.1
 
+# Always invoke pnpm through corepack with the version pinned explicitly. This
+# bypasses PATH resolution, so a globally installed pnpm on a dev host can never
+# shadow the version pinned above.
+PNPM := corepack pnpm@$(PNPM_VERSION)
+
 LEDGER_SRC=$(CURDIR)/app
 FUZZ_COVERAGE_DIR=$(CURDIR)/fuzz/coverage
 DOCKER_APP_SRC=/app
@@ -364,11 +369,11 @@ zemu_install_js_link: pnpm_setup
 else
 zemu_install_js_link: pnpm_setup
 	# First unlink everything
-	cd $(TESTS_JS_DIR) && pnpm unlink || true
-	cd $(TESTS_ZEMU_DIR) && pnpm unlink $(TESTS_JS_PACKAGE) || true
+	cd $(TESTS_JS_DIR) && $(PNPM) unlink || true
+	cd $(TESTS_ZEMU_DIR) && $(PNPM) unlink $(TESTS_JS_PACKAGE) || true
 	# Now build and link
-	cd $(TESTS_JS_DIR) && pnpm install && pnpm build && pnpm link --global || true
-	cd $(TESTS_ZEMU_DIR) && pnpm link --global $(TESTS_JS_PACKAGE) && pnpm install || true
+	cd $(TESTS_JS_DIR) && $(PNPM) install && $(PNPM) build && $(PNPM) link --global || true
+	cd $(TESTS_ZEMU_DIR) && $(PNPM) link --global $(TESTS_JS_PACKAGE) && $(PNPM) install || true
 	@echo
 	# List linked packages
 	@echo
@@ -379,7 +384,7 @@ endif
 .PHONY: zemu_install
 zemu_install: zemu_install_js_link
 	# and now install everything
-	cd $(TESTS_ZEMU_DIR) && pnpm install
+	cd $(TESTS_ZEMU_DIR) && $(PNPM) install
 
 .PHONY: zemu
 zemu:
@@ -397,7 +402,7 @@ zemu_debug:
 
 .PHONY: zemu_test
 zemu_test: pnpm_setup
-	cd $(TESTS_ZEMU_DIR) && pnpm run test$(COIN)
+	cd $(TESTS_ZEMU_DIR) && $(PNPM) run test$(COIN)
 
 .PHONY: rust_test
 rust_test:
