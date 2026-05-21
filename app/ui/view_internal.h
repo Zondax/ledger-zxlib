@@ -38,8 +38,16 @@
 #include "nbgl_use_case.h"
 #define MAX_LINES_PER_PAGE_REVIEW NB_MAX_LINES_IN_REVIEW
 #define MAX_CHARS_PER_KEY_LINE 64
-#define MAX_CHARS_PER_VALUE1_LINE 180
-#define MAX_CHARS_SUBMSG_LINE 180
+// A review page renders at most NB_MAX_LINES_IN_REVIEW (9) lines for a value.
+// NBGL truncates anything beyond that with "..." and the overflow is never
+// shown: the next page resumes at the next pre-paginated chunk, not where the
+// text was cut. Each value chunk must therefore fit within 9 lines. The
+// narrowest touch screen (Apex) fits ~16 hex chars/line, i.e. 9*16 = 144
+// chars. The previous value of 180 was sized for the wider Stax/Flex screens
+// and overflowed on Apex (and partially on Stax/Flex), silently hiding bytes
+// of long values (e.g. EVM call params) from the signer.
+#define MAX_CHARS_PER_VALUE1_LINE 144
+#define MAX_CHARS_SUBMSG_LINE 144
 #define MAX_CHARS_HEXMESSAGE 160
 #else
 #ifndef MAX_CHARS_PER_VALUE_LINE
