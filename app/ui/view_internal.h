@@ -38,17 +38,31 @@
 #include "nbgl_use_case.h"
 #define MAX_LINES_PER_PAGE_REVIEW NB_MAX_LINES_IN_REVIEW
 #define MAX_CHARS_PER_KEY_LINE 64
-// A review page renders at most NB_MAX_LINES_IN_REVIEW (9) lines for a value.
+#define MAX_CHARS_HEXMESSAGE 160
+// A review page renders a value across at most NB_MAX_LINES_IN_REVIEW lines.
 // NBGL truncates anything beyond that with "..." and the overflow is never
 // shown: the next page resumes at the next pre-paginated chunk, not where the
-// text was cut. Each value chunk must therefore fit within 9 lines. The
-// narrowest touch screen (Apex) fits ~16 hex chars/line, i.e. 9*16 = 144
-// chars. The previous value of 180 was sized for the wider Stax/Flex screens
-// and overflowed on Apex (and partially on Stax/Flex), silently hiding bytes
-// of long values (e.g. EVM call params) from the signer.
+// text was cut. So each value chunk (MAX_CHARS_PER_VALUE1_LINE) must fit within
+// that line budget. Sizing it per device = (max review lines) * (hex chars per
+// line); hex digits render at a fixed (tabular) width, so chars/line is
+// constant for the worst-case hex value:
+//   - Stax : 10 lines * 16 chars/line = 160  (NB_MAX_LINES_IN_REVIEW = 10)
+//   - Flex :  9 lines * 18 chars/line = 162  (NB_MAX_LINES_IN_REVIEW =  9)
+//   - Apex :  9 lines * 16 chars/line = 144  (narrowest screen)
+// A flat 144 (sized for the narrowest, Apex) under-fills the taller Stax and
+// wider Flex screens by one line each, needlessly splitting long values (e.g.
+// EVM call params) across extra pages. Sizing per device shows more per page
+// without ever silently hiding bytes from the signer.
+#if defined(TARGET_STAX)
+#define MAX_CHARS_PER_VALUE1_LINE 160
+#define MAX_CHARS_SUBMSG_LINE 160
+#elif defined(TARGET_FLEX)
+#define MAX_CHARS_PER_VALUE1_LINE 162
+#define MAX_CHARS_SUBMSG_LINE 162
+#else  // TARGET_APEX_P
 #define MAX_CHARS_PER_VALUE1_LINE 144
 #define MAX_CHARS_SUBMSG_LINE 144
-#define MAX_CHARS_HEXMESSAGE 160
+#endif
 #else
 #ifndef MAX_CHARS_PER_VALUE_LINE
 #define MAX_CHARS_PER_VALUE_LINE (17)
