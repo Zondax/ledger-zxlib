@@ -76,6 +76,12 @@ int decode_base58(const char *in, size_t length, unsigned char *out, size_t *out
         if (tmp[startAt] == 0) {
             ++startAt;
         }
+        // Base58 output never has more digits than the input, so j (starting at
+        // length) cannot reach 0 here. The explicit guard proves that bound to the
+        // static analyzer and avoids an unsigned underflow of j on any future change.
+        if (j == 0) {
+            break;
+        }
         buffer[--j] = (unsigned char)remainder;
     }
     while ((j < length) && (buffer[j] == 0)) {
