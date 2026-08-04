@@ -248,17 +248,47 @@ static uint8_t get_item_page_count(uint8_t itemIdx) {
     return 0;
 }
 
-static uint8_t get_pair_number() {
+/**
+ * @brief Total the review pairs, refusing anything the review cannot show whole
+ *
+ * NBGL addresses review pairs through a uint8_t (nbgl_contentTagValueList_t's
+ * nbPairs), so 255 is the most it can be told about. Totalling them in a uint8_t
+ * wrapped instead of refusing: a document needing 257 pairs reported 1, and the
+ * review presented that one pair and offered approval while the app went on to
+ * sign the whole document.
+ *
+ * Capping the item count does not prevent this. Items and pairs are separate
+ * budgets, because one item can render many pairs: an amount array renders a
+ * page per coin through a single item, and a long value paginates by length.
+ */
+static zxerr_t get_pair_number(uint8_t *numPairs) {
+    if (numPairs == NULL) {
+        return zxerr_unknown;
+    }
+
     uint8_t numItems = 0;
-    uint8_t numPairs = 0;
-    viewdata.viewfuncGetNumItems(&numItems);
+    CHECK_ZXERR(viewdata.viewfuncGetNumItems(&numItems))
 
     // Use cached page counts to avoid re-parsing
+    uint16_t totalPairs = 0;
     for (uint8_t i = 0; i < numItems; i++) {
-        uint8_t pageCount = get_item_page_count(i);
-        numPairs += pageCount;
+        const uint8_t pageCount = get_item_page_count(i);
+        if (pageCount == 0) {
+            // The item could not be retrieved. Adding zero and carrying on
+            // drops it from the review while leaving it in what gets signed,
+            // and would let a document slip under the bound below by not
+            // counting the parts that failed.
+            return zxerr_no_data;
+        }
+
+        totalPairs += pageCount;
+        if (totalPairs > UINT8_MAX) {
+            return zxerr_out_of_bounds;
+        }
     }
-    return numPairs;
+
+    *numPairs = (uint8_t)totalPairs;
+    return zxerr_ok;
 }
 
 zxerr_t h_review_update_data() {
@@ -518,7 +548,11 @@ static void config_useCaseReview(nbgl_operationType_t type) {
     }
 
     pairList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;
-    pairList.nbPairs = get_pair_number();
+    if (get_pair_number(&pairList.nbPairs) != zxerr_ok) {
+        ZEMU_LOGF(50, "get_pair_number failed\n")
+        view_error_show();
+        return;
+    }
     pairList.pairs = NULL;  // to indicate that callback should be used
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
@@ -542,7 +576,11 @@ static void config_useCaseMessageReview() {
     }
 
     pairList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;
-    pairList.nbPairs = get_pair_number();
+    if (get_pair_number(&pairList.nbPairs) != zxerr_ok) {
+        ZEMU_LOGF(50, "get_pair_number failed\n")
+        view_error_show();
+        return;
+    }
     pairList.pairs = NULL;  // to indicate that callback should be used
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
@@ -566,7 +604,11 @@ static void config_useCaseReviewLight(const char *title, const char *validate) {
     }
 
     pairList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;
-    pairList.nbPairs = get_pair_number();
+    if (get_pair_number(&pairList.nbPairs) != zxerr_ok) {
+        ZEMU_LOGF(50, "get_pair_number failed\n")
+        view_error_show();
+        return;
+    }
     pairList.pairs = NULL;  // to indicate that callback should be used
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
