@@ -206,8 +206,14 @@ void view_blindsign_error_show() {
                        "Reject Transaction", goto_settings);
 }
 
+// Reached when a review could not be built at all, so nothing was shown to the
+// user. The choice callback must not be confirm_setting: that one runs
+// viewdata.viewfuncAccept(), which in a signing flow is the app's sign action,
+// so dismissing this screen would sign a transaction the user never saw. Ending
+// the request with an error is also what the Nano builds do, where the same
+// screen is wired to h_error_accept.
 void view_error_show_impl() {
-    nbgl_useCaseChoice(&C_IMPORTANT_CIRCLE_ICON, viewdata.key, viewdata.value, "Ok", NULL, confirm_setting);
+    nbgl_useCaseChoice(&C_IMPORTANT_CIRCLE_ICON, viewdata.key, viewdata.value, "Ok", NULL, confirm_error);
 }
 
 void view_settings_show_impl() {
@@ -484,6 +490,7 @@ static void review_configuration() {
     if (err != zxerr_ok) {
         ZEMU_LOGF(50, "Config screen error\n")
         view_error_show();
+        return;
     }
 
     nbgl_useCaseChoice(&C_IMPORTANT_CIRCLE_ICON, viewdata.key, viewdata.value, "Accept", "Reject", confirm_setting);
@@ -496,6 +503,7 @@ static void config_useCaseAddressReview() {
         numItems > NB_MAX_DISPLAYED_PAIRS_IN_REVIEW) {
         ZEMU_LOGF(50, "Show address error\n")
         view_error_show();
+        return;
     }
 
     for (uint8_t idx = 1; idx < numItems; idx++) {
