@@ -443,12 +443,24 @@ __Z_INLINE void pageStringExt(char *outValue, uint16_t outValueLen, const char *
         return;
     }
 
-    *pageCount = (uint8_t)(inValueLen / outValueLen);
+    // Count the pages in a type wide enough to hold the true total. inValueLen is
+    // a uint16_t, so a narrow page can need far more than UINT8_MAX pages, and
+    // computing the count straight into the uint8_t out-parameter wrapped: the
+    // review then offered only the pages that survived the wrap while the tail of
+    // the value stayed in what got signed. A value that cannot be paged whole is
+    // refused instead -- *pageCount stays 0, which the review layer already reads
+    // as "this item cannot be rendered" and turns into a rejected request.
+    uint16_t totalPages = (uint16_t)(inValueLen / outValueLen);
     const uint16_t lastChunkLen = (inValueLen % outValueLen);
 
     if (lastChunkLen > 0) {
-        (*pageCount)++;
+        totalPages++;
     }
+
+    if (totalPages > UINT8_MAX) {
+        return;
+    }
+    *pageCount = (uint8_t)totalPages;
 
     if (pageIdx < *pageCount) {
         if (lastChunkLen > 0 && pageIdx == *pageCount - 1) {
@@ -479,12 +491,25 @@ __Z_INLINE void pageStringHex(char *outValue, uint16_t outValueLen, const char *
     }
     // leaving space for null terminator
     const uint16_t bytesPerPage = (outValueLen - 1) / 2;
-    *pageCount = (uint8_t)(inValueLen / bytesPerPage);
+    if (bytesPerPage == 0) {
+        // outValueLen == 2 leaves room for no byte at all once the terminator is
+        // accounted for; dividing by it below would fault.
+        return;
+    }
+
+    // Widened for the same reason as pageStringExt above: a page count past
+    // UINT8_MAX must refuse the value rather than wrap and hide its tail.
+    uint16_t totalPages = (uint16_t)(inValueLen / bytesPerPage);
     const uint16_t lastChunkLen = inValueLen % bytesPerPage;
 
     if (lastChunkLen > 0) {
-        (*pageCount)++;
+        totalPages++;
     }
+
+    if (totalPages > UINT8_MAX) {
+        return;
+    }
+    *pageCount = (uint8_t)totalPages;
 
     if (pageIdx < *pageCount) {
         if (lastChunkLen > 0 && pageIdx == *pageCount - 1) {
