@@ -70,7 +70,14 @@ void view_init(void) {
 #endif
 }
 
-void view_idle_show(uint8_t item_idx, const char *statusString) { view_idle_show_impl(item_idx, statusString); }
+void view_idle_show(uint8_t item_idx, const char *statusString) {
+    // The main menu means nothing owns the device, so this is the backstop that
+    // releases the lock. It is what recovers an IO reset taken mid-review: the
+    // SDK unwinds into app_init(), which comes back through here rather than
+    // through view_init() or any of the h_* handlers below.
+    review_pending = false;
+    view_idle_show_impl(item_idx, statusString);
+}
 
 void view_message_show(const char *title, const char *message) { view_message_impl(title, message); }
 
