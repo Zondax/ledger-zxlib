@@ -24,6 +24,23 @@
 view_t viewdata;
 unsigned int review_type = 0;
 
+// Set for exactly as long as a review owns the screen: armed where a review is
+// drawn, cleared by every path that takes the device back to idle. Apps gate
+// their APDU dispatcher on view_review_is_pending() so the request being
+// reviewed is the one that gets answered -- its tx buffer, derivation path and
+// parsed context cannot be replaced between the moment the review is drawn and
+// the moment the user answers it.
+//
+// Deliberately NOT armed for IO_ASYNCH_REPLY at large: chunked transfers and
+// the EVM plugin / EIP-712 flows are asynchronous without drawing a review and
+// must keep streaming. Nor for the error screens -- those reply via THROW while
+// still on screen, so arming there would wedge the dispatcher.
+static volatile bool review_pending = false;
+
+bool view_review_is_pending(void) { return review_pending; }
+
+void view_review_clear_pending(void) { review_pending = false; }
+
 ///////////////////////////////////
 // Paging related
 
@@ -40,6 +57,7 @@ void h_paging_init() {
 // General
 void view_init(void) {
     UX_INIT();
+    review_pending = false;
 #ifdef APP_SECRET_MODE_ENABLED
     viewdata.secret_click_count = 0;
 #endif
@@ -74,16 +92,19 @@ void view_review_init_progressive(viewfunc_getItem_t viewfuncGetItem, viewfunc_g
 void view_initialize_init(viewfunc_initialize_t viewFuncInit) { viewdata.viewfuncInitialize = viewFuncInit; }
 
 void view_review_show(review_type_e reviewKind) {
+    review_pending = true;
     // Set > 0 to reply apdu message
     view_review_show_impl((unsigned int)reviewKind, NULL, NULL);
 }
 
 void view_review_show_with_intent(review_type_e reviewKind, const char *intent) {
+    review_pending = true;
     // New function that explicitly handles intent
     view_review_show_with_intent_impl((unsigned int)reviewKind, intent);
 }
 
 void view_review_show_generic(review_type_e reviewKind, const char *title, const char *validate) {
+    review_pending = true;
     view_review_show_impl((unsigned int)reviewKind, title, validate);
 }
 
@@ -94,6 +115,7 @@ void view_initialize_show(uint8_t item_idx, const char *statusString) {
 void h_approve(__Z_UNUSED unsigned int _) {
     zemu_log_stack("h_approve");
 
+    review_pending = false;
     view_idle_show(0, NULL);
     UX_WAIT();
     if (viewdata.viewfuncAccept != NULL) {
@@ -104,6 +126,7 @@ void h_approve(__Z_UNUSED unsigned int _) {
 void h_reject(unsigned int requireReply) {
     zemu_log_stack("h_reject");
 
+    review_pending = false;
     view_idle_show(0, NULL);
     UX_WAIT();
 
@@ -113,6 +136,7 @@ void h_reject(unsigned int requireReply) {
 }
 
 void h_error_accept(__Z_UNUSED unsigned int _) {
+    review_pending = false;
     view_idle_show(0, NULL);
     UX_WAIT();
     app_reply_error();
