@@ -24,18 +24,25 @@
 view_t viewdata;
 unsigned int review_type = 0;
 
-// Set for exactly as long as a review owns the screen: armed where a review is
-// drawn, cleared by every path that takes the device back to idle. Apps gate
-// their APDU dispatcher on view_review_is_pending() so the request being
-// reviewed is the one that gets answered -- its tx buffer, derivation path and
-// parsed context cannot be replaced between the moment the review is drawn and
-// the moment the user answers it.
+// Set for exactly as long as a screen owns the device: armed where a review or
+// an error modal is drawn, released by every path that answers it. Apps gate
+// their APDU dispatcher on view_review_is_pending() so the request on screen is
+// the one that gets answered -- its tx buffer, derivation path and parsed
+// context cannot be replaced between the moment it is drawn and the moment the
+// user answers it.
+//
+// The error modals are included on purpose. A handler that raises one throws,
+// so the host already has a status word, but the modal still owes a reply
+// through h_error_accept() -> app_reply_error(). Leaving it unlocked lets the
+// host push a review on top of the modal and have the user approve it with the
+// button press they meant as "dismiss".
 //
 // Deliberately NOT armed for IO_ASYNCH_REPLY at large: chunked transfers and
-// the EVM plugin / EIP-712 flows are asynchronous without drawing a review and
-// must keep streaming. Nor for the error screens -- those reply via THROW while
-// still on screen, so arming there would wedge the dispatcher.
+// the EVM plugin / EIP-712 flows are asynchronous without putting anything on
+// screen and must keep streaming.
 static volatile bool review_pending = false;
+
+void h_review_mark_pending(void) { review_pending = true; }
 
 bool view_review_is_pending(void) { return review_pending; }
 

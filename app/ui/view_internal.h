@@ -266,6 +266,12 @@ void h_review_update();
 
 void h_error_accept(unsigned int _);
 
+// Arm the review lock (see view_review_is_pending). Called by every screen that
+// owns the device until the user answers it -- the reviews in view.c and the
+// error modals in the UI backends, which still owe the host a reply through
+// h_error_accept even though the handler that raised them already threw.
+void h_review_mark_pending(void);
+
 zxerr_t h_review_update_data();
 
 zxerr_t h_inspect_update_data();

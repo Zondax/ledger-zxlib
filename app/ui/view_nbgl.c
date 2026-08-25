@@ -125,6 +125,9 @@ static void h_blindsign_toggle() { app_mode_set_blindsign(!app_mode_blindsign())
 static void confirm_error(__Z_UNUSED bool confirm) { h_error_accept(0); }
 
 static void goto_settings(bool confirm) {
+    // Ends the request via app_reply_error() below rather than h_error_accept(),
+    // so it has to release the lock itself.
+    view_review_clear_pending();
     if (confirm) {
         view_settings_show_impl();
     } else {
@@ -172,6 +175,9 @@ static void reviewGenericChoice(bool confirm) {
 }
 
 static void confirm_setting(bool confirm) {
+    // The accept branch calls viewfuncAccept() directly instead of going through
+    // h_approve(), so it has to release the lock itself.
+    view_review_clear_pending();
     if (confirm && viewdata.viewfuncAccept != NULL) {
         viewdata.viewfuncAccept();
         return;
@@ -181,6 +187,7 @@ static void confirm_setting(bool confirm) {
 }
 
 void view_error_show() {
+    h_review_mark_pending();
     viewdata.key = viewdata.keys[0];
     viewdata.value = viewdata.values[0];
     MEMZERO(viewdata.key, MAX_CHARS_PER_KEY_LINE);
@@ -191,6 +198,7 @@ void view_error_show() {
 }
 
 void view_custom_error_show(const char *upper, const char *lower) {
+    h_review_mark_pending();
     viewdata.key = viewdata.keys[0];
     viewdata.value = viewdata.values[0];
     MEMZERO(viewdata.key, MAX_CHARS_PER_KEY_LINE);
@@ -201,6 +209,7 @@ void view_custom_error_show(const char *upper, const char *lower) {
 }
 
 void view_blindsign_error_show() {
+    h_review_mark_pending();
     nbgl_useCaseChoice(&C_WARNING_ICON, "This transaction cannot\nbe clear-signed",
                        "Enable blind signing in the\nsettings to sign this\ntransaction.", "Go to settings",
                        "Reject Transaction", goto_settings);

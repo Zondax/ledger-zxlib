@@ -134,14 +134,19 @@ void view_spinner_show(const char *text);
 
 void view_review_show_generic(review_type_e reviewKind, const char *title, const char *validate);
 
-/// True while a review owns the screen, from the moment it is drawn by any of
-/// the view_review_show* calls until the user approves or rejects it.
+/// True while a screen owns the device: from the moment a review is drawn by any
+/// of the view_review_show* calls, or an error modal by view_error_show,
+/// view_custom_error_show or view_blindsign_error_show, until the user answers
+/// it.
 ///
 /// Gate the APDU dispatcher on this so an incoming request cannot replace the
-/// tx buffer, derivation path or parsed context behind a review the user is
-/// still reading. Chunked transfers and the EVM plugin / EIP-712 flows are
-/// asynchronous without drawing a review, so they are not covered here and keep
-/// streaming -- an app that must serialize those too needs its own state on top.
+/// tx buffer, derivation path or parsed context behind what the user is reading,
+/// nor push a review on top of an error modal and collect the dismissing button
+/// press as an approval.
+///
+/// Chunked transfers and the EVM plugin / EIP-712 flows are asynchronous without
+/// putting anything on screen, so they are not covered here and keep streaming
+/// -- an app that must serialize those too needs its own state on top.
 bool view_review_is_pending(void);
 
 /// Release the review lock. Cleared automatically on approve, reject, error
