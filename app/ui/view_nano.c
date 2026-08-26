@@ -69,18 +69,23 @@ void h_initialize() {
 }
 
 void view_error_show() {
+    h_review_mark_pending();
     snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "ERROR");
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "SHOWING DATA");
     view_error_show_impl();
 }
 
 void view_custom_error_show(const char *upper, const char *lower) {
+    h_review_mark_pending();
     snprintf(viewdata.key, MAX_CHARS_PER_KEY_LINE, "%s", upper);
     snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", lower);
     view_custom_error_show_impl();
 }
 
-void view_blindsign_error_show() { view_blindsign_error_show_impl(); }
+void view_blindsign_error_show() {
+    h_review_mark_pending();
+    view_blindsign_error_show_impl();
+}
 
 ///////////////////////////////////
 // Paging related
