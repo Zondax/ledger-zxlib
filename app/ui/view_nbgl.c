@@ -517,6 +517,12 @@ static void config_useCaseReview(nbgl_operationType_t type) {
         return;
     }
 
+    // NBGL draws the "Skip" control only for an operation that asks for it. Long reviews do:
+    // reading to the end is many taps, and the user who trusts the contract wants the last page.
+    if (h_review_is_skippable()) {
+        type |= SKIPPABLE_OPERATION;
+    }
+
     pairList.nbMaxLinesForValue = NB_MAX_LINES_IN_REVIEW;
     pairList.nbPairs = get_pair_number();
     pairList.pairs = NULL;  // to indicate that callback should be used
@@ -546,12 +552,14 @@ static void config_useCaseMessageReview() {
     pairList.pairs = NULL;  // to indicate that callback should be used
     pairList.callback = update_item_callback;
     pairList.startIndex = 0;
+    const nbgl_operationType_t msgType =
+        h_review_is_skippable() ? (TYPE_MESSAGE | SKIPPABLE_OPERATION) : (nbgl_operationType_t)TYPE_MESSAGE;
     if (app_mode_blindsign_required()) {
-        nbgl_useCaseReviewBlindSigning(TYPE_MESSAGE, &pairList, &C_REVIEW_ICON,
+        nbgl_useCaseReviewBlindSigning(msgType, &pairList, &C_REVIEW_ICON,
                                        (intro_message == NULL ? "Review Message" : intro_message), NULL,
                                        "Accept risk and sign message ?", NULL, reviewMessageChoice);
     } else {
-        nbgl_useCaseReview(TYPE_MESSAGE, &pairList, &C_REVIEW_ICON,
+        nbgl_useCaseReview(msgType, &pairList, &C_REVIEW_ICON,
                            (intro_message == NULL ? "Review Message" : intro_message), intro_submessage,
                            (approval_label_buf[0] != '\0' ? approval_label_buf : APPROVE_LABEL_NBGL_MSG),
                            reviewMessageChoice);
