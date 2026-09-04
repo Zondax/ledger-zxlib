@@ -16,6 +16,7 @@
  ********************************************************************************/
 
 #include "actions.h"
+#include "app_mode.h"
 #include "view_internal.h"
 #include "zxmacros.h"
 
@@ -26,6 +27,26 @@ unsigned int review_type = 0;
 
 ///////////////////////////////////
 // Paging related
+
+bool h_review_is_skippable() {
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+    // Only a blind-signed review may be skipped. On an ordinary review the shortcut would let a
+    // user approve without seeing the details -- blind signing in all but name, reached without
+    // the warning that names it and without the setting they would have had to turn on first.
+    if (!app_mode_blindsign_required()) {
+        return false;
+    }
+
+    uint8_t numItems = 0;
+    if (viewdata.viewfuncGetNumItems == NULL || viewdata.viewfuncGetNumItems(&numItems) != zxerr_ok) {
+        return false;
+    }
+    return numItems >= REVIEW_SKIP_MIN_ITEMS;
+#else
+    // No blind-signing mode means no opted-in state to key the shortcut off, so there is none.
+    return false;
+#endif
+}
 
 void h_paging_init() {
     zemu_log_stack("h_paging_init");

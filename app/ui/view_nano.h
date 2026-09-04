@@ -27,7 +27,15 @@ typedef uint8_t max_char_display;
 typedef int max_char_display;
 #endif
 
-#define MAX_REVIEW_UX_SCREENS 10
+/**
+ * Slots in the review flow array.
+ *
+ * Worst case for a transaction review: two blind-signing warning steps, the review title, the
+ * shortcut step, the skip step, the three paging-loop steps, the approval, the rejection, and the
+ * flow terminator -- eleven. Sized one above that so adding a step does not silently overrun the
+ * array, which is a global and would corrupt whatever follows it.
+ */
+#define MAX_REVIEW_UX_SCREENS 12
 
 void splitValueField();
 void splitValueAddress();
