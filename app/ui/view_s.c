@@ -215,6 +215,8 @@ bool should_show_skip_menu_right() {
     // When going backwards: we're at first page of current item
     return viewdata.with_confirmation &&
            (review_type == REVIEW_TXN || review_type == REVIEW_GROUP_TXN || review_type == REVIEW_MSG) &&
+           // only worth an extra screen on a review long enough to be worth skipping
+           h_review_is_skippable() &&
            // To enable left arrow rendering
            viewdata.pageIdx > 0 &&
            // only if all item's pages has been rendered
@@ -230,7 +232,8 @@ bool should_show_skip_menu_right() {
 bool should_show_skip_menu_left() {
     return viewdata.with_confirmation &&
            (review_type == REVIEW_TXN || review_type == REVIEW_GROUP_TXN || review_type == REVIEW_MSG) &&
-           viewdata.itemIdx > 0 &&  // Not the first item
+           // only worth an extra screen on a review long enough to be worth skipping
+           h_review_is_skippable() && viewdata.itemIdx > 0 &&  // Not the first item
            // if all pages have been rendered
            // Reached first page of current item
            viewdata.pageIdx == 0 &&

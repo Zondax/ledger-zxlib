@@ -25,6 +25,19 @@
 
 #define CUR_FLOW G_ux.flow_stack[G_ux.stack_count - 1]
 
+/**
+ * @brief Fewest display items a review must have before the UI offers to skip to the approval.
+ *
+ * On a short review the offer costs more than it saves: the user is a few clicks from the end
+ * anyway, and on a Nano the offer is itself a screen between every item, so it makes the review
+ * longer rather than shorter. It earns its place on the long ones -- a wide DeFi call, a contract
+ * deployment -- where reading to the end is dozens of clicks. An app that wants a different line
+ * can define this before including the UI.
+ */
+#ifndef REVIEW_SKIP_MIN_ITEMS
+#define REVIEW_SKIP_MIN_ITEMS 12
+#endif
+
 #if defined(TARGET_NANOX) || defined(TARGET_NANOS2)
 #define MAX_CHARS_PER_KEY_LINE 64
 #ifdef ZXLIB_LIGHT_MODE
@@ -248,6 +261,18 @@ void view_custom_error_show_impl();
 void view_spinner_impl(const char *text);
 
 void view_blindsign_error_show_impl();
+
+/**
+ * @brief Whether this review may offer a shortcut to the approval.
+ *
+ * True only for a blind-signed review that is long enough to be worth skipping. The blind-signing
+ * condition is the important half: a shortcut on an ordinary review would be a way to approve
+ * without reading, which is blind signing without the warning or the opt-in.
+ *
+ * Counts the transaction's own display items, not the screens the UI wraps around them, so the
+ * same transaction behaves the same on every device regardless of intro screens or paging.
+ */
+bool h_review_is_skippable();
 
 void h_paging_init();
 
