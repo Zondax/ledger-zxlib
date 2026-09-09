@@ -37,6 +37,7 @@ zxerr_t account_enabled();
 #define APPROVE_LABEL_NBGL_MSG "Sign message?"
 #define APPROVE_LABEL_NBGL_GENERIC "Accept operation?"
 #define CANCEL_LABEL "Cancel"
+#define VALUE_UNRENDERABLE_LABEL "Cannot be displayed"
 #define VERIFY_TITLE_LABEL_GENERIC "Verify operation"
 #define INFO_LIST_SIZE 4
 #define SETTING_CONTENTS_NB 1
@@ -137,8 +138,75 @@ static void goto_settings(bool confirm) {
     app_reply_error();
 }
 
+static bool review_value_unrenderable = false;
+
+/**
+ * @brief Characters a review value chunk may carry on one page
+ *
+ * A review page renders a value across at most NB_MAX_LINES_IN_REVIEW lines.
+ * NBGL clips whatever needs more, draws "..." and discards the remainder, and
+ * the next page resumes at the next pre-paginated chunk rather than where the
+ * text was cut -- so the characters in between are shown on no page while
+ * staying inside what gets signed.
+ *
+ * Pagination is by character count, so the chunk has to be short enough that
+ * even the widest glyphs the value font can draw still fit the line budget.
+ * Sizing it as (max review lines) * (hex chars per line) held only while no
+ * glyph was wider than a hex digit. The value font is proportional: on Stax a
+ * hex-sized budget assumes 22px per character, while 'W' and '@' advance 31px,
+ * so an uppercase-heavy value overflowed the page and the overflow was dropped
+ * with no way for the signer to reach it.
+ *
+ * Ask the font for its widest printable glyph instead of assuming one. The
+ * result tracks the font, the screen width and the line budget of whatever SDK
+ * the app is built against, so it cannot drift the way a constant did.
+ */
+static uint16_t review_value_page_len(void) {
+    static uint16_t cached = 0;
+    if (cached != 0) {
+        return cached;
+    }
+
+    uint8_t widest = 1;
+    for (unsigned int c = 0x20; c <= 0x7E; c++) {
+        const char probe[2] = {(char)c, '\0'};
+        const uint8_t width = nbgl_getCharWidth(LARGE_MEDIUM_FONT, probe);
+        if (width > widest) {
+            widest = width;
+        }
+    }
+
+    uint16_t perLine = (uint16_t)(AVAILABLE_WIDTH / widest);
+    if (perLine == 0) {
+        perLine = 1;
+    }
+
+    // pageStringExt() reserves one byte of the length it is given for the NUL,
+    // so ask for one more than the characters we want drawn.
+    uint32_t len = (uint32_t)perLine * NB_MAX_LINES_IN_REVIEW + 1;
+    if (len > MAX_CHARS_PER_VALUE1_LINE) {
+        len = MAX_CHARS_PER_VALUE1_LINE;
+    }
+
+    cached = (uint16_t)len;
+    return cached;
+}
+
+/**
+ * @brief Whether the value as fetched actually fits the page it will be drawn on
+ *
+ * review_value_page_len() bounds every printable ASCII glyph, so this can only
+ * fail on content the scan cannot bound -- a multi-byte codepoint wider than any
+ * ASCII glyph. Refuse to render it rather than show a clipped value: the review
+ * must never present less than what the signature covers.
+ */
+static bool review_value_fits(const char *value) {
+    return nbgl_getTextNbLinesInWidth(LARGE_MEDIUM_FONT, value, AVAILABLE_WIDTH, pairList.wrapping) <=
+           NB_MAX_LINES_IN_REVIEW;
+}
+
 static void reviewAddressChoice(bool confirm) {
-    if (confirm) {
+    if (confirm && !review_value_unrenderable) {
         nbgl_useCaseReviewStatus(STATUS_TYPE_ADDRESS_VERIFIED, h_approve_internal);
     } else {
         nbgl_useCaseReviewStatus(STATUS_TYPE_ADDRESS_REJECTED, h_reject_internal);
@@ -146,7 +214,7 @@ static void reviewAddressChoice(bool confirm) {
 }
 
 static void reviewTransactionChoice(bool confirm) {
-    if (confirm) {
+    if (confirm && !review_value_unrenderable) {
         nbgl_useCaseReviewStatus(STATUS_TYPE_TRANSACTION_SIGNED, h_approve_internal);
     } else {
         nbgl_useCaseReviewStatus(STATUS_TYPE_TRANSACTION_REJECTED, h_reject_internal);
@@ -154,7 +222,7 @@ static void reviewTransactionChoice(bool confirm) {
 }
 
 static void reviewMessageChoice(bool confirm) {
-    if (confirm) {
+    if (confirm && !review_value_unrenderable) {
         nbgl_useCaseReviewStatus(STATUS_TYPE_MESSAGE_SIGNED, h_approve_internal);
     } else {
         nbgl_useCaseReviewStatus(STATUS_TYPE_MESSAGE_REJECTED, h_reject_internal);
@@ -164,6 +232,10 @@ static void reviewMessageChoice(bool confirm) {
 static void reviewGenericChoice(bool confirm) {
     const char *msg = "Operation rejected";
     bool isSuccess = false;
+
+    if (review_value_unrenderable) {
+        confirm = false;
+    }
 
     if (confirm) {
         msg = "Operation approved";
@@ -245,8 +317,8 @@ static uint8_t get_item_page_count(uint8_t itemIdx) {
 
     // Cache miss or invalid - need to query
     uint8_t pageCount = 0;
-    if (viewdata.viewfuncGetItem(itemIdx, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
-                                 MAX_CHARS_PER_VALUE1_LINE, 0, &pageCount) == zxerr_ok) {
+    if (viewdata.viewfuncGetItem(itemIdx, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value, review_value_page_len(),
+                                 0, &pageCount) == zxerr_ok) {
         // Store in cache if valid
         if (pageCount > 0 && itemIdx < MAX_CACHED_ITEMS) {
             if (!pageCountCache.valid) {
@@ -340,7 +412,14 @@ zxerr_t h_review_update_data() {
             const uint8_t innerIdx = viewdata.itemIdx - accPages;
             // Only call viewfuncGetItem when we actually need to display this page
             CHECK_ZXERR(viewdata.viewfuncGetItem(i, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
-                                                 MAX_CHARS_PER_VALUE1_LINE, innerIdx, &viewdata.pageCount))
+                                                 review_value_page_len(), innerIdx, &viewdata.pageCount))
+            if (!review_value_fits(viewdata.value)) {
+                ZEMU_LOGF(50, "review value does not fit the page line budget\n")
+                review_value_unrenderable = true;
+                MEMZERO(viewdata.value, MAX_CHARS_PER_VALUE1_LINE);
+                snprintf(viewdata.value, MAX_CHARS_PER_VALUE1_LINE, "%s", VALUE_UNRENDERABLE_LABEL);
+                return zxerr_out_of_bounds;
+            }
             if (viewdata.pageCount > 1) {
                 const uint8_t titleLen = strnlen(viewdata.key, MAX_CHARS_PER_KEY_LINE);
                 snprintf(viewdata.key + titleLen, MAX_CHARS_PER_KEY_LINE - titleLen, " (%d/%d)", innerIdx + 1,
@@ -507,6 +586,7 @@ static void review_configuration() {
 
 static void config_useCaseAddressReview() {
     extraPagesPtr = NULL;
+    review_value_unrenderable = false;
     uint8_t numItems = 0;
     if (viewdata.viewfuncGetNumItems == NULL || viewdata.viewfuncGetNumItems(&numItems) != zxerr_ok ||
         numItems > NB_MAX_DISPLAYED_PAIRS_IN_REVIEW) {
@@ -642,6 +722,7 @@ void view_review_show_impl(unsigned int requireReply, const char *title, const c
     intro_msg_buf[0] = '\0';
     intro_submsg_buf[0] = '\0';
     approval_label_buf[0] = '\0';
+    review_value_unrenderable = false;
     viewdata.key = viewdata.keys[0];
     viewdata.value = viewdata.values[0];
     // Retrieve intro text for transaction
@@ -693,6 +774,7 @@ void view_review_show_with_intent_impl(unsigned int requireReply, const char *in
     intro_msg_buf[0] = '\0';
     intro_submsg_buf[0] = '\0';
     approval_label_buf[0] = '\0';
+    review_value_unrenderable = false;
     viewdata.key = viewdata.keys[0];
     viewdata.value = viewdata.values[0];
 

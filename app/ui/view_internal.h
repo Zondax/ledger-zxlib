@@ -39,20 +39,23 @@
 #define MAX_LINES_PER_PAGE_REVIEW NB_MAX_LINES_IN_REVIEW
 #define MAX_CHARS_PER_KEY_LINE 64
 #define MAX_CHARS_HEXMESSAGE 160
-// A review page renders a value across at most NB_MAX_LINES_IN_REVIEW lines.
-// NBGL truncates anything beyond that with "..." and the overflow is never
-// shown: the next page resumes at the next pre-paginated chunk, not where the
-// text was cut. So each value chunk (MAX_CHARS_PER_VALUE1_LINE) must fit within
-// that line budget. Sizing it per device = (max review lines) * (hex chars per
-// line); hex digits render at a fixed (tabular) width, so chars/line is
-// constant for the worst-case hex value:
-//   - Stax : 10 lines * 16 chars/line = 160  (NB_MAX_LINES_IN_REVIEW = 10)
-//   - Flex :  9 lines * 18 chars/line = 162  (NB_MAX_LINES_IN_REVIEW =  9)
-//   - Apex :  9 lines * 16 chars/line = 144  (narrowest screen)
-// A flat 144 (sized for the narrowest, Apex) under-fills the taller Stax and
-// wider Flex screens by one line each, needlessly splitting long values (e.g.
-// EVM call params) across extra pages. Sizing per device shows more per page
-// without ever silently hiding bytes from the signer.
+// Size of the buffer a review value is fetched into. This is storage only: it
+// does NOT decide how many characters a review page may carry.
+//
+// It used to do both, sized per device as (max review lines) * (hex chars per
+// line) on the grounds that hex digits render at a fixed width so hex was the
+// worst case. It is not. The value font is proportional and review values are
+// not restricted to hex, so a value whose glyphs are wider than a hex digit
+// needed more lines than the page has. NBGL drew what fit, marked it "..." and
+// dropped the rest, and the next page resumed at the next character chunk
+// rather than where the text was cut -- putting characters of a signed value on
+// no page at all, with no control offered to reach them.
+//
+// The chunk length is now measured from the font at runtime by
+// review_value_page_len() (view_nbgl.c), which bounds every printable glyph
+// instead of assuming one. These constants stay at their previous values so
+// that an app sizing its own buffers from them, or writing a chunk it paginated
+// itself, still has the room it always had.
 #if defined(TARGET_STAX)
 #define MAX_CHARS_PER_VALUE1_LINE 160
 #define MAX_CHARS_SUBMSG_LINE 160
