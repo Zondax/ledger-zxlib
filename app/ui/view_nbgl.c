@@ -86,6 +86,7 @@ static struct {
     bool valid;
     uint8_t itemCount;
     uint8_t pageCounts[MAX_CACHED_ITEMS];
+    uint16_t budgets[MAX_CACHED_ITEMS];
 } pageCountCache = {.valid = false, .itemCount = 0};
 
 typedef enum {
@@ -205,6 +206,109 @@ static bool review_value_fits(const char *value) {
            NB_MAX_LINES_IN_REVIEW;
 }
 
+// How many attempts the search below gets before falling back to the width-safe
+// floor. Each attempt strictly shrinks the budget, so this only bounds work.
+#define MAX_BUDGET_ATTEMPTS 4
+
+/**
+ * @brief Characters of this value that actually reach the page
+ *
+ * The count NBGL itself uses to break its details pages: how much of the text
+ * fits within a line budget at a given width. Answers in characters, measured in
+ * pixels, which is the join the review layer needs and could not express while
+ * it only knew how to count.
+ */
+static uint16_t review_value_chars_that_fit(const char *value, uint16_t drawn) {
+    // nbgl_getTextMaxLenInNbLines() answers where to cut, and the SDK only ever
+    // asks it once it knows a cut is needed. Ask the same question in the same
+    // order: text that already fits has no cut to report.
+    if (nbgl_getTextNbLinesInWidth(LARGE_MEDIUM_FONT, value, AVAILABLE_WIDTH, pairList.wrapping) <=
+        NB_MAX_LINES_IN_REVIEW) {
+        return drawn;
+    }
+
+    uint16_t len = 0;
+    nbgl_getTextMaxLenInNbLines(LARGE_MEDIUM_FONT, value, AVAILABLE_WIDTH, NB_MAX_LINES_IN_REVIEW, &len,
+                                pairList.wrapping);
+    return len;
+}
+
+/**
+ * @brief The largest chunk size that still shows this item whole
+ *
+ * Pagination has to hand the app one chunk length and reuse it for every page of
+ * the item, because the app derives each page's offset from it. That rules out
+ * breaking each page where its own text stops, the way the SDK does for its
+ * details pages, so the length is chosen for the item instead: start at what the
+ * buffer holds and shrink until no page of this item overflows its lines.
+ *
+ * Sizing it from the widest glyph the font can draw is always safe but assumes
+ * every character is that wide. Almost none are, so a page of ordinary hex or
+ * bech32 ran about six lines of the ten it had. Measuring the item's own text
+ * gives those lines back without letting a page overflow.
+ */
+static uint16_t review_item_budget(uint8_t itemIdx) {
+    const uint16_t floorLen = review_value_page_len();
+    uint16_t budget = MAX_CHARS_PER_VALUE1_LINE;
+
+    for (uint8_t attempt = 0; attempt < MAX_BUDGET_ATTEMPTS; attempt++) {
+        uint8_t pageCount = 0;
+        if (viewdata.viewfuncGetItem(itemIdx, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value, budget, 0,
+                                     &pageCount) != zxerr_ok ||
+            pageCount == 0) {
+            return floorLen;
+        }
+
+        uint16_t smallest = budget;
+        for (uint8_t page = 0; page < pageCount; page++) {
+            if (page > 0) {
+                uint8_t ignored = 0;
+                if (viewdata.viewfuncGetItem(itemIdx, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value, budget,
+                                             page, &ignored) != zxerr_ok) {
+                    return floorLen;
+                }
+            }
+            const uint16_t drawn = (uint16_t)strnlen(viewdata.value, budget);
+            const uint16_t fits = review_value_chars_that_fit(viewdata.value, drawn);
+            // +1 for the NUL that pageStringExt() reserves out of the length
+            if (fits < drawn && (uint16_t)(fits + 1) < smallest) {
+                smallest = fits + 1;
+            }
+        }
+
+        if (smallest == budget) {
+            return budget;
+        }
+        // No progress means the search cannot settle; the safe floor still holds.
+        if (smallest >= budget || smallest <= 1) {
+            break;
+        }
+        budget = smallest;
+    }
+
+    return floorLen;
+}
+
+/**
+ * @brief The chunk length to page this item with, computed once per review
+ */
+static uint16_t review_budget_for(uint8_t itemIdx) {
+    if (pageCountCache.valid && itemIdx < MAX_CACHED_ITEMS && pageCountCache.budgets[itemIdx] > 0) {
+        return pageCountCache.budgets[itemIdx];
+    }
+
+    const uint16_t budget = review_item_budget(itemIdx);
+
+    if (itemIdx < MAX_CACHED_ITEMS) {
+        if (!pageCountCache.valid) {
+            MEMZERO(&pageCountCache, sizeof(pageCountCache));
+            pageCountCache.valid = true;
+        }
+        pageCountCache.budgets[itemIdx] = budget;
+    }
+    return budget;
+}
+
 static void reviewAddressChoice(bool confirm) {
     if (confirm && !review_value_unrenderable) {
         nbgl_useCaseReviewStatus(STATUS_TYPE_ADDRESS_VERIFIED, h_approve_internal);
@@ -317,8 +421,8 @@ static uint8_t get_item_page_count(uint8_t itemIdx) {
 
     // Cache miss or invalid - need to query
     uint8_t pageCount = 0;
-    if (viewdata.viewfuncGetItem(itemIdx, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value, review_value_page_len(),
-                                 0, &pageCount) == zxerr_ok) {
+    if (viewdata.viewfuncGetItem(itemIdx, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
+                                 review_budget_for(itemIdx), 0, &pageCount) == zxerr_ok) {
         // Store in cache if valid
         if (pageCount > 0 && itemIdx < MAX_CACHED_ITEMS) {
             if (!pageCountCache.valid) {
@@ -412,7 +516,7 @@ zxerr_t h_review_update_data() {
             const uint8_t innerIdx = viewdata.itemIdx - accPages;
             // Only call viewfuncGetItem when we actually need to display this page
             CHECK_ZXERR(viewdata.viewfuncGetItem(i, viewdata.key, MAX_CHARS_PER_KEY_LINE, viewdata.value,
-                                                 review_value_page_len(), innerIdx, &viewdata.pageCount))
+                                                 review_budget_for(i), innerIdx, &viewdata.pageCount))
             if (!review_value_fits(viewdata.value)) {
                 ZEMU_LOGF(50, "review value does not fit the page line budget\n")
                 review_value_unrenderable = true;
