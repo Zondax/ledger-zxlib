@@ -42,10 +42,6 @@
 char intro_msg_buf[MAX_CHARS_PER_KEY_LINE];
 char intro_submsg_buf[MAX_CHARS_SUBMSG_LINE];
 
-bool custom_callback_active = false;
-// Add global variable to store original callback at the top with other globals
-unsigned int (*original_button_callback)(unsigned int button_mask, unsigned int button_mask_counter) = NULL;
-
 void account_enabled();
 void shortcut_enabled();
 
@@ -54,8 +50,7 @@ static void h_expert_update();
 static void h_review_loop_start();
 static void h_review_loop_inside();
 static void h_review_loop_end();
-static unsigned int handle_button_push(unsigned int button_mask, unsigned int button_mask_counter);
-static void set_button_callback(unsigned int slot);
+static void h_skip_to_approval();
 
 #ifdef APP_SECRET_MODE_ENABLED
 static void h_secret_click();
@@ -103,13 +98,7 @@ UX_STEP_NOCB(ux_idle_flow_3_step, bn,
                  APPVERSION_LINE2,
              });
 
-UX_STEP_NOCB_INIT(ux_review_skip_step, nn,
-                  {
-                      // This will execute during initialization without requiring validation
-                      custom_callback_active = true;
-                      set_button_callback(stack_slot);
-                  },
-                  {"Press right to read", "Double-press to skip"});
+UX_STEP_CB(ux_review_skip_step, nn, h_skip_to_approval(), {"Press right to read", "Double-press to skip"});
 
 #ifdef APP_SECRET_MODE_ENABLED
 UX_STEP_CB(ux_idle_flow_4_step, bn, h_secret_click(),
@@ -367,30 +356,6 @@ void h_review_loop_end() {
         switch (err) {
             case zxerr_ok:
                 ux_layout_bnnn_paging_reset();
-                // If we're at the end of current item and there's more to show
-                if (viewdata.with_confirmation &&
-                    (review_type == REVIEW_TXN || review_type == REVIEW_GROUP_TXN || review_type == REVIEW_MSG) &&
-                    viewdata.pageIdx == viewdata.pageCount - 1 &&
-                    // Ensure that at least the first item is displayed.
-                    // The UI design may vary between applications. For example, item 0 might
-                    // serve as a title for the transaction type rather than a regular item.
-                    // In this implementation, we check if there is more than one item (>1).
-                    // If so, we treat item 0 as a title and display the skip menu after it.
-                    // This approach allows for flexible UI designs while maintaining essential functionality.
-                    viewdata.itemIdx > 1 && viewdata.itemIdx < viewdata.itemCount - 1) {
-                    // Show skip screen and enable button handler
-                    uint8_t index = 0;
-
-                    ux_review_flow[index++] = &ux_review_skip_step;
-                    ux_review_flow[index++] = FLOW_END_STEP;
-
-                    unsigned int current_slot = G_ux.stack_count - 1;
-                    ux_flow_init(current_slot, ux_review_flow, NULL);
-                    // set the callback after flow initialization, otherwise
-                    // it would be overwritten
-                    set_button_callback(current_slot);
-                    return;
-                }
                 break;
 
             case zxerr_no_data: {
@@ -635,6 +600,25 @@ void view_review_show_with_intent_impl(unsigned int requireReply, const char *in
     run_ux_review_flow((review_type_e)review_type, NULL);
 }
 
+/**
+ * @brief The step that asks for the signature.
+ *
+ * Which one it is depends on the review type and on whether the transaction is being blind
+ * signed, and two callers have to agree: `run_ux_review_flow` places it in the flow, and the skip
+ * menu asks `ux_flow_init` to start there. When they disagreed the start step was absent from the
+ * flow, `ux_flow_init` had nothing to move to, and a blind-signed review simply stopped responding
+ * to the skip.
+ */
+static const ux_flow_step_t *approval_step(review_type_e reviewType) {
+#ifdef APP_BLINDSIGN_MODE_ENABLED
+    const bool blind_txn = reviewType == REVIEW_TXN || reviewType == REVIEW_GROUP_TXN || reviewType == REVIEW_MSG;
+    if (app_mode_blindsign_required() && blind_txn) {
+        return &ux_review_flow_3_step_blindsign;
+    }
+#endif
+    return (reviewType == REVIEW_MSG) ? &ux_review_flow_6_step : &ux_review_flow_3_step;
+}
+
 // Build review UX flow and run it
 void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t *const start_step) {
     uint8_t index = 0;
@@ -680,31 +664,20 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t *const st
             break;
     }
 
+    // A fixed position in the carousel, straight after the review title and before the first
+    // item, so the offer to skip is made once, up front, and reading the transaction is then
+    // uninterrupted. Walking back from the first item lands here again because this *is* that
+    // position -- nothing is inserted or removed while the review is running.
+    if (h_review_is_skippable() &&
+        (reviewType == REVIEW_TXN || reviewType == REVIEW_GROUP_TXN || reviewType == REVIEW_MSG)) {
+        ux_review_flow[index++] = &ux_review_skip_step;
+    }
+
     ux_review_flow[index++] = &ux_review_flow_2_start_step;
     ux_review_flow[index++] = &ux_review_flow_2_step;
     ux_review_flow[index++] = &ux_review_flow_2_end_step;
 
-    if (reviewType == REVIEW_MSG) {
-#ifdef APP_BLINDSIGN_MODE_ENABLED
-        if (app_mode_blindsign_required()) {
-            ux_review_flow[index++] = &ux_review_flow_3_step_blindsign;
-        } else {
-            ux_review_flow[index++] = &ux_review_flow_6_step;
-        }
-#else
-        ux_review_flow[index++] = &ux_review_flow_6_step;
-#endif
-    } else {
-#ifdef APP_BLINDSIGN_MODE_ENABLED
-        if (app_mode_blindsign_required() && (reviewType == REVIEW_TXN || reviewType == REVIEW_GROUP_TXN)) {
-            ux_review_flow[index++] = &ux_review_flow_3_step_blindsign;
-        } else {
-            ux_review_flow[index++] = &ux_review_flow_3_step;
-        }
-#else
-        ux_review_flow[index++] = &ux_review_flow_3_step;
-#endif
-    }
+    ux_review_flow[index++] = approval_step(reviewType);
     ux_review_flow[index++] = &ux_review_flow_4_step;
     ux_review_flow[index++] = FLOW_END_STEP;
 
@@ -748,47 +721,26 @@ void view_spinner_impl(const char *text) {
     ux_flow_init(0, ux_spinner_flow, NULL);
 }
 
-static unsigned int handle_button_push(unsigned int button_mask, unsigned int button_mask_counter) {
-    UNUSED(button_mask_counter);
-
-    if (!custom_callback_active) {
-        if (original_button_callback != NULL) {
-            // Just pass through to original callback
-            return original_button_callback(button_mask, button_mask_counter);
-        }
-        return 0;
+/**
+ * @brief Jump from the skip screen straight to the approval.
+ *
+ * Rebuilds the flow starting at the step that asks for the signature, so the user lands on the
+ * same approval they would have reached by reading every item -- including, when the transaction
+ * is blind signed, the risk acknowledgement rather than the plain approval.
+ *
+ * Leaves the paging where reading to the end would have left it: one index past the last item.
+ * Stepping back from the approval then shows the *last* item, which is the screen that precedes
+ * it in the ring, rather than restarting the review at the first. `h_review_loop_end` reaches
+ * that item by decrementing from here, exactly as it does after a full read.
+ */
+static void h_skip_to_approval() {
+    uint8_t numItems = 0;
+    if (viewdata.viewfuncGetNumItems != NULL && viewdata.viewfuncGetNumItems(&numItems) == zxerr_ok) {
+        viewdata.itemIdx = getIntroPages() + numItems;
+        viewdata.pageIdx = 0;
     }
-
-    // This is meant to handle the button interactions
-    // over the skip_step screen
-    switch (button_mask) {
-        // Handle skip to approve
-        case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT:
-            if (review_type == REVIEW_MSG) {
-                run_ux_review_flow((review_type_e)review_type, &ux_review_flow_6_step);
-            } else {
-                run_ux_review_flow((review_type_e)review_type, &ux_review_flow_3_step);
-            }
-            return 1;
-
-        // Handle continue review
-        case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-            viewdata.itemIdx++;
-            run_ux_review_flow((review_type_e)review_type, &ux_review_flow_2_start_step);
-            return 1;
-
-        case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-            // h_paging_init();
-            run_ux_review_flow((review_type_e)review_type, &ux_review_flow_2_start_step);
-            return 1;
-    }
-    return 0;
-}
-
-static void set_button_callback(unsigned int slot) {
-    // Store default callback to restablish later
-    original_button_callback = G_ux.stack[slot].button_push_callback;
-    G_ux.stack[slot].button_push_callback = handle_button_push;
+    flow_inside_loop = 0;
+    run_ux_review_flow((review_type_e)review_type, approval_step((review_type_e)review_type));
 }
 
 #endif
