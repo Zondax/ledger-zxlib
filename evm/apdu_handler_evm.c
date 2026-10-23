@@ -313,6 +313,13 @@ void handleSignEip191(volatile uint32_t *flags, volatile uint32_t *tx, uint32_t 
     // Full message assembled; close the chunking session before parse/review.
     reset_evm_chunk_state();
 
+    // The signed prefix carries the declared length, so it must be the length of
+    // the body the review shows.
+    const uint32_t buffer_len = tx_get_buffer_length();
+    if (buffer_len < sizeof(uint32_t) || U4BE(tx_get_buffer(), 0) != buffer_len - sizeof(uint32_t)) {
+        THROW(APDU_CODE_DATA_INVALID);
+    }
+
     // Reset BLS UI for next transaction
     app_mode_skip_blindsign_ui();
 

@@ -109,7 +109,11 @@ bool eip191_msg_parse() {
 }
 
 zxerr_t eip191_hash_message(const uint8_t *message, uint16_t messageLen, uint8_t *hash) {
-    if (message == NULL || messageLen == 0) {
+    if (message == NULL || messageLen < sizeof(uint32_t)) {
+        return zxerr_unknown;
+    }
+    // The hashed length prefix must describe the body that was reviewed.
+    if (U4BE(message, 0) != (uint32_t)(messageLen - sizeof(uint32_t))) {
         return zxerr_unknown;
     }
     MEMZERO(hash, 32);
