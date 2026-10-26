@@ -63,7 +63,7 @@ $(info TESTS_ZEMU_DIR        : $(TESTS_ZEMU_DIR))
 $(info TESTS_JS_DIR          : $(TESTS_JS_DIR))
 $(info TESTS_JS_PACKAGE      : $(TESTS_JS_PACKAGE))
 
-DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:ledger-aac4ed3b430bbe7ba58dd5b326e9d7d4fdcd9877
+DOCKER_IMAGE_ZONDAX=zondax/ledger-app-builder:ledger-ef06caf811b92956b7ca57c19652af3fb4a23cbc
 DOCKER_IMAGE_LEDGER=ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
 
 ifdef INTERACTIVE
