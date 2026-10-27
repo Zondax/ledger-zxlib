@@ -16,11 +16,11 @@ jobs:
     runs-on: ${{ github.repository_owner == 'zondax' && 'zondax-runners' || 'ubuntu-latest' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: true
       - name: Cache APT packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt-${{ hashFiles('**/main.yml') }}
@@ -33,7 +33,7 @@ jobs:
             libssl-dev libffi-dev libreadline-dev zlib1g-dev libbz2-dev libsqlite3-dev libncurses5-dev \
             libgdbm-dev libnss3-dev liblzma-dev libxml2-dev libxmlsec1-dev libffi-dev libyaml-dev
       - name: Cache CMake installation
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: cmake-cache
         with:
           path: /opt/cmake
@@ -56,11 +56,11 @@ jobs:
     needs: setup
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: true
       - name: Restore APT cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt-${{ hashFiles('**/main.yml') }}
@@ -73,7 +73,7 @@ jobs:
             libssl-dev libffi-dev libreadline-dev zlib1g-dev libbz2-dev libsqlite3-dev libncurses5-dev \
             libgdbm-dev libnss3-dev liblzma-dev libxml2-dev libxmlsec1-dev libffi-dev libyaml-dev
       - name: Restore CMake cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: cmake-cache-restore
         with:
           path: /opt/cmake
@@ -101,7 +101,7 @@ jobs:
       exists: ${{ steps.get-version.outputs.exists }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: true
@@ -130,7 +130,7 @@ jobs:
     if: ${{ needs.check_version.outputs.exists != 'true' && github.ref == 'refs/heads/main' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      - uses: softprops/action-gh-release@v1
+        uses: actions/checkout@v7
+      - uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.check_version.outputs.version }}

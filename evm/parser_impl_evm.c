@@ -93,13 +93,10 @@ static parser_error_t parse_legacy_tx(parser_context_t *ctx, eth_tx_t *tx_obj) {
     CHECK_ERROR(rlp_read(ctx, &(tx_obj->tx.value)));
     CHECK_ERROR(rlp_read(ctx, &(tx_obj->tx.data)));
 
-    // Check for legacy no EIP155 which means no chain_id
-    // There is not more data no eip155 compliant tx
+    // A legacy tx without EIP-155 fields carries no chain ID, so its signature is
+    // valid on every EVM chain. Only the supported networks may be signed for.
     if (ctx->offset == ctx->bufferLen) {
-        tx_obj->chainId.kind = RLP_KIND_BYTE;
-        tx_obj->chainId.ptr = NULL;
-        tx_obj->chainId.rlpLen = 0;
-        return parser_ok;
+        return parser_invalid_chain_id;
     }
 
     // Otherwise legacy EIP155 in which case should come with empty r and s values
