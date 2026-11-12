@@ -839,7 +839,7 @@ void view_review_show_impl(unsigned int requireReply, const char *title, const c
     viewdata.value = viewdata.values[0];
     // Retrieve intro text for transaction
     if (viewdata.viewfuncGetItem != NULL) {
-        viewdata.viewfuncGetItem(0xFF, intro_msg_buf, MAX_CHARS_PER_KEY_LINE, intro_submsg_buf,
+        viewdata.viewfuncGetItem(VIEW_INTRO_DISPLAY_IDX, intro_msg_buf, MAX_CHARS_PER_KEY_LINE, intro_submsg_buf,
                                  MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount);
         if (strlen(intro_msg_buf) > strlen(" ")) {
             intro_message = intro_msg_buf;

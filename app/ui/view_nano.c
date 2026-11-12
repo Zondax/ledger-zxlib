@@ -288,8 +288,14 @@ zxerr_t h_review_update_data() {
 #endif
 
     do {
-        CHECK_ZXERR(viewdata.viewfuncGetNumItems(&viewdata.itemCount))
-        viewdata.itemCount += getIntroPages();
+        uint8_t numItems = 0;
+        CHECK_ZXERR(viewdata.viewfuncGetNumItems(&numItems))
+        // itemCount is a uint8_t that also holds the intro pages and the closing screen added
+        // below, so a review that would not leave room for them is refused rather than wrapped.
+        if (numItems > UINT8_MAX - 1 - getIntroPages()) {
+            return zxerr_out_of_bounds;
+        }
+        viewdata.itemCount = numItems + getIntroPages();
 
         if (viewdata.itemIdx - getIntroPages() < 0) {
             return zxerr_out_of_bounds;
