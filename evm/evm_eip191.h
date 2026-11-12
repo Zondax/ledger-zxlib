@@ -28,7 +28,7 @@ extern "C" {
 
 bool eip191_msg_parse();
 zxerr_t eip191_msg_getNumItems(uint8_t *num_items);
-zxerr_t eip191_msg_getItem(int8_t displayIdx, char *outKey, uint16_t outKeyLen, char *outVal, uint16_t outValLen,
+zxerr_t eip191_msg_getItem(uint8_t displayIdx, char *outKey, uint16_t outKeyLen, char *outVal, uint16_t outValLen,
                            uint8_t pageIdx, uint8_t *pageCount);
 zxerr_t eip191_hash_message(const uint8_t *message, uint16_t messageLen, uint8_t *hash);
 #ifdef __cplusplus
