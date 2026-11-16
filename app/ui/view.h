@@ -70,7 +70,11 @@ typedef struct {
 
 typedef zxerr_t (*viewfunc_getNumItems_t)(uint8_t *num_items);
 
-typedef zxerr_t (*viewfunc_getItem_t)(int8_t displayIdx, char *outKey, uint16_t outKeyLen, char *outVal,
+// Index the view passes to ask for the review intro text instead of an item. A review reports its
+// item count through a uint8_t, so its last item sits at index 254 at most and this is never one.
+#define VIEW_INTRO_DISPLAY_IDX 0xFF
+
+typedef zxerr_t (*viewfunc_getItem_t)(uint8_t displayIdx, char *outKey, uint16_t outKeyLen, char *outVal,
                                       uint16_t outValLen, uint8_t pageIdx, uint8_t *pageCount);
 
 typedef zxerr_t (*viewfunc_getInnerItem_t)(uint8_t depth_level, uint8_t *trace, ui_field_t *ui_field);

@@ -652,8 +652,8 @@ void run_ux_review_flow(review_type_e reviewType, const ux_flow_step_t *const st
             }
 #endif
             if (reviewType == REVIEW_GROUP_TXN) {
-                viewdata.viewfuncGetItem(0xFF, intro_msg_buf, MAX_CHARS_PER_KEY_LINE, intro_submsg_buf,
-                                         MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount);
+                viewdata.viewfuncGetItem(VIEW_INTRO_DISPLAY_IDX, intro_msg_buf, MAX_CHARS_PER_KEY_LINE,
+                                         intro_submsg_buf, MAX_CHARS_PER_VALUE1_LINE, 0, &viewdata.pageCount);
                 ux_review_flow[index++] = &ux_review_flow_1_review_group_title;
             } else {
                 ux_review_flow[index++] = &ux_review_flow_1_review_title;

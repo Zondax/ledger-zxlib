@@ -30,7 +30,7 @@ const char *tx_parse_eth(uint8_t *error_code);
 zxerr_t tx_getNumItemsEth(uint8_t *num_items);
 
 /// Gets an specific item from the transaction (including paging)
-zxerr_t tx_getItemEth(int8_t displayIdx, char *outKey, uint16_t outKeyLen, char *outValue, uint16_t outValueLen,
+zxerr_t tx_getItemEth(uint8_t displayIdx, char *outKey, uint16_t outKeyLen, char *outValue, uint16_t outValueLen,
                       uint8_t pageIdx, uint8_t *pageCount);
 
 zxerr_t tx_compute_eth_v(unsigned int info, uint8_t *v, bool is_personal_message);
