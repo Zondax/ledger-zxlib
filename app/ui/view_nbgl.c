@@ -688,11 +688,21 @@ static void review_configuration() {
     nbgl_useCaseChoice(&C_IMPORTANT_CIRCLE_ICON, viewdata.key, viewdata.value, "Accept", "Reject", confirm_setting);
 }
 
+// Fill viewdata.key/value for the address review item at viewdata.itemIdx.
+// A value that does not fit is replaced by a label and the review is shown
+// but cannot be confirmed (review_value_unrenderable); any other failure
+// leaves the buffers with no item to show.
+static bool address_review_item_ready() {
+    const zxerr_t err = h_review_update_data();
+    return err == zxerr_ok || (err == zxerr_out_of_bounds && review_value_unrenderable);
+}
+
 static void config_useCaseAddressReview() {
     extraPagesPtr = NULL;
     review_value_unrenderable = false;
     uint8_t numItems = 0;
-    if (viewdata.viewfuncGetNumItems == NULL || viewdata.viewfuncGetNumItems(&numItems) != zxerr_ok ||
+    // item 0 is the address itself, so a review needs at least one item
+    if (viewdata.viewfuncGetNumItems == NULL || viewdata.viewfuncGetNumItems(&numItems) != zxerr_ok || numItems == 0 ||
         numItems > NB_MAX_DISPLAYED_PAIRS_IN_REVIEW) {
         ZEMU_LOGF(50, "Show address error\n")
         view_error_show();
@@ -706,7 +716,11 @@ static void config_useCaseAddressReview() {
         viewdata.itemIdx = idx;
         viewdata.key = viewdata.keys[idx];
         viewdata.value = viewdata.values[idx];
-        h_review_update_data();
+        if (!address_review_item_ready()) {
+            ZEMU_LOGF(50, "Show address item error\n")
+            view_error_show();
+            return;
+        }
 
         pairList.nbMaxLinesForValue = 0;
         pairList.nbPairs = idx;
@@ -717,7 +731,11 @@ static void config_useCaseAddressReview() {
     viewdata.itemIdx = 0;
     viewdata.key = viewdata.keys[0];
     viewdata.value = viewdata.values[0];
-    h_review_update_data();
+    if (!address_review_item_ready()) {
+        ZEMU_LOGF(50, "Show address item error\n")
+        view_error_show();
+        return;
+    }
 
 #if defined(CUSTOM_ADDRESS_TEXT)
     UNUSED(ADDRESS_TEXT);
