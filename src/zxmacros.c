@@ -26,10 +26,10 @@ void handle_stack_overflow() {
     zemu_log("!!!!!!!!!!!!!!!!!!!!!! CANARY TRIGGERED!!! STACK OVERFLOW DETECTED\n");
 #if defined(TARGET_NANOS) || defined(TARGET_NANOX) || defined(TARGET_NANOS2) || defined(TARGET_STAX) || \
     defined(TARGET_FLEX) || defined(TARGET_APEX_P)
-    io_seproxyhal_se_reset();
-#else
-    while (1);
+    // io_seproxyhal_se_reset() is deprecated in the SDK in favour of halt()
+    halt();
 #endif
+    while (1);
 }
 
 #ifdef __cplusplus
